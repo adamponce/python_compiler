@@ -1,2 +1,2 @@
-# python_compiler
+# Python_Compiler
 Python Compiler for CSE 423 
