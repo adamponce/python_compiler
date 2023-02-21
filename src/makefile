@@ -27,4 +27,4 @@ tree: tree.c tree.h
 	$(CC) $(OBJFLAGS) $@.c
 
 clean:
-	rm *.o $(targets)
+	rm *.o $(targets) punygrammar.tab.c punygrammar.tab.h lex.yy.c

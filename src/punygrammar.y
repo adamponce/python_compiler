@@ -9,7 +9,8 @@
     struct tree *treeptr;
 }
 
-%token <treeptr> ENDMARKER NEWLINE ';' compound_stmt small_stmt FALSE 
+%token <treeptr> ENDMARKER NEWLINE ';'
+FALSE 
 IF
 DEF
 RAISE
@@ -80,41 +81,76 @@ NUMBER
 STRING
 INDENT
 DEDENT
-%type <treeptr> assignment expression value 
+%type <treeptr> file_input statements stament interactive statement_newline eval
+expressions opt_newline func_type opt_type_expressions fstring
+compound_stmt simple_stmts type_expression star_expressions expression 
+simple_stmt opt_simple_stmt opt_semicolon assignment return_stmt import_stmt
+raise_stmt del_stmt yield_stmt assert_stmt global_stmt nonlocal_stmt function_def
+if_stmt class_def with_stmt for_stmt try_stmt while_stmt match_stmt 
+single_target_expression single_target augassign
+single_subscript_attribute_target opt_name del_targets yield_expr opt_expressions opt_expression
+import_name import_from
+
+
 
 %%
+// STARTING RULES
+// =================
+file_input: statements ENDMARKER;
+interactive: statement_newline;
+eval: expressions opt_newline ENDMARKER;
+func_type: LPAR opt_type_expressions RPAR RARROW expression ENDMARKER;
+opt_type_expressions: {$$=NULL} | type_expression;
+fstring: star_expressions;
+opt_newline: {$$=NULL} | NEWLINE;
+type_expression: {$$=NULL};
+expressions: {$$=NULL};
+star_expressions:  {$$=NULL};
+expression: {$$=NULL};
 
-/* Example for grammar:
-assignment: NAME{printnode($1);} EQUAL{printnode($1);} expression ENDMARKER{printnode($1);};
+// GENERAL STATEMENTS
+//====================
+statements: {$$=NULL}| stament | statements stament;
+stament: compound_stmt | simple_stmts;
+statement_newline: {$$=NULL} | compound_stmt NEWLINE | simple_stmts | NEWLINE | ENDMARKER; 
+simple_stmts: {$$=NULL} | simple_stmt NEWLINE | simple_stmt opt_simple_stmt;
+opt_simple_stmt: {$$=NULL} | opt_simple_stmt opt_semicolon;
+opt_semicolon: SEMI simple_stmt;
+simple_stmt: {$$=NULL} | assignment | star_expressions | return_stmt | import_stmt | raise_stmt
+    | PASS
+    | del_stmt
+    | yield_stmt
+    | assert_stmt
+    | BREAK
+    | CONTINUE 
+    | global_stmt
+    | nonlocal_stmt;
+compound_stmt:  {$$=NULL} | function_def | if_stmt | class_def | with_stmt | for_stmt | try_stmt
+    | while_stmt
+    | match_stmt;
 
-expression: value | NAME{printnode($1);};
+// SIMPLE STATEMENTS
+// =================
 
-value: NUMBER{printnode($1);} | STRING{printnode($1);};
-*/
+assignment: {$$=NULL} | NAME COLON expression
+    | single_target_expression COLON expression
+    | single_target augassign;
 
+single_target_expression: LPAR single_target RPAR | single_subscript_attribute_target;
+augassign: {$$=NULL} | PLUSEQUAL | LESSEQUAL;
+return_stmt: {$$=NULL} | RETURN;
+raise_stmt: {$$=NULL} | RAISE expression | RAISE;
+global_stmt: GLOBAL opt_name;
+nonlocal_stmt: NONLOCAL opt_name;
+del_stmt: {$$=NULL} | DEL del_targets
+yield_stmt: yield_expr
+assert_stmt: ASSERT expression opt_expressions;
+opt_expressions: {$$=NULL} | opt_expressions opt_expression 
+opt_expression: COMMA expression;
+import_stmt: import_name | import_from;
 
+// IMPORT STATEMENTS
+// ===================
 
-
-/*
-%type <treeptr> file_input
-%type <treeptr> file_input_prime
-%type <treeptr> stmt
-%type <treeptr> simple_stmt
-%type <treeptr> small_stmts
-%type <treeptr> optional_semicolon
-
-
-
-file_input: ENDMARKER ;
-file_input: file_input_prime ENDMARKER;
-file_input_prime : file_input_prime NEWLINE ;
-file_input_prime : file_input_prime stmt ;
-file_input_prime : ;
-stmt: simple_stmt | compound_stmt ;
-simple_stmt: small_stmt small_stmts optional_semicolon NEWLINE ;
-small_stmts : small_stmts ';' small_stmt
-small_stmts : ;
-optional_semicolon: ';' | ;
-*/
 
 %%
