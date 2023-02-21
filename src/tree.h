@@ -1,5 +1,5 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef TREE_H
+#define TREE_H
 
 struct token{
    int category;

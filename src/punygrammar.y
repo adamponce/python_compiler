@@ -83,12 +83,14 @@ DEDENT
 %type <treeptr> assignment expression value 
 
 %%
+
+/* Example for grammar:
 assignment: NAME{printnode($1);} EQUAL{printnode($1);} expression ENDMARKER{printnode($1);};
 
 expression: value | NAME{printnode($1);};
 
 value: NUMBER{printnode($1);} | STRING{printnode($1);};
-
+*/
 
 
 
