@@ -1,3 +1,8 @@
+#if YYDEBUG == 1
+    extern yydebug;
+    yydebug = 1;
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
