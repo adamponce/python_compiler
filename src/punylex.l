@@ -54,7 +54,7 @@
 "return"	{return alctoken(RETURN);}
 "True"	{return alctoken(TRUE);}
 "elif"	{return alctoken(ELIF);}
-"in"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"in"	{return alctoken(IN);}
 "try"	{return alctoken(TRY);}
 "and"	{return alctoken(AND);}
 "else"	{return alctoken(ELSE);}
