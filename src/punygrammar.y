@@ -101,7 +101,7 @@ param_with_default_zero_more param_with_default_one_more
 param_maybe_default_zero_more param_maybe_default_one_more
 param_no_default param_no_default_star_annotation param_with_default
 param_maybe_default param param_star_annotation annotation star_annotation
-default type_comment_opt default_opt annotation_opt named_expression "@" elif_stmt else_block opt_else_block
+default named_expression "@" elif_stmt else_block opt_else_block
 star_targets type_expressions comparison bitwise_or one_or_more_compare_op_bitwise_or_pair compare_op_bitwise_or_pair
 eq_bitwise_or noteq_bitwise_or lte_bitwise_or lt_bitwise_or gte_bitwise_or gt_bitwise_or '|' '^' bitwise_and '&' '<<'
 '>>' shift_expr sum term factor power primary opt_arguments slices slices_dot_expr
@@ -118,9 +118,7 @@ star_targets_list_seq star_targets_list_seq_dot star_targets_list_seq_dot_star
 star_targets_tuple_seq star_target_comma_plus star_target target_with_star_atom
 star_atom opt_star_targets_tuple_seq opt_star_targets_list_seq
 t_primary t_lookahead bitwise_xor star_named_expressions
-del_targets_star del_t_atom opt_del_targets star_named_expression
-comma_expression_star func_type_comment '~' assignment_expression del_target with_item
-with_item_one
+del_targets_star del_t_atom opt_del_targets star_named_expression '~' assignment_expression del_target with_item
 comma_opt
 except_block
 except_block_one
@@ -186,6 +184,8 @@ pattern
 name_or_attr
 literal_expr_or_attr
 "match"
+opt_default
+opt_annotation
 "case"
 "_"
 
@@ -295,7 +295,7 @@ function_def: {$$=NULL}
     | function_def_raw;
 
 function_def_raw: {$$=NULL}
-    | DEF NAME LPAR params RPAR function_def_raw_exp COLON func_type_comment block 
+    | DEF NAME LPAR params RPAR function_def_raw_exp COLON block 
 function_def_raw_exp: {$$=NULL} | RARROW expression;
 
 // Function parameters
@@ -341,6 +341,34 @@ param_with_default_zero_more: {$$=NULL} | param_with_default;
 param_with_default_one_more: param_with_default | param_with_default param_with_default_one_more;
 param_maybe_default_zero_more: {$$=NULL} | param_maybe_default;
 param_maybe_default_one_more: param_maybe_default | param_maybe_default param_maybe_default_one_more;
+
+
+param_no_default: {$$=NULL}
+    | param COMMA 
+    // | param type_comment_opt &')';
+    | param RPAR;
+param_no_default_star_annotation: {$$=NULL}
+    | param_star_annotation COMMA  
+    // | param_star_annotation type_comment_opt &')';
+    | param_star_annotation RPAR;
+param_with_default: {$$=NULL}
+    | param default COMMA 
+    // | param default type_comment_opt &')';
+    | param default RPAR;
+param_maybe_default:{$$=NULL}
+    | param opt_default COMMA 
+    // | param default? type_comment_opt &')';
+    | param opt_default RPAR;
+param: NAME opt_annotation; 
+param_star_annotation: NAME star_annotation;
+annotation: COLON expression;
+star_annotation: COLON star_expression;
+// default: EQUAL expression  | invalid_default;
+default: EQUAL expression;
+
+// type_comment_opt: {$$=NULL} | TYPE_COMMENT;
+opt_default: {$$=NULL} | default;
+opt_annotation: {$$=NULL} | annotation;
 
 /* 
 if statement: 
@@ -452,7 +480,7 @@ star_named_expressions_opt: {$$=NULL}
     | star_named_expressions;
 
 case_block: {$$=NULL} 
-    | "case" patters gaurd_opt COLON block;
+    | "case" patterns gaurd_opt COLON block;
 
 case_block_one: case_block 
     | case_block_one case_block;
@@ -465,6 +493,8 @@ gaurd_opt: {$$=NULL}
 patterns: {$$=NULL} 
     | open_sequence_pattern 
     | pattern;
+
+pattern: {$$=NULL} | as_pattern | or_pattern;
 
 as_pattern: {$$=NULL}
     | or_pattern AS pattern_capture_target;
@@ -547,6 +577,10 @@ value_pattern: {$$=NULL}
 
 attr: {$$=NULL}
     | name_or_attr DOT NAME;
+
+name_or_attr: {$$=NULL}
+    | attr
+    | NAME;
 
 group_pattern: {$$=NULL}
     | LPAR pattern RPAR;
@@ -962,7 +996,7 @@ t_lookahead: LPAR | LSQB | DOT;
 // --------------------------
 
 del_targets: del_target del_targets_star opt_comma;
-del_targets_star: {$$=NULL} | COMMA deltargets del_targets_star;
+del_targets_star: {$$=NULL} | COMMA del_targets del_targets_star;
 
 del_target: {$$=NULL}
     | t_primary DOT NAME 
@@ -979,9 +1013,6 @@ opt_del_targets: {$$=NULL} | del_targets;
 // TYPING ELEMENTS
 // ================
 
-
-
-
-
+type_expressions: {$$=NULL} | STAR expression | DOUBLESTAR expression | STAR expression COMMA DOUBLESTAR expression;
 
 %%
