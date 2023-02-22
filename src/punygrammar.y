@@ -89,7 +89,8 @@ raise_stmt del_stmt yield_stmt assert_stmt global_stmt nonlocal_stmt function_de
 if_stmt class_def with_stmt for_stmt try_stmt while_stmt match_stmt 
 single_target_expression single_target augassign
 single_subscript_attribute_target opt_name del_targets yield_expr opt_expressions opt_expression
-import_name import_from
+import_name import_from dotted_as_names ellip_or_dot_any dotted_name import_from_targets
+ellip_or_dot_one ellip_or_dot import_from_names
 
 
 
@@ -151,6 +152,16 @@ import_stmt: import_name | import_from;
 
 // IMPORT STATEMENTS
 // ===================
+
+import_name: IMPORT dotted_as_names;
+import_from: {$$=NULL} | FROM ellip_or_dot_any dotted_name IMPORT import_from_targets
+    | FROM ellip_or_dot_one IMPORT import_from_targets;
+ellip_or_dot_any: {$$=NULL} | ellip_or_dot_any ellip_or_dot;
+ellip_or_dot_one: ellip_or_dot | ellip_or_dot_any ellip_or_dot;
+ellip_or_dot: DOT | ELLIPSIS;
+import_from_targets: {$$=NULL} | LPAR import_from_names coma_one_or_more RPAR | import_from_names | STAR;
+coma_one_or_more: COMMA | coma_one_or_more COMMA;
+import_from_names: {$$=NULL};
 
 
 %%

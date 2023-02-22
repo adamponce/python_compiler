@@ -108,6 +108,7 @@
 "{"	{return alctoken(LBRACE);}
 "}"	{return alctoken(RBRACE);}
 ":"	{return alctoken(COLON);}
+"..." {return alctoken(ELLIPSIS);}
 "@"|"`"|"$" {printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
 (\"{3}([^\"]|\"\")*\"{3})	{return alctoken(STRING);}
 (\'{3}([^\']|\'\')*\'{3})	{return alctoken(STRING);}
