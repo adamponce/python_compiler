@@ -1,8 +1,3 @@
-#if YYDEBUG == 1
-    extern yydebug;
-    yydebug = 1;
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +10,7 @@ extern FILE *yyin;
 extern char *yytext;
 extern int firsttime;
 extern int rows;
+extern int yydebug;
 
 
 
@@ -40,6 +36,7 @@ int main(int argc, char *argv[]){
         }
         printf("Category \t Text \t\t\t        Lineno \t      Filename \t                 Ival/Sval\n");
         printf("----------------------------------------------------------------------------------------------------------------\n");
+        yydebug = 1;
         printf("yyparse returns %d\n", yyparse());
         firsttime = 0;
         rows = 1;
