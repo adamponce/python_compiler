@@ -91,7 +91,7 @@ compound_stmt simple_stmts star_expressions expression
 simple_stmt opt_simple_stmt opt_semicolon assignment return_stmt import_stmt
 raise_stmt del_stmt yield_stmt assert_stmt global_stmt nonlocal_stmt
 if_stmt with_stmt for_stmt try_stmt while_stmt match_stmt 
-single_target_expression single_target augassign
+single_target augassign
 single_subscript_attribute_target opt_name del_targets yield_expr opt_expressions opt_expression
 import_name import_from dotted_as_names ellip_or_dot_any dotted_name import_from_targets
 ellip_or_dot_one ellip_or_dot import_from_names import_from_as_name import_from_as_name_or_coma
@@ -121,7 +121,7 @@ star_targets_list_seq star_targets_list_seq_dot star_targets_list_seq_dot_star
 star_targets_tuple_seq star_target_comma_plus star_target target_with_star_atom
 star_atom opt_star_targets_tuple_seq opt_star_targets_list_seq
 t_primary t_lookahead bitwise_xor star_named_expressions
-del_targets_star del_t_atom opt_del_targets star_named_expression '~' assignment_expression del_target with_item
+del_target_star del_t_atom opt_del_targets star_named_expression '~' assignment_expression del_target with_item
 except_block
 except_block_one
 except_star_block
@@ -224,10 +224,10 @@ file_input: statements ENDMARKER;
 statements: stament | statements stament;
 stament: compound_stmt | simple_stmts;
 //statement_newline: {$$=NULL} | compound_stmt NEWLINE | simple_stmts | NEWLINE | ENDMARKER; 
-simple_stmts: {$$=NULL} | simple_stmt NEWLINE | simple_stmt opt_simple_stmt;
+simple_stmts: /*{$$=NULL} |*/ simple_stmt NEWLINE | simple_stmt opt_simple_stmt;
 opt_simple_stmt: {$$=NULL} | opt_simple_stmt opt_semicolon;
 opt_semicolon: SEMI simple_stmt;
-simple_stmt: {$$=NULL} | assignment | star_expressions | return_stmt | import_stmt | raise_stmt
+simple_stmt: /*{$$=NULL} |*/ assignment | star_expressions | return_stmt | import_stmt | raise_stmt
     | PASS
     | del_stmt
     | yield_stmt
@@ -244,10 +244,9 @@ compound_stmt:  /*{$$=NULL} |*/ function_def | if_stmt | class_def | with_stmt |
 // =================
 
 assignment: /*{$$=NULL} |*/  NAME COLON expression
-    | single_target_expression COLON expression
+    | single_target COLON expression
     | single_target augassign;
 
-single_target_expression: LPAR single_target RPAR | single_subscript_attribute_target;
 augassign: {$$=NULL} | PLUSEQUAL | LESSEQUAL;
 return_stmt: /*{$$=NULL}|*/ RETURN;
 raise_stmt: /*{$$=NULL}|*/ RAISE expression | RAISE;
@@ -272,12 +271,12 @@ import_from: /*{$$=NULL} |*/ FROM ellip_or_dot_any dotted_name IMPORT import_fro
 ellip_or_dot_any: {$$=NULL} | ellip_or_dot_any ellip_or_dot;
 ellip_or_dot_one: ellip_or_dot | ellip_or_dot_one ellip_or_dot;
 ellip_or_dot: DOT | ELLIPSIS;
-import_from_targets: {$$=NULL} | LPAR import_from_names coma_one_or_more RPAR | import_from_names | STAR;
+import_from_targets: /*{$$=NULL} |*/ LPAR import_from_names coma_one_or_more RPAR | import_from_names | STAR;
 coma_one_or_more: COMMA | coma_one_or_more COMMA;
-import_from_names: {$$=NULL} | import_from_as_name import_from_as_name_or_comas;
+import_from_names: /*{$$=NULL} |*/ import_from_as_name import_from_as_name_or_comas;
 import_from_as_name_or_comas: {$$=NULL} | import_from_as_name_or_comas import_from_as_name_or_coma;
 import_from_as_name_or_coma: COMMA import_from_as_name;
-import_from_as_name: {$$=NULL} | NAME opt_as_name;
+import_from_as_name: /*{$$=NULL} |*/ NAME opt_as_name;
 dotted_as_names: {$$=NULL} | dotted_as_name dotted_as_name_commas;
 dotted_as_name_commas: {$$=NULL} | dotted_as_name_commas dotted_as_name_comma;
 dotted_as_name_comma: COMMA dotted_as_name;
@@ -484,15 +483,13 @@ patterns: {$$=NULL}
     | open_sequence_pattern 
     | pattern;
 
-pattern: {$$=NULL} | as_pattern | or_pattern;
+pattern: /*{$$=NULL} |*/ as_pattern | or_pattern;
 
 as_pattern:/*{$$=NULL} |*/ or_pattern AS pattern_capture_target;
 
-or_pattern: {$$=NULL}
-    | closed_pattern closed_pattern_many;
+or_pattern: /*{$$=NULL} |*/ closed_pattern closed_pattern_many;
 
-closed_pattern: {$$=NULL}
-    | literal_pattern
+closed_pattern: /*{$$=NULL} |*/ literal_pattern
     | capture_pattern
     | wildcard_pattern
     | value_pattern
@@ -524,8 +521,7 @@ Literal Expressions:
 --------------------
 Literal expressions are used to restrict permitted mapping pattern keys
 */
-literal_expr: {$$=NULL}
-    | signed_number 
+literal_expr: /*{$$=NULL} |*/ signed_number 
     | complex_number
     | strings
     | NONE
@@ -538,28 +534,23 @@ complex_number: /*{$$=NULL} |*/ signed_real_number PLUS imaginary_number
 signed_number: /*{$$=NULL} |*/ NUMBER
     | MINUS NUMBER;
 
-signed_real_number: {$$=NULL}
-    | real_number
+signed_real_number: /*{$$=NULL} |*/real_number
     | MINUS real_number;
 
-real_number: {$$=NULL}
-    | NUMBER;
+real_number: /*{$$=NULL} |*/NUMBER;
 
-imaginary_number: {$$=NULL}
-    | NUMBER;
+imaginary_number: /*{$$=NULL} |*/NUMBER;
 
 capture_pattern:/*{$$=NULL} |*/ pattern_capture_target;
     
 /*THis deals with ! but i didn't implement it*/
-pattern_capture_target: {$$=NULL}
-    | NAME;
+pattern_capture_target: /*{$$=NULL} |*/ NAME;
 
 wildcard_pattern: /*{$$=NULL} |*/ "_";
 
 value_pattern: /*{$$=NULL} |*/ attr;
 
-attr: {$$=NULL}
-    | name_or_attr DOT NAME;
+attr: /*{$$=NULL} |*/ name_or_attr DOT NAME;
 
 name_or_attr: /*{$$=NULL} |*/attr
     | NAME;
@@ -593,19 +584,16 @@ mapping_pattern: /*{$$=NULL} |*/LBRACE RBRACE
     | LBRACE items_pattern COMMA double_star_pattern opt_comma RBRACE
     | LBRACE items_pattern opt_comma RBRACE;
 
-items_pattern: {$$=NULL}
-    | key_value_pattern key_value_pattern_many;
+items_pattern: /*{$$=NULL} |*/ key_value_pattern key_value_pattern_many;
 
-key_value_pattern: {$$=NULL}
-    | literal_expr_or_attr COLON pattern;
+key_value_pattern: /*{$$=NULL} |*/ literal_expr_or_attr COLON pattern;
 
 literal_expr_or_attr: literal_expr | attr;
 
 key_value_pattern_many: {$$=NULL} 
     | key_value_pattern_many COMMA key_value_pattern;
 
-double_star_pattern: {$$=NULL}
-    | DOUBLESTAR pattern_capture_target;
+double_star_pattern: /*{$$=NULL} |*/  DOUBLESTAR pattern_capture_target;
 
 class_pattern: /*{$$=NULL} |*/ name_or_attr LPAR RPAR
     | name_or_attr LPAR positional_patterns opt_comma RPAR
@@ -619,8 +607,7 @@ pattern_many: {$$=NULL}
 
 keyword_patterns: /*{$$=NULL} |*/ keyword_pattern keyword_pattern_many;
 
-keyword_pattern: {$$=NULL}
-    | NAME EQUAL pattern;
+keyword_pattern: /*{$$=NULL} |*/ NAME EQUAL pattern;
 
 keyword_pattern_many: {$$=NULL}
     | keyword_pattern_many COMMA key_value_pattern;
@@ -644,8 +631,7 @@ opt_comma: {$$=NULL}
     | COMMA; 
 */
 
-expression: {$$=NULL} 
-    | disjunction IF disjunction ELSE expression
+expression: /*{$$=NULL} |*/ disjunction IF disjunction ELSE expression
     | disjunction;
 
 yield_expr: /*{$$=NULL} |*/ YIELD FROM expression
@@ -666,11 +652,11 @@ opt_star_expressions: {$$=NULL}
 
 star_named_expressions: star_named_expression star_named_expression_many opt_comma;
 
-star_named_expression: /*{$$=NULL} |*/ STAR bitwise_or
-    | named_expression;
-
 star_named_expression_many: {$$=NULL} 
     | star_named_expression_many COMMA star_named_expression;
+
+star_named_expression: /*{$$=NULL} |*/ STAR bitwise_or
+    | named_expression;
 
 assignment_expression:/*{$$=NULL} |*/ NAME COLONEQUAL expression;
 
@@ -678,22 +664,19 @@ assignment_expression:/*{$$=NULL} |*/ NAME COLONEQUAL expression;
 named_expression: /*{$$=NULL} |*/ assignment_expression
     | expression;
 
-disjunction: {$$=NULL} 
-    | conjunction or_conjunction_one
+disjunction: /*{$$=NULL} |*/ conjunction or_conjunction_one
     | conjunction;
 
 or_conjunction_one: OR conjunction
     | or_conjunction_one OR conjunction;
 
-conjunction: {$$=NULL} 
-    | inversion and_inversion_one
+conjunction: /*{$$=NULL} |*/inversion and_inversion_one
     | inversion;
 
 and_inversion_one: AND inversion 
     | and_inversion_one AND inversion;
 
-inversion: {$$=NULL} 
-    | NOT inversion 
+inversion: /*{$$=NULL} |*/ NOT inversion 
     | comparison;
 
 
@@ -725,34 +708,31 @@ gt_bitwise_or: GREATER bitwise_or;
 // BITWISE OPERATORS
 // ===================
 
-bitwise_or: {$$=NULL} | bitwise_or '|' bitwise_xor | bitwise_xor;
+bitwise_or: /*{$$=NULL} |*/ bitwise_or '|' bitwise_xor | bitwise_xor;
 
-bitwise_xor: {$$=NULL} | bitwise_xor '^' bitwise_and | bitwise_and;
+bitwise_xor: /*{$$=NULL} |*/ bitwise_xor '^' bitwise_and | bitwise_and;
 
-bitwise_and: {$$=NULL}| bitwise_and '&' shift_expr | shift_expr;
+bitwise_and: /*{$$=NULL} |*/ bitwise_and '&' shift_expr | shift_expr;
 
-shift_expr: {$$=NULL} | shift_expr '<<' sum | shift_expr '>>' sum | sum;
+shift_expr: /*{$$=NULL} |*/ shift_expr '<<' sum | shift_expr '>>' sum | sum;
 
 // Arithmetic operators
 // --------------------
 
-sum: {$$=NULL}
-    | sum PLUS term 
+sum: /*{$$=NULL} |*/ sum PLUS term 
     | sum MINUS term 
     | term;
 
-term: {$$=NULL}
-    | term STAR factor 
+term: /*{$$=NULL} |*/term STAR factor 
     | term SLASH factor 
     | term DOUBLESLASH factor 
     | term PERCENT factor 
-    | term '@' factor 
+    //| term '@' factor 
     | factor;
 
-factor: {$$=NULL}
-    | PLUS factor 
+factor: /*{$$=NULL} |*/PLUS factor 
     | MINUS factor 
-    | '~' factor 
+    //| '~' factor 
     | power;
 
 
@@ -790,8 +770,7 @@ opt_col_expr: {$$=NULL} | COLON opt_expressions_1;
 
 opt_expressions_1: /*{$$=NULL} |*/ expression;
 
-atom: {$$=NULL}
-    | NAME
+atom: /*{$$=NULL} |*/ NAME
     | TRUE 
     | FALSE
     | NONE
@@ -817,11 +796,11 @@ strings: STRING | STRING strings;
 list:/*{$$=NULL} |*/LSQB opt_star_named_expressions RSQB;
 
 tuple: /*{$$=NULL} |*/ LPAR tuple_grp_one RPAR;
-tuple_grp_one: {$$=NULL} | star_named_expression COMMA opt_star_named_expressions;
+tuple_grp_one: /*{$$=NULL} |*/ star_named_expression COMMA opt_star_named_expressions;
 
 set: LBRACE star_named_expressions RBRACE;
 
-opt_star_named_expressions: {$$=NULL} | star_named_expressions;
+opt_star_named_expressions: /*{$$=NULL} |*/ star_named_expressions;
 
 
 // Dicts
@@ -833,8 +812,7 @@ opt_double_starred_kvpairs: {$$=NULL} | double_starred_kvpairs;
 double_starred_kvpairs: double_starred_kvpair double_starred_kvpair_star opt_comma;
 double_starred_kvpair_star: {$$=NULL} | double_starred_kvpair_star COMMA double_starred_kvpair;
 
-double_starred_kvpair: {$$=NULL}
-    | DOUBLESTAR bitwise_or 
+double_starred_kvpair: /*{$$=NULL} |*/ DOUBLESTAR bitwise_or 
     | kvpair;
 
 kvpair: expression COLON expression;
@@ -898,9 +876,8 @@ kwarg_or_double_starred: {$$=NULL}
 // ---------------
 
 // NOTE: star_targets may contain *bitwise_or, targets may not.
-star_targets: {$$=NULL}
-    | star_target 
-    | star_target star_targets_star opt_comma;
+star_targets: /*{$$=NULL} |*/ star_target star_targets_star opt_comma;
+
 star_targets_star: {$$=NULL} | COMMA star_target star_targets_star;
 
 star_targets_list_seq: star_targets_list_seq_dot opt_comma
@@ -911,8 +888,7 @@ star_targets_tuple_seq: /*{$$=NULL} |*/ star_target star_target_comma_plus opt_c
     | star_target COMMA;
 star_target_comma_plus: COMMA star_target | COMMA star_target star_target_comma_plus;
 
-star_target: {$$=NULL} 
-    | STAR star_target 
+star_target: /*{$$=NULL} |*/ STAR star_target 
     | target_with_star_atom;
 
 target_with_star_atom: /*{$$=NULL} |*/ t_primary DOT NAME  
@@ -926,13 +902,11 @@ star_atom: /*{$$=NULL} |*/ NAME
 opt_star_targets_tuple_seq: {$$=NULL} | star_targets_tuple_seq;
 opt_star_targets_list_seq: {$$=NULL} | star_targets_list_seq;
 
-single_target: {$$=NULL} 
-    | single_subscript_attribute_target
-    //| NAME 
+single_target: /*{$$=NULL} |*/ single_subscript_attribute_target
+    //| NAME
     | LPAR single_target RPAR;
 
-single_subscript_attribute_target: {$$=NULL} 
-    | t_primary DOT NAME 
+single_subscript_attribute_target: /*{$$=NULL} |*/t_primary DOT NAME 
     | t_primary LSQB slices RSQB;
 
 t_primary: /*{$$=NULL} |*/ t_primary DOT NAME t_lookahead 
@@ -948,19 +922,18 @@ t_lookahead: LPAR | LSQB | DOT;
 // Targets for del statements
 // --------------------------
 
-del_targets: del_target del_targets_star opt_comma;
-del_targets_star: {$$=NULL} | COMMA del_targets del_targets_star;
+del_targets: del_target del_target_star opt_comma;
+del_target_star: {$$=NULL} | COMMA del_target del_target_star;
 
-del_target: {$$=NULL}
-    | t_primary DOT NAME 
+del_target: /*{$$=NULL} |*/ t_primary DOT NAME 
     | t_primary LSQB slices RSQB 
     | del_t_atom;
 
-del_t_atom: /*{$$=NULL} |*/ NAME 
+del_t_atom: /*{$$=NULL} |*/ //NAME 
     | LPAR del_target RPAR
     | LPAR opt_del_targets RPAR 
     | LSQB opt_del_targets RSQB
-opt_del_targets: {$$=NULL} | del_targets;
+opt_del_targets: /*{$$=NULL} |*/ del_targets;
 
 // TYPING ELEMENTS
 // ================
