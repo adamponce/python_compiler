@@ -21,7 +21,7 @@ punygrammar.tab: punygrammar.tab.c
 	$(CC) $(OBJFLAGS) $@.c
 
 punygrammar.tab.h punygrammar.tab.c: punygrammar.y
-	bison -d punygrammar.y
+	bison -d -v punygrammar.y
 
 tree: tree.c tree.h
 	$(CC) $(OBJFLAGS) $@.c
