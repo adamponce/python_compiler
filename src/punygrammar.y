@@ -113,7 +113,7 @@ atom_grp_one atom_grp_two atom_grp_three group group_grp_one
 strings list opt_star_named_expressions tuple tuple_grp_one set dict
 opt_double_starred_kvpairs double_starred_kvpairs double_starred_kvpair_star
 double_starred_kvpair kvpair for_if_clauses for_if_clause_plus for_if_clause
-if_disjunction_star listcomp setcomp genexp genexp_grp_one dictcomp arguments
+if_disjunction_star listcomp setcomp genexp dictcomp arguments
 args args_dot args_grp_one args_dot_star opt_comma_kwargs kwargs kwargs_dot_one
 kwargs_dot_one_star kwargs_dot_two kwargs_dot_two_star starred_expression
 kwarg_or_starred kwarg_or_double_starred star_targets_star
@@ -224,7 +224,7 @@ file_input: statements ENDMARKER;
 statements: stament | statements stament;
 stament: compound_stmt | simple_stmts;
 //statement_newline: {$$=NULL} | compound_stmt NEWLINE | simple_stmts | NEWLINE | ENDMARKER; 
-simple_stmts: /*{$$=NULL} |*/ simple_stmt NEWLINE | simple_stmt opt_simple_stmt;
+simple_stmts: {$$=NULL} | simple_stmt NEWLINE | simple_stmt opt_simple_stmt;
 opt_simple_stmt: {$$=NULL} | opt_simple_stmt opt_semicolon;
 opt_semicolon: SEMI simple_stmt;
 simple_stmt: /*{$$=NULL} |*/ assignment | star_expressions | return_stmt | import_stmt | raise_stmt
@@ -243,8 +243,8 @@ compound_stmt:  /*{$$=NULL} |*/ function_def | if_stmt | class_def | with_stmt |
 // SIMPLE STATEMENTS
 // =================
 
-assignment: /*{$$=NULL} |*/  NAME COLON expression
-    | single_target COLON expression
+assignment: /*{$$=NULL} |*/  NAME EQUAL expression
+    | single_target EQUAL expression
     | single_target augassign;
 
 augassign: {$$=NULL} | PLUSEQUAL | LESSEQUAL;
@@ -313,8 +313,7 @@ function_def_raw_exp: {$$=NULL} | RARROW expression;
 // Function parameters
 // ==================
 
-params: {$$=NULL}
-    | parameters;
+params: /*{$$=NULL} |*/ parameters;
 
 parameters: /*{$$=NULL} |*/ slash_no_default param_no_default_zero_more param_with_default_zero_more star_etc_opt 
     | slash_with_default param_with_default_zero_more star_etc_opt
@@ -342,7 +341,7 @@ star_etc: /*{$$=NULL} |*/ STAR param_no_default param_maybe_default_zero_more kw
 kwds: /*{$$=NULL} |*/ DOUBLESTAR param_no_default;
 kwds_opt: {$$=NULL} | kwds;
 
-param_no_default_zero_more: {$$=NULL} | param_no_default;
+param_no_default_zero_more: {$$=NULL} | param_no_default_one_more;
 param_no_default_one_more: param_no_default | param_no_default param_no_default_one_more;
 param_with_default_zero_more: {$$=NULL} | param_with_default;
 param_with_default_one_more: param_with_default | param_with_default param_with_default_one_more;
@@ -350,21 +349,19 @@ param_maybe_default_zero_more: {$$=NULL} | param_maybe_default;
 param_maybe_default_one_more: param_maybe_default | param_maybe_default param_maybe_default_one_more;
 
 
-param_no_default: {$$=NULL}
-    | param COMMA 
+param_no_default: /*{$$=NULL} |*/ param COMMA 
     // | param type_comment_opt &')';
     | param RPAR;
 param_no_default_star_annotation: /*{$$=NULL} |*/ param_star_annotation COMMA  
     // | param_star_annotation type_comment_opt &')';
     | param_star_annotation RPAR;
-param_with_default: {$$=NULL}
-    | param default COMMA 
+param_with_default: /*{$$=NULL} |*/ param default COMMA 
     // | param default type_comment_opt &')';
     | param default RPAR;
-param_maybe_default:{$$=NULL}
-    | param opt_default COMMA 
+param_maybe_default:/*{$$=NULL} |*/ param opt_default COMMA 
     // | param default? type_comment_opt &')';
     | param opt_default RPAR;
+
 param: NAME opt_annotation; 
 param_star_annotation: NAME star_annotation;
 annotation: COLON expression;
@@ -412,8 +409,7 @@ This has multiple odd things such as the . in front of with_item_one and deletio
 with_stmt: /*{$$=NULL} |*/ WITH LPAR with_item comma_with_item_many opt_comma RPAR COLON block
     | WITH with_item comma_with_item_many COLON block;
 
-with_item: {$$=NULL}
-    | expression AS star_target comma_rpar_colon | expression;
+with_item: /*{$$=NULL} |*/ expression AS star_target comma_rpar_colon; //| expression;
 
 comma_rpar_colon: COMMA | RPAR | COLON;
 
@@ -438,7 +434,7 @@ except_block: /*{$$=NULL} |*/ EXCEPT expression opt_as_name COLON block
 except_block_one: except_block 
     | except_block_one except_block;
 
-except_star_block: /*{$$=NULL} |*/ EXCEPT STAR expression opt_as_name COLON block;
+except_star_block: /*{$$=NULL} |*/ EXCEPT starred_expression opt_as_name COLON block;
 
 except_star_block_one: except_star_block 
     | except_star_block_one except_star_block;
@@ -641,8 +637,8 @@ star_expressions: /*{$$=NULL} |*/ star_expression star_expression_one opt_comma
     //| star_expression COMMA
     | star_expression;
 
-star_expression: /*{$$=NULL} |*/ STAR bitwise_or
-    | expression;
+star_expression: /*{$$=NULL} |*/ STAR bitwise_or;
+    //| expression;
 
 star_expression_one: COMMA star_expression
     | star_expression_one COMMA star_expression;
@@ -758,8 +754,9 @@ primary: /*{$$=NULL}|*/ primary DOT NAME
 
 slices: /*{$$=NULL} |*/slice 
     | slices_dot_expr opt_comma;
+    
 slices_dot_expr: slices_grp_one slices_grp_two;
-slices_grp_one: slice | starred_expression;
+slices_grp_one: starred_expression;
 slices_grp_two: {$$=NULL} | slices_grp_two COMMA slices_grp_one;
 opt_comma: {$$=NULL} | COMMA;
 
@@ -823,17 +820,17 @@ kvpair: expression COLON expression;
 for_if_clauses: /*{$$=NULL} |*/for_if_clause_plus;
 for_if_clause_plus: for_if_clause | for_if_clause for_if_clause_plus;
 
-for_if_clause: {$$=NULL}
+for_if_clause: /*{$$=NULL} |*/
     // | ASYNC 'for' star_targets 'in' ~ disjunction ('if' disjunction )* 
-    | FOR star_targets IN disjunction if_disjunction_star;
+    FOR star_targets IN disjunction if_disjunction_star;
+
 if_disjunction_star: {$$=NULL} | if_disjunction_star IF disjunction;
 
 listcomp: /*{$$=NULL} |*/LSQB named_expression for_if_clauses RSQB;
 
 setcomp: /*{$$=NULL} |*/LBRACE named_expression for_if_clauses RBRACE;
 
-genexp: /*{$$=NULL} |*/ LPAR genexp_grp_one for_if_clauses RPAR;
-genexp_grp_one: assignment_expression | expression;
+genexp: /*{$$=NULL} |*/ LPAR named_expression for_if_clauses RPAR;
 
 dictcomp: /*{$$=NULL} |*/ LBRACE kvpair for_if_clauses RBRACE;
 
@@ -850,23 +847,20 @@ args_dot_star: {$$=NULL} | args_dot_star COMMA args_grp_one;
 opt_comma_kwargs: {$$=NULL} | COMMA kwargs;
 
 // s.e+ = (e (s e)*)
-kwargs: {$$=NULL}
-    | kwargs_dot_one COMMA kwargs_dot_two
+kwargs: /*{$$=NULL} |*/ kwargs_dot_one COMMA kwargs_dot_two
     | kwargs_dot_one
     | kwargs_dot_two;
 kwargs_dot_one: kwarg_or_starred kwargs_dot_one_star;
-kwargs_dot_one_star: {$$=NULL} | COMMA kwarg_or_starred kwargs_dot_one_star;
+kwargs_dot_one_star: /*{$$=NULL} |*/ COMMA kwarg_or_starred kwargs_dot_one_star;
 kwargs_dot_two: kwarg_or_double_starred kwargs_dot_two_star;
 kwargs_dot_two_star: {$$=NULL} | COMMA kwarg_or_double_starred kwargs_dot_two_star;
 
-starred_expression: {$$=NULL}
-    | STAR expression;
+starred_expression: /*{$$=NULL} |*/ STAR expression;
 
 kwarg_or_starred: /*{$$=NULL} |*/ NAME EQUAL expression 
     | starred_expression;
 
-kwarg_or_double_starred: {$$=NULL}
-    | NAME EQUAL expression 
+kwarg_or_double_starred: /*{$$=NULL} |*/ NAME EQUAL expression 
     | DOUBLESTAR expression;
 
 // ASSIGNMENT TARGETS
@@ -895,12 +889,12 @@ target_with_star_atom: /*{$$=NULL} |*/ t_primary DOT NAME
     | t_primary LSQB slices RSQB 
     | star_atom;
 
-star_atom: /*{$$=NULL} |*/ NAME 
+star_atom: /*{$$=NULL} |*/ //NAME 
     | LPAR target_with_star_atom RPAR
-    | LPAR opt_star_targets_tuple_seq RPAR 
+    //| LPAR opt_star_targets_tuple_seq RPAR 
     | LSQB opt_star_targets_list_seq RSQB;
-opt_star_targets_tuple_seq: {$$=NULL} | star_targets_tuple_seq;
-opt_star_targets_list_seq: {$$=NULL} | star_targets_list_seq;
+opt_star_targets_tuple_seq: /*{$$=NULL} |*/ star_targets_tuple_seq;
+opt_star_targets_list_seq: /*{$$=NULL} |*/ star_targets_list_seq;
 
 single_target: /*{$$=NULL} |*/ single_subscript_attribute_target
     //| NAME
@@ -915,7 +909,7 @@ t_primary: /*{$$=NULL} |*/ t_primary DOT NAME t_lookahead
     | t_primary LPAR opt_arguments RPAR t_lookahead 
     | atom t_lookahead;
 
-opt_arguments: {$$=NULL} | arguments;
+opt_arguments: /*{$$=NULL} |*/ arguments;
 
 t_lookahead: LPAR | LSQB | DOT;
 
