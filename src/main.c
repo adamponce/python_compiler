@@ -37,7 +37,8 @@ int main(int argc, char *argv[]){
         printf("Category \t Text \t\t\t        Lineno \t      Filename \t                 Ival/Sval\n");
         printf("----------------------------------------------------------------------------------------------------------------\n");
         yydebug = 1;
-        printf("yyparse returns %d\n", yyparse());
+        int r = yyparse();
+        printf("yyparse returns %d\n", r);
         firsttime = 0;
         rows = 1;
         fclose(yyin);

@@ -14,7 +14,9 @@
 	int dedentcount;
 	int firsttime, rows = 1, words = 0, column = 1;
 	extern char *current_file;
+	int start_token;
 	#define yylex real_yylex
+
 %}
 %%
 <<EOF>> {if (firsttime++ == 0){

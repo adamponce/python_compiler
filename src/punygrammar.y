@@ -4,6 +4,11 @@
     #include <stdio.h>
     int yylex();
     int yyerror(char *);
+    if (start_token){
+      int t = start_token;
+      start_token = 0;
+      return t;
+    }
 %}
 
 %union{
@@ -84,8 +89,9 @@
 %token <treeptr> INDENT
 %token <treeptr> DEDENT
 %token <treeptr> IN
+%token <treeptr> FILE_START EVAL_START INTERACTIVE_START FUNC_TYPE_START FSTRING_START
 
-%start file_input
+%start start
 
 %type <treeptr> statements stament
 compound_stmt simple_stmts star_expressions expression 
@@ -191,6 +197,16 @@ class_def_raw_opt
 opt_annotation
 "case"
 "_"
+eval
+interactive
+comma_expression_one
+fstring
+opt_newline
+statement_newline
+expressions
+type_expressions
+opt_type_expressions
+func_type
 
 
 %%
@@ -211,20 +227,25 @@ func_type
 
 // STARTING RULES
 // =================
+start: FILE_START file_input | EVAL_START eval | INTERACTIVE_START interactive | FUNC_TYPE_START func_type | FSTRING_START fstring;
+
 file_input: statements ENDMARKER;
-//interactive: statement_newline;
-//eval: expressions opt_newline ENDMARKER;
-//func_type: LPAR opt_type_expressions RPAR RARROW expression ENDMARKER;
-//opt_type_expressions: {$$=NULL;} | type_expressions;
-//fstring: star_expressions;
-//opt_newline: {$$=NULL;} | opt_newline NEWLINE | NEWLINE;
+interactive: statement_newline;
+eval: expressions opt_newline ENDMARKER;
+func_type: LPAR opt_type_expressions RPAR RARROW expression ENDMARKER;
+opt_type_expressions: {$$=NULL;} | type_expressions;
+fstring: star_expressions;
+opt_newline: {$$=NULL;} | opt_newline NEWLINE | NEWLINE;
+
+
+
 
 
 // GENERAL STATEMENTS
 //====================
 statements: stament | statements stament;
 stament: compound_stmt | simple_stmts;
-//statement_newline: {$$=NULL;} | compound_stmt NEWLINE | simple_stmts | NEWLINE | ENDMARKER; 
+statement_newline: {$$=NULL;} | compound_stmt NEWLINE | simple_stmts | NEWLINE | ENDMARKER; 
 simple_stmts: /*{$$=NULL;} |*/ simple_stmt NEWLINE | simple_stmt opt_simple_stmt;
 opt_simple_stmt: {$$=NULL;} | opt_simple_stmt opt_semicolon;
 opt_semicolon: SEMI simple_stmt;
@@ -610,9 +631,9 @@ keyword_pattern_many: {$$=NULL;}
     | keyword_pattern_many COMMA key_value_pattern;
 
 
-/*
-Expressions:
-------------
+
+//Expressions:
+//------------
 
 expressions: {$$=NULL;}
     | expression comma_expression_one opt_comma;
@@ -622,11 +643,6 @@ expressions: {$$=NULL;}
 
 comma_expression_one: COMMA expression 
     | comma_expression_one COMMA expression;
-
-
-opt_comma: {$$=NULL;}
-    | COMMA; 
-*/
 
 expression: /*{$$=NULL;} |*/ disjunction IF disjunction ELSE expression
     | disjunction;
@@ -933,6 +949,6 @@ opt_del_targets: /*{$$=NULL;} |*/ del_targets;
 // TYPING ELEMENTS
 // ================
 
-//type_expressions: {$$=NULL;} | STAR expression | DOUBLESTAR expression | STAR expression COMMA DOUBLESTAR expression;
+type_expressions: {$$=NULL;} | STAR expression | DOUBLESTAR expression | STAR expression COMMA DOUBLESTAR expression;
 
 %%
