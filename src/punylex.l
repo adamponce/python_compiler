@@ -62,23 +62,23 @@
 "else"	{return alctoken(ELSE);}
 "is"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
 "while"	{return alctoken(WHILE);}
-"as"	{return alctoken(AS);}
-"except"	{return alctoken(EXCEPT);}
-"lambda"	{return alctoken(LAMBDA);}
-"with"	{return alctoken(WITH);}
-"assert"	{return alctoken(ASSERT);}
-"finally"	{return alctoken(FINALLY);}
-"nonlocal"	{return alctoken(NONLOCAL);}
-"yield"	{return alctoken(YIELD);}
+"as"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"except"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"lambda"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"with"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"assert"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"finally"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"nonlocal"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"yield"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
 "break"	{return alctoken(BREAK);}
 "for"	{return alctoken(FOR);}
 "not"	{return alctoken(NOT);}
 "class"	{return alctoken(CLASS);}
-"from"	{return alctoken(FROM);}
+"from"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
 "or"	{return alctoken(OR);}
 "continue"	{return alctoken(CONTINUE);}
 "global"	{return alctoken(GLOBAL);}
-"pass"	{return alctoken(PASS);}
+"pass"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
 "print"	{return alctoken(NAME);}
 "input"	{return alctoken(NAME);}
 "int"	{return alctoken(NAME);}
