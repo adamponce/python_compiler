@@ -2,7 +2,7 @@
 %option noinput
 %option nounput
 %{
-    #include "punygrammar.tab.h"
+    #include "punygram.tab.h"
 	#include "tree.h"
 	#include <stdio.h>
 	#include <stdlib.h>	

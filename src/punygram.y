@@ -83,24 +83,23 @@
 %token <treeptr> INDENT
 %token <treeptr> DEDENT
 %token <treeptr> IN
+%token <treeptr> TYPE_COMMENT
 
 %start single_input
 
-%type <treeptr> file_input simple_stmt compound_stmt zero_more_newline_stmt newline_stmt funcdef
+%type <treeptr> file_input zero_more_newline_stmt newline_stmt
 %type <treeptr> parameters suite opt_test opt_typedargslist argumentstd zero_more_comma_argtd comma_argstd
 %type <treeptr> argumenttd opt_eq_test test opt_comma opt_type_comment argstd opt_tfdef kwonly_kwargstd
 %type <treeptr> type_comment_or_opt_comma_type_comment_kwargs opt_kwardstd 
 %type <treeptr> type_comment_or_opt_comma_type_comment_args_kwonly_kwargs opt_comma_type_comment_args_kwonly_kwargs
-%type <treeptr> opt_args_kwonly_kwargs typedargslist_no_posonly typedarglist otp_comma_tc_tdnp opt_tc_tdnp
-%type <treeptr> opt_tp_tdnp opt_col_test argumentsvg argumentvg zero_more_comma_argvg comma_argvg vfpdef kwargstd
-%type <treeptr> kwargsvg argsgv opt_vdpdef kwonly_kwargsvg opt_comma_kwargsvg opt_kwardsvg poskeyword_args_kwonly_kwargsvg
+%type <treeptr> opt_args_kwonly_kwargs typedargslist_no_posonly typedargslist otp_comma_tc_tdnp opt_tc_tdnp
+%type <treeptr> opt_col_test argumentsvg argumentvg zero_more_comma_argvg comma_argvg vfpdef kwargstd
+%type <treeptr> kwargsvg opt_vdpdef kwonly_kwargsvg opt_comma_kwargsvg opt_kwardsvg poskeyword_args_kwonly_kwargsvg
 %type <treeptr> opt_comma_args_kwonly_kwargsgv opt_args_kwonly_kwargsgv vararglist_no_posonlyvg opt_comma_vararglist_no_posonlyvg
-%type <treeptr> varargslist opt_varlst stmt simple_stmt compound_stmt zero_more_stmts single_stmt
-%type <treeptr> expr_stmt del_stmt pass_stmt flow_stmt import_stmt global_stmt nonlocal_stmt assert_stmt testlist_star_expr
-opt_eq_yeild__tc annassign_or_augassign annassign yield_or_testlist opt_rarrowtest
-yield_expr testlist opt_opt_eq_yeild__tc eq_yield_or_tlse one_or_more_eq_yield_or_tlse
-yield_or_tlse testlist_star_expr test_or_se zero_more_comma_test_or_se star_expr exprlist 
-break_stmt continue_stmt return_stmt raise_stmt yield_stmt opt_tse opt_test_opt_from_test
+%type <treeptr> varargslist opt_varlst simple_stmt compound_stmt zero_more_stmts single_stmt
+%type <treeptr> expr_stmt del_stmt pass_stmt flow_stmt global_stmt nonlocal_stmt assert_stmt testlist_star_expr
+opt_eq_yeild__tc annassign_or_augassign annassign yield_or_testlist opt_rarrowtest eq_yield_or_tlse one_or_more_eq_yield_or_tlse
+yield_or_tlse test_or_se zero_more_comma_test_or_se break_stmt continue_stmt return_stmt raise_stmt yield_stmt opt_tse opt_test_opt_from_test
 dotted_as_names import_from import_name import_stmt opt_from_test
 dot_ellip_dn_or_one_more_dot_ellip zero_more_dot_or_ellip dotted_name one_more_dot_or_ellip dot_or_ellip
 star_or_names import_as_names import_as_name zero_more_comma_isn dotted_as_name zero_more_dsn
@@ -115,27 +114,25 @@ zero_more_and_shift and_shift shift_expr zero_more_double_arrow_arith double_arr
 arith_expr zero_more_plus_minus_term plus_minus_term term
 zero_more_factor symbols_factor symbols_f factor power opt_doublestar_factor atom_expr zero_more_trailer
 atom opt_yield_tlc yield_or_tlc opt_tlc
-opt_dictsetmarker one_more_string testlist_comp
+one_more_string testlist_comp
 comp_for_multiple zero_more_comma_nt_or_se
 comma_nt_or_se
 namedexpr_or_star_expr
-trailer
+trailer opt_slicop
 opt_arglist
-subscriptlist sliceop exprlist exprlist zero_more_comma_expr_or_se comma_expr_or_se
+subscriptlist sliceop exprlist zero_more_comma_expr_or_se comma_expr_or_se
 expr_or_starexpr
-testlist zero_more_comma_test comma_test class_def 
+testlist zero_more_comma_test comma_test
 opt_lpar_arglist_rpar
 arglist zero_more_arguments
 argument opt_comp_for
 comp_iter sync_comp_for comp_for comp_if
-opt_comp_iter yield_expr opt_yield_args yield_args func_body_suite opt_type_comment_newline opt_type_comment_newline
-func_type_input zero_more_newline func_type opt_typelist "$" "<<" ">>"
-
-
-
-
-
-
+opt_comp_iter yield_expr opt_yield_args yield_args func_body_suite opt_type_comment_newline
+func_type_input zero_more_newline func_type opt_typelist "$" "<<" ">>" opt_eq_yeild_or_tlse
+zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef opt_comma_type_comment_kwargs
+poskeyword_args_kwonly_kwargstd args_kwonly_kwargstd
+args_kwonly_kwargsgv argsvg small_stmt augassign one_more_except except_clause plus_or_minus
+subscript opt_finally
 %%
 
 //STARTING RULES
@@ -153,11 +150,12 @@ funcdef: DEF NAME parameters opt_rarrowtest COLON suite;
 opt_rarrowtest: {$$=NULL;} | RARROW test;
 
 parameters: LPAR opt_typedargslist RPAR;
+opt_typedargslist: {$$=NULL} | typedargslist;
 
 //typedargslist rules
 //===================
 argumentstd: argumenttd zero_more_comma_argtd;
-comma_argstd: COMMA argumentd;
+comma_argstd: COMMA argumenttd;
 
 argumenttd: tfdef opt_eq_test;
 
@@ -175,9 +173,9 @@ opt_comma_type_comment_args_kwonly_kwargs: COMMA opt_type_comment opt_args_kwonl
 
 typedargslist_no_posonly: poskeyword_args_kwonly_kwargstd | args_kwonly_kwargstd;
 
-typedarglist: argumentd COMMA opt_type_comment SLASH otp_comma_tc_tdnp | typedargslist_no_posonly;
+typedargslist: argumenttd COMMA opt_type_comment SLASH otp_comma_tc_tdnp | typedargslist_no_posonly;
 
-otp_comma_tc_tdnp: {$$=NULL;} | COMMA opt_tc_tdnp:
+otp_comma_tc_tdnp: {$$=NULL;} | COMMA opt_tc_tdnp;
 opt_tc_tdnp: {$$=NULL;} | opt_type_comment typedargslist_no_posonly;
 opt_args_kwonly_kwargs: {$$=NULL;} | args_kwonly_kwargstd;
 opt_kwardstd: {$$=NULL;} | kwargstd;
@@ -196,8 +194,8 @@ argumentvg: vfpdef opt_eq_test;
 
 kwargsvg: DOUBLESTAR vfpdef opt_comma;
 
-argsgv: STAR opt_vdpdef;
-opt_vdpdef: {$$=NULL;} vfpdef;
+argsvg: STAR opt_vdpdef;
+opt_vdpdef: {$$=NULL;} | vfpdef;
 
 kwonly_kwargsvg: zero_more_comma_argvg opt_comma_kwargsvg;
 
@@ -215,7 +213,7 @@ opt_args_kwonly_kwargsgv: {$$=NULL;} | args_kwonly_kwargsgv;
 
 vararglist_no_posonlyvg: poskeyword_args_kwonly_kwargsvg | args_kwonly_kwargsgv;
 
-varargslist: argumentsvg COMMA SLASH opt_comma_vararglist_no_posonlyvg | vararglist_no_posonlygv;
+varargslist: argumentsvg COMMA SLASH opt_comma_vararglist_no_posonlyvg | vararglist_no_posonlyvg;
 
 opt_comma_vararglist_no_posonlyvg: {$$=NULL;} | COMMA opt_varlst;
 opt_varlst: {$$=NULL;} | varargslist;
@@ -237,7 +235,7 @@ expr_stmt: testlist_star_expr annassign_or_augassign | opt_eq_yeild__tc;
 annassign_or_augassign: annassign | augassign yield_or_testlist;
 yield_or_testlist: yield_expr | testlist;
 
-opt_opt_eq_yeild__tc: {$$=NULL;} | one_or_more_eq_yield_or_tlse opt_type_comment;
+opt_eq_yeild__tc: {$$=NULL;} | one_or_more_eq_yield_or_tlse opt_type_comment;
 one_or_more_eq_yield_or_tlse: eq_yield_or_tlse | one_or_more_eq_yield_or_tlse eq_yield_or_tlse;
 
 annassign: COLON test opt_eq_yeild_or_tlse;
@@ -319,7 +317,8 @@ for_stmt: FOR exprlist IN testlist COLON opt_type_comment suite opt_else;
 
 try_stmt: TRY COLON suite except_else_or_finally;
 
-except_else_or_finally: one_more_except opt_else opt_finally | FINALLY COLIN suite;
+except_else_or_finally: one_more_except opt_else opt_finally | FINALLY COLON suite;
+opt_finally: {$$=NULL} | FINALLY COLON suite;
 
 one_more_except: except_stmt | one_more_except except_stmt;
 except_stmt: except_clause COLON suite;
@@ -398,14 +397,14 @@ opt_doublestar_factor: {$$=NULL} | DOUBLESTAR factor;
 atom_expr: atom zero_more_trailer;
 zero_more_trailer: {$$=NULL;} | zero_more_trailer trailer;
 
-atom: LPAR opt_yield_tlc RPAR | LSQB opt_tlc RSQB | LBRACE opt_dictsetmarker RBRACE | NAME | one_more_string | ELLIPSIS | NONE | TRUE | FALSE;
+atom: LPAR opt_yield_tlc RPAR | LSQB opt_tlc RSQB | /*LBRACE opt_dictsetmarker RBRACE |*/ NAME | one_more_string | ELLIPSIS | NONE | TRUE | FALSE;
 
 opt_yield_tlc: {$$=NULL} | yield_or_tlc;
 yield_or_tlc: yield_expr | testlist_comp;
 
 opt_tlc: {$$=NULL} | testlist_comp;
 
-opt_dictsetmarker: {$$=NULL} | dictorsetmarker;
+/*opt_dictsetmarker: {$$=NULL} | dictorsetmarker;*/
 
 one_more_string: STRING | one_more_string STRING;
 
@@ -425,6 +424,7 @@ zero_more_comma_sub: {$$=NULL} | zero_more_comma_sub comma_sub;
 comma_sub: COMMA subscript;
 
 subscript: test | opt_test COLON opt_test opt_slicop;
+opt_slicop: {$$=NULL} | sliceop;
 
 sliceop: COLON opt_test;
 
@@ -440,7 +440,7 @@ comma_test: COMMA test;
 
 /*dicormarker*/
 
-class_def: CLASS NAME opt_lpar_arglist_rpar COLON suite;
+classdef: CLASS NAME opt_lpar_arglist_rpar COLON suite;
 opt_lpar_arglist_rpar: {$$=NULL} | LPAR opt_arglist RPAR;
 
 arglist: argument zero_more_arguments opt_comma;
