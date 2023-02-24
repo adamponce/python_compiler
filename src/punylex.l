@@ -79,10 +79,10 @@
 "continue"	{return alctoken(CONTINUE);}
 "global"	{return alctoken(GLOBAL);}
 "pass"	{return alctoken(PASS);}
-"print"	{return alctoken(FUNCTION);}
-"input"	{return alctoken(FUNCTION);}
-"int"	{return alctoken(FUNCTION);}
-"str"	{return alctoken(FUNCTION);}
+"print"	{return alctoken(NAME);}
+"input"	{return alctoken(NAME);}
+"int"	{return alctoken(NAME);}
+"str"	{return alctoken(NAME);}
 "."	{return alctoken(DOT);}
 "="	{return alctoken(EQUAL);}
 "+"	{return alctoken(PLUS);}
