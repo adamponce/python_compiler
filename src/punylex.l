@@ -2,6 +2,8 @@
 %option noinput
 %option nounput
 %{
+	#define COLOR_BOLD "\e[33m"
+	#define COLOR_END "\e[m"
     #include "punygram.tab.h"
 	#include "tree.h"
 	#include <stdio.h>
@@ -60,25 +62,25 @@
 "try"	{return alctoken(TRY);}
 "and"	{return alctoken(AND);}
 "else"	{return alctoken(ELSE);}
-"is"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"is"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "while"	{return alctoken(WHILE);}
-"as"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
-"except"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
-"lambda"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
-"with"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
-"assert"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
-"finally"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
-"nonlocal"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
-"yield"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"as"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
+"except"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
+"lambda"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
+"with"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
+"assert"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
+"finally"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
+"nonlocal"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
+"yield"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "break"	{return alctoken(BREAK);}
 "for"	{return alctoken(FOR);}
 "not"	{return alctoken(NOT);}
 "class"	{return alctoken(CLASS);}
-"from"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"from"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "or"	{return alctoken(OR);}
 "continue"	{return alctoken(CONTINUE);}
 "global"	{return alctoken(GLOBAL);}
-"pass"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"pass"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "print"	{return alctoken(NAME);}
 "input"	{return alctoken(NAME);}
 "int"	{return alctoken(NAME);}
@@ -100,7 +102,7 @@
 "<"	{return alctoken(LESS);}
 ">="	{return alctoken(GREATEREQUAL);}
 "<="	{return alctoken(LESSEQUAL);}
-"~"|"<<"|">>"|"&="|"|="|"^="|">>="|"<<="|"&"|"|"|"^"	{printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"~"|"<<"|">>"|"&="|"|="|"^="|">>="|"<<="|"&"|"|"|"^"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "\["	{return alctoken(LSQB);}
 "\]"	{return alctoken(RSQB);}
 "("	{return alctoken(LPAR);}
@@ -112,7 +114,7 @@
 ":"	{return alctoken(COLON);}
 "..." {return alctoken(ELLIPSIS);}
 "->" {return alctoken(RARROW);}
-"@"|"`"|"$" {printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1);}
+"@"|"`"|"$" {printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 (\"{3}([^\"]|\"\")*\"{3})	{return alctoken(STRING);}
 (\'{3}([^\']|\'\')*\'{3})	{return alctoken(STRING);}
 (\"([^\"]|\"\")*\") {int cat = alctoken(STRING); mksval(yytext); yylval.treeptr->leaf->issval = 1; return cat;}
@@ -122,7 +124,7 @@
 [a-zA-Z_][a-zA-Z0-9_]*	{column += strlen(yytext); return alctoken(NAME);}
 "#".*   { }
 " "	{ }
-.		{column++; printf("Lexical Error: %s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}
+.		{column++; printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("%s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}
 %%
 
 int indentlevel(char *s)
