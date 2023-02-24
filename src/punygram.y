@@ -85,18 +85,13 @@
 %token <treeptr> IN
 %token <treeptr> TYPE_COMMENT
 
-%start single_input
+%start file_input
 
-%type <treeptr> single_input zero_more_newline_stmt newline_stmt
-%type <treeptr> parameters suite opt_test opt_typedargslist argumentstd zero_more_comma_argtd comma_argstd
-%type <treeptr> argumenttd opt_eq_test test opt_comma opt_type_comment argstd  kwonly_kwargstd
-%type <treeptr> type_comment_or_opt_comma_type_comment_kwargs opt_kwardstd 
-%type <treeptr> type_comment_or_opt_comma_type_comment_args_kwonly_kwargs opt_comma_type_comment_args_kwonly_kwargs
-%type <treeptr> opt_args_kwonly_kwargs typedargslist_no_posonly typedargslist otp_comma_tc_tdnp opt_tc_tdnp
-%type <treeptr> opt_col_test argumentsvg argumentvg zero_more_comma_argvg comma_argvg vfpdef kwargstd
-%type <treeptr> kwargsvg opt_vdpdef kwonly_kwargsvg opt_comma_kwargsvg opt_kwardsvg poskeyword_args_kwonly_kwargsvg
-%type <treeptr> opt_comma_args_kwonly_kwargsgv opt_args_kwonly_kwargsgv vararglist_no_posonlyvg opt_comma_vararglist_no_posonlyvg
-%type <treeptr> varargslist opt_varlst simple_stmt compound_stmt zero_more_stmts single_stmt
+%type <treeptr> zero_more_newline_stmt newline_stmt
+%type <treeptr> parameters suite opt_test argumentstd comma_argstd
+%type <treeptr> argumenttd opt_eq_test test opt_comma opt_type_comment
+%type <treeptr> opt_col_test
+%type <treeptr> simple_stmt compound_stmt zero_more_stmts single_stmt
 %type <treeptr> expr_stmt del_stmt pass_stmt flow_stmt global_stmt nonlocal_stmt assert_stmt testlist_star_expr
 opt_eq_yeild__tc annassign yield_or_testlist opt_rarrowtest eq_yield_or_tlse one_or_more_eq_yield_or_tlse
 yield_or_tlse test_or_se zero_more_comma_test_or_se break_stmt continue_stmt return_stmt raise_stmt yield_stmt opt_tse opt_test_opt_from_test
@@ -113,7 +108,7 @@ zero_more_comp_op_expr comp_op_expr comp_op star_expr expr zero_more_or_xor_expr
 zero_more_and_shift and_shift shift_expr zero_more_double_arrow_arith double_arrow_arith left_or_right
 arith_expr zero_more_plus_minus_term plus_minus_term term
 zero_more_factor symbols_factor symbols_f factor power opt_doublestar_factor atom_expr zero_more_trailer
-atom opt_yield_tlc opt_tlc
+atom opt_yield_tlc
 one_more_string testlist_comp
 comp_for_multiple zero_more_comma_nt_or_se
 comma_nt_or_se
@@ -124,16 +119,14 @@ subscriptlist sliceop exprlist zero_more_comma_expr_or_se comma_expr_or_se
 expr_or_starexpr
 testlist zero_more_comma_test comma_test
 opt_lpar_arglist_rpar
-arglist zero_more_arguments
+arglist zero_more_comma_arguments
 argument opt_comp_for
 comp_iter sync_comp_for comp_for comp_if
 opt_comp_iter yield_expr opt_yield_args yield_args func_body_suite opt_type_comment_newline
-func_type_input zero_more_newline func_type opt_typelist "$" "<<" ">>" opt_eq_yeild_or_tlse
-zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef opt_comma_type_comment_kwargs
-poskeyword_args_kwonly_kwargstd args_kwonly_kwargstd
-args_kwonly_kwargsgv argsvg small_stmt augassign one_more_except except_clause plus_or_minus
-subscript opt_finally
-dictorsetmaker dsm_expr tct_or_dse zero_more_comma_tct_or_dse cf_or_comma_tct_dct dsm_star_expr cf_or_comma_tse
+"$" "<<" ">>" opt_eq_yeild_or_tlse
+zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef small_stmt augassign one_more_except except_clause plus_or_minus
+subscript opt_finally zero_more_comma_argtd
+dictorsetmarker dsm_expr tct_or_dse zero_more_comma_tct_or_dse cf_or_comma_tct_dct dsm_star_expr cf_or_comma_tse opt_dictsetmarker
 %%
 /*
 Removed:
@@ -142,7 +135,7 @@ opt_tfdef
 
 //STARTING RULES
 //================
-single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE;
+//single_input: NEWLINE ENDMARKER | simple_stmt ENDMARKER | compound_stmt NEWLINE ENDMARKER;
 
 file_input: zero_more_newline_stmt ENDMARKER;
 
@@ -150,25 +143,28 @@ zero_more_newline_stmt: {$$=NULL;} | zero_more_newline_stmt newline_stmt;
 
 newline_stmt: NEWLINE | stmt;
 
-
-funcdef: DEF NAME parameters opt_rarrowtest COLON suite;
+funcdef: DEF NAME parameters opt_rarrowtest COLON func_body_suite;
 opt_rarrowtest: {$$=NULL;} | RARROW test;
 
-parameters: LPAR opt_typedargslist RPAR;
-opt_typedargslist: {$$=NULL;} | typedargslist;
+parameters: LPAR argumentstd RPAR;
+//opt_typedargslist: {$$=NULL;} | typedargslist;
 
 //typedargslist rules
 //===================
 argumentstd: argumenttd zero_more_comma_argtd;
+zero_more_comma_argtd: {$$=NULL;} | zero_more_comma_argtd comma_argstd;
 comma_argstd: COMMA argumenttd;
 
 argumenttd: tfdef opt_eq_test;
+
+/*
+zero_more_comma_argvg comma_argvg vfpdef kwargstd
 
 kwargstd: DOUBLESTAR tfdef opt_comma opt_type_comment;
 // argstd: STAR opt_tfdef;
 argstd: STAR tfdef;
 kwonly_kwargstd: zero_more_comma_argtd type_comment_or_opt_comma_type_comment_kwargs;
-type_comment_or_opt_comma_type_comment_kwargs: /*TYPE_COMMENT |*/ opt_comma_type_comment_kwargs;
+type_comment_or_opt_comma_type_comment_kwargs: TYPE_COMMENT | opt_comma_type_comment_kwargs;
 opt_comma_type_comment_kwargs: opt_type_comment opt_kwardstd;
 
 args_kwonly_kwargstd: argstd kwonly_kwargstd | kwargstd;
@@ -185,8 +181,9 @@ otp_comma_tc_tdnp: {$$=NULL;} | COMMA opt_tc_tdnp;
 opt_tc_tdnp: {$$=NULL;} | opt_type_comment typedargslist_no_posonly;
 opt_args_kwonly_kwargs: {$$=NULL;} | args_kwonly_kwargstd;
 opt_kwardstd: {$$=NULL;} | kwargstd;
-zero_more_comma_argtd: {$$=NULL;} | zero_more_comma_argtd comma_argstd;
+*/
 // opt_tfdef: {$$=NULL;} | tfdef;
+
 
 tfdef: NAME | opt_col_test;
 opt_col_test: {$$=NULL;} | COLON test;
@@ -194,6 +191,7 @@ opt_col_test: {$$=NULL;} | COLON test;
 //varargslist rules
 //===================
 
+/*
 argumentsvg: argumentvg zero_more_comma_argvg;
 
 argumentvg: vfpdef opt_eq_test;
@@ -225,7 +223,7 @@ opt_comma_vararglist_no_posonlyvg: {$$=NULL;} | COMMA opt_varlst;
 opt_varlst: {$$=NULL;} | varargslist;
 
 vfpdef: NAME;
-
+*/
 
 //SIMPLE STATEMENTS
 //===========
@@ -351,7 +349,6 @@ opt_if_else: {$$=NULL;} | IF or_test ELSE test;
 
 test_nocond: or_test;
 
-
 or_test: and_test zero_more_or_and_test;
 zero_more_or_and_test: {$$=NULL;} | zero_more_or_and_test or_and_test;
 or_and_test: OR and_test;
@@ -404,17 +401,17 @@ opt_doublestar_factor: {$$=NULL;} | DOUBLESTAR factor;
 atom_expr: atom zero_more_trailer;
 zero_more_trailer: {$$=NULL;} | zero_more_trailer trailer;
 
-atom: LPAR opt_yield_tlc RPAR | LSQB opt_tlc RSQB 
-    | /*LBRACE opt_dictsetmarker RBRACE |*/ NAME | NUMBER 
+atom: LPAR opt_yield_tlc RPAR | LSQB testlist_comp RSQB 
+    | LBRACE opt_dictsetmarker RBRACE | NAME | NUMBER 
     | one_more_string | ELLIPSIS | NONE | TRUE | FALSE;
 
-opt_yield_tlc: opt_tlc | yield_expr;
+opt_yield_tlc: testlist_comp | yield_expr;
 // opt_yield_tlc: {$$=NULL;} | yield_or_tlc;
 // yield_or_tlc: yield_expr | testlist_comp;
 
-opt_tlc: /*{$$=NULL;} | */testlist_comp;
+//opt_tlc: /*{$$=NULL;} | */testlist_comp;
 
-/*opt_dictsetmarker: {$$=NULL;} | dictorsetmarker;*/
+opt_dictsetmarker: {$$=NULL;} | dictorsetmarker;
 
 one_more_string: STRING | one_more_string STRING;
 
@@ -426,7 +423,7 @@ comma_nt_or_se: COMMA namedexpr_or_star_expr;
 
 namedexpr_or_star_expr: namedexpr_test | star_expr;
 
-trailer: RPAR opt_arglist LPAR | LSQB subscriptlist RSQB | DOT NAME;
+trailer: LPAR opt_arglist RPAR | LSQB subscriptlist RSQB | DOT NAME;
 opt_arglist: {$$=NULL;} | arglist;
 
 subscriptlist: subscript zero_more_comma_sub opt_comma;
@@ -451,7 +448,7 @@ comma_test: COMMA test;
 /*dictormarker*/
 // dictorsetmaker: ((test ':' test | '**' expr) (comp_for | (',' (test ':' test | '**' expr))* [','])) |
 //                   ((test | star_expr) (comp_for | (',' (test | star_expr))* [',']))
-dictorsetmaker: dsm_expr | dsm_star_expr;
+dictorsetmarker: dsm_expr | dsm_star_expr;
 
 dsm_expr: tct_or_dse cf_or_comma_tct_dct
 tct_or_dse: test COLON test | DOUBLESTAR expr;
@@ -464,8 +461,8 @@ cf_or_comma_tse: comp_for | zero_more_comma_test_or_se opt_comma;
 classdef: CLASS NAME opt_lpar_arglist_rpar COLON suite;
 opt_lpar_arglist_rpar: {$$=NULL;} | LPAR opt_arglist RPAR;
 
-arglist: argument zero_more_arguments opt_comma;
-zero_more_arguments: {$$=NULL;} | zero_more_arguments argument;
+arglist: argument zero_more_comma_arguments opt_comma;
+zero_more_comma_arguments: {$$=NULL;} | zero_more_comma_arguments COMMA argument;
 
 argument: test opt_comp_for | test COLONEQUAL test | test EQUAL test | DOUBLESTAR test | STAR test;
 opt_comp_for: {$$=NULL;} | comp_for;
@@ -487,11 +484,11 @@ func_body_suite: simple_stmt | NEWLINE opt_type_comment_newline INDENT one_more_
 
 opt_type_comment_newline: {$$=NULL;} | TYPE_COMMENT NEWLINE;
 
-func_type_input: func_type zero_more_newline ENDMARKER;
-zero_more_newline: {$$=NULL;} | zero_more_newline NEWLINE;
+//func_type_input: func_type zero_more_newline ENDMARKER;
+//zero_more_newline: {$$=NULL;} | zero_more_newline NEWLINE;
 
-func_type: LPAR opt_typelist RPAR RARROW test;
-opt_typelist: {$$=NULL;} | opt_typelist;
+//func_type: LPAR opt_typelist RPAR RARROW test;
+//opt_typelist: {$$=NULL;} | opt_typelist;
 
 /*type_list*/
 
