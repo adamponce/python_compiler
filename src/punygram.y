@@ -520,8 +520,11 @@ opt_dictsetmarker: {$$=alocnull("opt_dictsetmarker");}
 one_more_string: STRING{$$ = alctree(1166, "one_more_string", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}  
     | one_more_string STRING{$$ = alctree(1167, "one_more_sttring", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);} ;
 
-testlist_comp: namedexpr_or_star_expr{$$ = alctree(1168, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
-    | comp_for_multiple{$$ = alctree(1169, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
+testlist_comp: namedexpr_or_star_expr comp_for_multiple{$$ = alctree(1169, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
+
+
+// {$$ = alctree(1168, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
+//{$$ = alctree(1169, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
 
 comp_for_multiple: comp_for{$$ = alctree(1170, "comp_for_multiple", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
     | zero_more_comma_nt_or_se opt_comma{$$ = alctree(1171, "comp_for_multiple", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);} ;
