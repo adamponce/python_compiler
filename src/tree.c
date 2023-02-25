@@ -33,6 +33,13 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
         symbol_tree->prodrule = prodrule;
         symbol_tree->symbolname = symbol_name;
         symbol_tree->kids[0] = child1;
+        symbol_tree->kids[1] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[2] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[3] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[4] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[5] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[6] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[7] = calloc(1, sizeof(struct tree));
     }
 
 
@@ -42,6 +49,12 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
         symbol_tree->symbolname = symbol_name;
         symbol_tree->kids[0] = child1;
         symbol_tree->kids[1] = child2;
+        symbol_tree->kids[2] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[3] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[4] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[5] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[6] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[7] = calloc(1, sizeof(struct tree));
     }
 
     else if(nkids == 3){
@@ -51,6 +64,11 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
         symbol_tree->kids[0] = child1;
         symbol_tree->kids[1] = child2;
         symbol_tree->kids[2] = child3;
+        symbol_tree->kids[3] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[4] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[5] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[6] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[7] = calloc(1, sizeof(struct tree));
     }
 
     else if(nkids == 4){
@@ -61,6 +79,10 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
         symbol_tree->kids[1] = child2;
         symbol_tree->kids[2] = child3;
         symbol_tree->kids[3] = child4;
+        symbol_tree->kids[4] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[5] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[6] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[7] = calloc(1, sizeof(struct tree));
     }
 
     else if(nkids == 5){
@@ -72,6 +94,9 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
         symbol_tree->kids[2] = child3;
         symbol_tree->kids[3] = child4;
         symbol_tree->kids[4] = child5;
+        symbol_tree->kids[5] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[6] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[7] = calloc(1, sizeof(struct tree));
     }
 
     else if(nkids == 6){
@@ -84,6 +109,8 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
         symbol_tree->kids[3] = child4;
         symbol_tree->kids[4] = child5;
         symbol_tree->kids[5] = child6;
+        symbol_tree->kids[6] = calloc(1, sizeof(struct tree));
+        symbol_tree->kids[7] = calloc(1, sizeof(struct tree));
     }
 
     else if(nkids == 7){
@@ -97,6 +124,7 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
         symbol_tree->kids[4] = child5;
         symbol_tree->kids[5] = child6;
         symbol_tree->kids[6] = child7;
+        symbol_tree->kids[7] = calloc(1, sizeof(struct tree));
     }
 
         else if(nkids == 8){
@@ -114,6 +142,14 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
     }
     
     return symbol_tree;
+}
+
+
+struct tree *alocnull(char *symbol_name){
+    struct tree *t = calloc(1, sizeof(struct tree));
+    t->symbolname = symbol_name;
+    t->nkids = 0;
+    return t;
 }
 
 
@@ -140,6 +176,9 @@ void treeprint(struct tree *t, int depth)
 
     if(t == NULL){
         return;
+    }
+    else if(t->symbolname == NULL){
+        printf("%*s NULL: %d\n", depth*2, " ", t->nkids);
     }
     else{
         printf("%*s %s: %d\n", depth*2, " ", t->symbolname, t->nkids);
