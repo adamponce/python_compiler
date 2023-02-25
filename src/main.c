@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tree.h"
 #define COLOR_BOLD "\e[33m"
 #define COLOR_END "\e[m"
 
@@ -14,6 +15,7 @@ extern char *yytext;
 extern int firsttime;
 extern int rows;
 extern int yydebug;
+extern struct tree *root;
 
 
 
@@ -42,12 +44,17 @@ int main(int argc, char *argv[]){
         yydebug = 0;
         int r = yyparse();
         printf("yyparse returns %d\n", r);
+
+        treeprint(root, 1);
+        
         firsttime = 0;
         rows = 1;
         fclose(yyin);
     }
     return 0;
 }
+
+
 
 int yyerror(char *s){
     printf(COLOR_BOLD "SYNTAX ERROR: " COLOR_END);
