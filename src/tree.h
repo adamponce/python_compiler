@@ -27,4 +27,5 @@ struct tree *alctree(int prodrule, char *symbol_name, int nkids, struct tree *ch
 struct tree *child3, struct tree *child4, struct tree *child5, struct tree *child6, struct tree *child7, struct tree *child8);
 void treeprint(struct tree *t, int depth);
 struct tree *alocnull(char *symbol_name);
+char *humanreadable(struct tree *t);
 #endif

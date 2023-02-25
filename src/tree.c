@@ -11,6 +11,7 @@ int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
     yylval.treeptr->prodrule = cat;
     yylval.treeptr->nkids = 0;
+    yylval.treeptr->symbolname = yytext; 
     yylval.treeptr->leaf = malloc(sizeof (struct token));
     yylval.treeptr->leaf->category = cat;
     yylval.treeptr->leaf->text = yytext;
@@ -140,6 +141,8 @@ struct tree *child3, struct tree *child4, struct tree *child5, struct tree *chil
         symbol_tree->kids[6] = child7;
         symbol_tree->kids[7] = child8;
     }
+
+    symbol_tree->sn = 4325345;
     
     return symbol_tree;
 }
@@ -149,6 +152,7 @@ struct tree *alocnull(char *symbol_name){
     struct tree *t = calloc(1, sizeof(struct tree));
     t->symbolname = symbol_name;
     t->nkids = 0;
+    t->sn = 1;
     return t;
 }
 
@@ -174,16 +178,20 @@ void treeprint(struct tree *t, int depth)
 {
     int i;
 
-    if(t == NULL){
-        return;
-    }
-    else if(t->symbolname == NULL){
-        printf("%*s NULL: %d\n", depth*2, " ", t->nkids);
-    }
-    else{
-        printf("%*s %s: %d\n", depth*2, " ", t->symbolname, t->nkids);
-    }
+    printf("%*s %s: %d\n", depth*2, " ", humanreadable(t), t->nkids);
     for(i = 0; i < t->nkids; i++){
         treeprint(t->kids[i], depth+1);
+    }
+}
+
+char *humanreadable(struct tree *t){
+    if(t == NULL){
+        return "NULL";
+    }
+    else if((t->prodrule >= 258) && (t->prodrule <=332)){
+        return "terminal_symbol";
+    }
+    else{
+        return t->symbolname;
     }
 }

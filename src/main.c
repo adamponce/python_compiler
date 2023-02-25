@@ -35,18 +35,23 @@ int main(int argc, char *argv[]){
             exit(-1);
         }
         current_file = argv[i];
-        if ((yyin = fopen(argv[i],"r")) == NULL) {
+        if ((yyin = fopen(argv[i], "a")) == NULL) {
             fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
             exit(-1);
         }
-        printf("Category \t Text \t\t\t        Lineno \t      Filename \t                 Ival/Sval\n");
-        printf("----------------------------------------------------------------------------------------------------------------\n");
+        fprintf(yyin,"\n");
+        fclose(yyin);
+        if ((yyin = fopen(argv[i], "r")) == NULL) {
+            fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
+            exit(-1);
+        }
+        printf("PRINTING TREE: \n");
+        printf("-------------------------------------------------\n");
         yydebug = 0;
         int r = yyparse();
-        printf("yyparse returns %d\n", r);
-
-        treeprint(root, 1);
-        
+        if(r == 0){
+            treeprint(root, 1);
+        }
         firsttime = 0;
         rows = 1;
         fclose(yyin);
