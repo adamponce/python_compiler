@@ -520,7 +520,7 @@ opt_dictsetmarker: {$$=alocnull("opt_dictsetmarker");}
 one_more_string: STRING{$$ = alctree(1166, "one_more_string", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}  
     | one_more_string STRING{$$ = alctree(1167, "one_more_sttring", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);} ;
 
-testlist_comp: namedexpr_or_star_expr comp_for_multiple{$$ = alctree(1169, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
+testlist_comp: {$$=alocnull("testlist_comp");} | namedexpr_or_star_expr comp_for_multiple{$$ = alctree(1169, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
 
 
 // {$$ = alctree(1168, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
