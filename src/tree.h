@@ -1,3 +1,13 @@
+/**
+* @file tree.h
+*
+* @author Javier Reyna Adam Schmidt Nikki Sparacino
+*
+* @date 02/25/2023
+*
+* Assignment: Homework 3
+*/
+
 #ifndef TREE_H
 #define TREE_H
 

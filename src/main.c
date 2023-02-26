@@ -1,3 +1,14 @@
+/**
+* @file main.c
+*
+* @author Javier Reyna Adam Schmidt Nikki Sparacino
+*
+* @date 02/25/2023
+*
+* Assignment: Homework 3
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,7 +58,7 @@ int main(int argc, char *argv[]){
         }
         printf("PRINTING TREE: \n");
         printf("-------------------------------------------------\n");
-        yydebug = 1;
+        yydebug = 0;
         int r = yyparse();
         if(r == 0){
             treeprint(root, 1);

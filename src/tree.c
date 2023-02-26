@@ -1,3 +1,14 @@
+/**
+* @file tree.c
+*
+* @author Javier Reyna Adam Schmidt Nikki Sparacino
+*
+* @date 02/25/2023
+*
+* Assignment: Homework 3
+*/
+
+
 #include "tree.h"
 #include "punygram.tab.h"
 #include <stdio.h>
