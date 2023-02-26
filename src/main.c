@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define COLOR_BOLD "\e[33m"
+#define COLOR_END "\e[m"
+
 
 int yylex();
 int yyparse();
@@ -10,12 +13,13 @@ extern FILE *yyin;
 extern char *yytext;
 extern int firsttime;
 extern int rows;
+extern int yydebug;
 
 
 
 int main(int argc, char *argv[]){
     if(argc < 2){
-        printf("Usage: wc file");
+        printf("Usage: file");
         exit(1);
     }
     for(int i = 1; i < argc; i++){
@@ -35,7 +39,9 @@ int main(int argc, char *argv[]){
         }
         printf("Category \t Text \t\t\t        Lineno \t      Filename \t                 Ival/Sval\n");
         printf("----------------------------------------------------------------------------------------------------------------\n");
-        printf("yyparse returns %d\n", yyparse());
+        yydebug = 0;
+        int r = yyparse();
+        printf("yyparse returns %d\n", r);
         firsttime = 0;
         rows = 1;
         fclose(yyin);
@@ -44,5 +50,7 @@ int main(int argc, char *argv[]){
 }
 
 int yyerror(char *s){
-    fprintf(stderr, "%s\n", s); exit(1);
+    printf(COLOR_BOLD "SYNTAX ERROR: " COLOR_END);
+    printf("\"%s\" filename: %s line number: %d\n", yytext, current_file, rows);
+    exit(2);
 }

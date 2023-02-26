@@ -1,1 +1,1 @@
-test = "Hello\tWorld\n"
+assignment
