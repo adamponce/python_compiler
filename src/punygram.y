@@ -130,7 +130,7 @@ opt_comp_iter yield_expr opt_yield_args yield_args func_body_suite opt_type_comm
 zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef small_stmt augassign one_more_except except_clause plus_or_minus
 subscript opt_finally zero_more_comma_argtd
 dictorsetmarker dsm_expr tct_or_dse zero_more_comma_tct_or_dse cf_or_comma_tct_dct dsm_star_expr cf_or_comma_tse opt_dictsetmarker
-everything_in_parenthesis comma_test_or_se comma_isn comma_dsn comma_sub
+everything_in_parenthesis comma_test_or_se comma_isn comma_dsn comma_sub dict_set_maker
 %%
 /*
 Removed:
@@ -567,8 +567,11 @@ comma_test: COMMA test{$$ = alctree(1192, "comma_test", 2, $1, $2, NULL, NULL, N
 /*dictormarker*/
 // dictorsetmaker: ((test ':' test | '**' expr) (comp_for | (',' (test ':' test | '**' expr))* [','])) |
 //                   ((test | star_expr) (comp_for | (',' (test | star_expr))* [',']))
-dictorsetmarker: dsm_expr{$$ = alctree(1193, "dictorsetmaker", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
-    | dsm_star_expr{$$ = alctree(1194, "dictorsetmaker", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+dictorsetmarker: dict_set_maker{$$ = alctree(1300, "dictorsetmaker", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
+
+
+dict_set_maker: dsm_expr{$$ = alctree(1193, "dict_set_marker", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
+    | dsm_star_expr{$$ = alctree(1194, "dict_set_marker", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 dsm_expr: tct_or_dse cf_or_comma_tct_dct{$$ = alctree(1195, "dsm_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -576,7 +579,8 @@ tct_or_dse: test COLON test{$$ = alctree(1196, "tct_or_dse", 3, $1, $2, $3, NULL
     | DOUBLESTAR expr{$$ = alctree(1197, "tct_or_dse", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 zero_more_comma_tct_or_dse: {$$=alocnull("zero_more_comma_tct_or_dse");} 
-    | zero_more_comma_tct_or_dse tct_or_dse{$$ = alctree(1198, "zero_more_comma_tct_or_dse", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+    | zero_more_comma_tct_or_dse COMMA tct_or_dse{$$ = alctree(1198, "zero_more_comma_tct_or_dse", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+
 cf_or_comma_tct_dct: comp_for{$$ = alctree(1199, "cf_or_comma_tct_dct", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
     | zero_more_comma_tct_or_dse opt_comma{$$ = alctree(1200, "cf_or_comma_tct_dct", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 

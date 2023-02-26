@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
         }
         printf("PRINTING TREE: \n");
         printf("-------------------------------------------------\n");
-        yydebug = 0;
+        yydebug = 1;
         int r = yyparse();
         if(r == 0){
             treeprint(root, 1);
