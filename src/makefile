@@ -21,7 +21,7 @@ punygram.tab: punygram.tab.c
 	$(CC) $(OBJFLAGS) $@.c
 
 punygram.tab.h punygram.tab.c: punygram.y
-	bison -d -v --debug punygram.y
+	bison -d punygram.y
 
 tree: tree.c tree.h
 	$(CC) $(OBJFLAGS) $@.c
