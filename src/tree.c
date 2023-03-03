@@ -206,21 +206,3 @@ char *humanreadable(struct tree *t){
         return t->symbolname;
     }
 }
-
-/* Start of symbol table functions */
-
-void printsyms(struct tree *t){
-    // tree traversal to call printsymbol function
-    int i;
-    printsymbol(t->symbolname);
-    for(i = 0; i < t->nkids; i++){
-        // treeprint(t->kids[i], depth+1);
-        printsyms(t->kids[i]);
-    }
-
-}
-
-void printsymbol(char *s)
-{
-   printf("%s\n", s); fflush(stdout);
-}
