@@ -54,6 +54,60 @@ void printsyms(struct tree *t){
    }  
 }
 
+/*
+ * Insert a symbol into a symbol table.
+ */
+int insert_sym(SymbolTable st, char *s, typeptr t) {
+
+   register int i;
+   int h;
+   struct sym_entry *se;
+   int l;t
+
+   h = hash(st, s);
+   for (se = st->tbl[h]; se != NULL; se = se->next)
+      if (!strcmp(s, se->s)) {
+         /*
+          * A copy of the string is already in the table.
+          */
+         return 0;
+         }
+
+   /*
+    * The string is not in the table. Add the copy from the
+    *  buffer to the table.
+    */
+   se = (SymbolTableEntry)alloc((unsigned int) sizeof (struct sym_entry));
+   se->next = st->tbl[h];
+   se->table = st;
+   st->tbl[h] = se;
+   se->s = strdup(s);
+   //se->type = t; don't need for hw4
+   st->nEntries++;
+   return 1;
+}
+
+
+/*
+ * lookup_st - search the symbol table for a given symbol, return its entry.
+ */
+SymbolTableEntry lookup_st(SymbolTable st, char *s) {
+
+   register int i;
+   int h;
+   SymbolTableEntry se;
+
+   h = hash(st, s);
+   for (se = st->tbl[h]; se != NULL; se = se->next)
+      if (!strcmp(s, se->s)) {
+         /*
+          *  Return a pointer to the symbol table entry.
+          */
+         return se;
+         }
+   return NULL;
+}
+
 /* error check calloc for NULL */
 char *alloc(int n) {
    char *a = calloc(n, sizeof(char));
@@ -63,6 +117,8 @@ char *alloc(int n) {
       }
    return a;
 }
+
+
 
 /* print the given symbol, s */
 void printsymbol(char *s)
