@@ -1,3 +1,13 @@
+/**
+* @file symtab.h
+*
+* @author Javier Reyna Adam Schmidt Nikki Sparacino
+*
+* @date 03/22/2023
+*
+* Assignment: Homework 4
+*/
+
 #ifndef SYMTAB_H
 #define SYMTAB_H
 #define MAX_SIZE 10

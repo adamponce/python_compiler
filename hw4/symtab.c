@@ -1,10 +1,12 @@
 /**
- * symtab.c
- * Javier Reyna; Adam Schmidt; Nikki Sparacino
- * CSE423 Lab 5 
- * 
- * This program builds a symbol table for our Python compiler.
- */
+* @file symtab.c
+*
+* @author Javier Reyna Adam Schmidt Nikki Sparacino
+*
+* @date 03/22/2023
+*
+* Assignment: Homework 4
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
