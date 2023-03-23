@@ -33,6 +33,7 @@ extern int name_counter;
 struct sym_table *global;
 struct sym_table *current;
 struct sym_table *tables[ARRAY_SIZE];
+extern int table_count;
 
 
 int main(int argc, char *argv[]){
@@ -68,11 +69,13 @@ int main(int argc, char *argv[]){
             fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
             exit(-1);
         }
-
+        printf("FILE: %s\n", argv[i]);
+        printf("----------------------\n");
         //Begins analysis
         yydebug = 0;
         int r = yyparse();
         global = init_symbol_table();
+        global->name = "Global";
         tables[0] = global;
         current = global;
         if(r == 0){
@@ -85,8 +88,13 @@ int main(int argc, char *argv[]){
                 printSymbolTable(tables[j]);
             }
         }
+        for(int m = 0; m < ARRAY_SIZE; m++){
+            tables[m] = NULL;
+        }
+        table_count = 1;
         firsttime = 0;
         rows = 1;
+        printf("\n");
         fclose(yyin);
     }
     return 0;

@@ -242,6 +242,7 @@ void treetraversal(struct tree *t){
         struct sym_table *new;
         new_scope = 1;
         new = init_symbol_table();
+        new->name = t->kids[1]->symbolname;
         tables[table_count] = new;
         current = new;
     }
@@ -278,8 +279,6 @@ void treetraversal(struct tree *t){
     }
 
     else if((dedent == indent) && (new_scope == 1) && (dedent != 0) && (indent != 0)){
-        //return to old scope
-        //memcpy(tables[table_count], current, sizeof(struct sym_table));
         table_count++;
         new_scope = 0;
         dedent = 0;

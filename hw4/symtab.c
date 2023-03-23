@@ -68,11 +68,11 @@ struct sym_entry * find_symbol(struct sym_table * st, char *name){
 
 void printSymbolTable(struct sym_table *st){
     struct sym_entry * head;
-    printf("Printing Symbol Table: \n");
+    printf("---symbol table for: %s---\n", st->name);
     for(int i = 0; i < st->nBuckets; i++){
         head = st->tbl[i];
         while(head != NULL){
-            printf("%s\n", head->s);
+            printf("\t%s\n", head->s);
             head = head->next;
         }
     } 

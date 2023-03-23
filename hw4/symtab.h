@@ -4,7 +4,8 @@
 
 struct sym_table{
    int nBuckets;
-   int nEntries;			
+   int nEntries;
+   char *name;		
    struct sym_entry *tbl[MAX_SIZE];
 };
 
