@@ -1,49 +1,25 @@
-hello = 1
-
 def f(c, b):
     a = b
-    b = 3
 
-def b(m, t):
+def b(m,t):
     a = t
-    m = 3
+    b = 5
 
-b = 6
+a = 91
 
-
-
-
+a:int 
 
 
+a = 2
+b = 4
+f = 5
+h = 1
+k = 2
+b = 2
 
+h:bool
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def b(m,t):
+    a = t
+    t = 9
 

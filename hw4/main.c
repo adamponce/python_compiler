@@ -34,17 +34,27 @@ struct sym_table *global;
 struct sym_table *current;
 struct sym_table *tables[ARRAY_SIZE];
 extern int table_count;
+extern int dedent;
+extern int indent;
 
 
 int main(int argc, char *argv[]){
     //Beginning Stuff
     if(argc < 2){
-        printf("Usage: file");
+        printf("Usage: puny [-symtab] <filename 1> <filename 2> ... <filename n>");
         exit(1);
     }
 
+    // check for optional -symtab command line argument
+    int symtab_flag;
+    if(strcmp(argv[1], "-symtab") == 0) {
+        symtab_flag = 1;
+    } else {
+        symtab_flag = 0;
+    }
+
     //Goes through all of the command line arguments
-    for(int i = 1; i < argc; i++){
+    for(int i = symtab_flag + 1; i < argc; i++){
 
         //Checks for .py extension
         char *ext = strrchr(argv[i], '.');
@@ -59,19 +69,26 @@ int main(int argc, char *argv[]){
 
         //Opens file to add new line at the end
         current_file = argv[i];
-        if ((yyin = fopen(argv[i], "a")) == NULL) {
+        if ((yyin = fopen(argv[i], "a+")) == NULL) {
             fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
             exit(-1);
         }
-        fprintf(yyin,"\n");
+        char lastChar;
+        fseek(yyin, -1, SEEK_END);
+        lastChar = fgetc(yyin);
+
+        if (lastChar != '\n') {
+            fprintf(yyin,"\n");
+        }
         fclose(yyin);
+
         if ((yyin = fopen(argv[i], "r")) == NULL) {
             fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
             exit(-1);
         }
+        //Begins analysis
         printf("FILE: %s\n", argv[i]);
         printf("----------------------\n");
-        //Begins analysis
         yydebug = 0;
         int r = yyparse();
         global = init_symbol_table();
@@ -79,13 +96,19 @@ int main(int argc, char *argv[]){
         tables[0] = global;
         current = global;
         if(r == 0){
+            if(symtab_flag == 0){
+                printf("No Errors Detected. Use -symtab to see symbol table");
+            }
             //treeprint(root, 1);
             treetraversal(root);
             for(int j = 0; j < ARRAY_SIZE; j++){
                 if(tables[j] == NULL){
                     break;
                 }
-                printSymbolTable(tables[j]);
+                // only print if symtab true
+                if(symtab_flag == 1) {
+                    printSymbolTable(tables[j]);
+                }
             }
         }
         for(int m = 0; m < ARRAY_SIZE; m++){
@@ -94,6 +117,8 @@ int main(int argc, char *argv[]){
         table_count = 1;
         firsttime = 0;
         rows = 1;
+        indent = 0;
+        dedent = 0;
         printf("\n");
         fclose(yyin);
     }
