@@ -1,22 +1,24 @@
-#include "tree.h"
+#ifndef SYMTAB_H
+#define SYMTAB_H
+#define MAX_SIZE 10
 
-/*Symbol table that uses an array of linked lists*/
-typedef struct sym_table {
-   int nBuckets;			/* # of buckets */
-   int nEntries;			/* # of symbols in the table */
-//   struct sym_table *parent;		/* enclosing scope, superclass etc. */
-   struct sym_entry **tbl;
-   /* more per-scope/per-symbol-table attributes go here */
-   } *SymbolTable;
+struct sym_table{
+   int nBuckets;
+   int nEntries;			
+   struct sym_entry *tbl[MAX_SIZE];
+};
 
-typedef struct sym_entry {
-   SymbolTable table;			/* what symbol table do we belong to*/
+struct sym_entry{
+   struct sym_table *table;
    char *s;				/* string */
-   char *type;       /*type name*/
-   /* more symbol attributes go here for code generation */
+   char *type;
    struct sym_entry *next;
-   } *SymbolTableEntry;
+};
 
-int hash(SymbolTable st, char *s);
-void printsyms(struct tree *t);
-void printsymbol(char *s);
+int hash(int size, char *s);
+void insert_symbol(struct sym_table *st, char *name, char *type);
+struct sym_table *init_symbol_table();
+struct sym_entry *find_symbol(struct sym_table *st, char *name);
+void printSymbolTable(struct sym_table *st);
+
+#endif

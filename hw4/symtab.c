@@ -13,59 +13,68 @@
 #include "tree.h"
 #include "punygram.tab.h"
 
-char *alloc(int n);
-
-/* compute the hash value */
-int hash(SymbolTable st, char *s){
-   register int h = 0;
-   register char c;
-   while ((c = *s++)) {
-      h += c & 0377;
-      h *= 37;
-      }
-   if (h < 0) h = -h;
-   return h % st->nBuckets;
+int hash(int size, char *s)
+{
+    register int h = 0;
+    register char c;
+    while ((c = *s++)) {
+        h += c & 0377;
+        h *= 37;
+    }
+    if (h < 0) h = -h;
+    return h % size;
 }
 
-/* initialize a new symbol table*/
-SymbolTable new_st(int nbuckets) {
-    // int h; /* h not used */
-    SymbolTable rv;
-    rv = (SymbolTable) alloc((unsigned int) (sizeof(struct sym_table)));
-    rv->tbl = (struct sym_entry **) alloc((unsigned int) (nbuckets * sizeof(struct sym_entry *)));
-    rv->nBuckets = nbuckets;
-    rv->nEntries = 0;
+struct sym_table * init_symbol_table(){
+    struct sym_table * rv = (struct sym_table *) malloc(sizeof(struct sym_table));
+    rv -> nBuckets = MAX_SIZE;
+    rv -> nEntries = 0;
     return rv;
 }
 
-/* traverse the tree and call the printsymbol function for each node */
-void printsyms(struct tree *t){
-    // tree traversal to call printsymbol function
-   int i;
-   if(t == NULL) return;
-   if(t->nkids > 0) {
-      for(i = 0; i < t->nkids; i++){
-         printsyms(t->kids[i]);
-      }
-   } else if (t->leaf) {
-      if(t->leaf->category == NAME) {
-         printsymbol(t->symbolname);
-      }
-   }  
+void insert_symbol(struct sym_table * st, char *name, char *type){
+    int hash_value = hash(MAX_SIZE, name);
+    struct sym_entry * head = st->tbl[hash_value];
+
+    while(head != NULL){
+        if(strcmp(head->s, name) == 0){
+            return;
+        }
+        head = head->next;
+    }
+
+    struct sym_entry * new_entry = (struct sym_entry *) malloc(sizeof(struct sym_entry));
+    new_entry->s = name;
+    new_entry->type = type;
+    new_entry->table = st;
+    new_entry->next = st->tbl[hash_value];
+    st->tbl[hash_value] = new_entry;
 }
 
-/* error check calloc for NULL */
-char *alloc(int n) {
-   char *a = calloc(n, sizeof(char));
-   if (a == NULL) {
-      fprintf(stderr, "alloc(%d): out of memory\n", (int)n);
-      exit(-1);
-      }
-   return a;
+
+struct sym_entry * find_symbol(struct sym_table * st, char *name){
+    int hash_value = hash(MAX_SIZE, name);
+    struct sym_entry * head = st->tbl[hash_value];
+
+    while(head != NULL){
+        if(strcmp(head->s, name) == 0){
+            return head;
+        }
+        head = head->next;
+    }
+
+    return NULL;
 }
 
-/* print the given symbol, s */
-void printsymbol(char *s)
-{
-   printf("%s\n", s); fflush(stdout);
+void printSymbolTable(struct sym_table *st){
+    struct sym_entry * head;
+    printf("Printing Symbol Table: \n");
+    for(int i = 0; i < st->nBuckets; i++){
+        head = st->tbl[i];
+        while(head != NULL){
+            printf("%s\n", head->s);
+            head = head->next;
+        }
+    } 
 }
+

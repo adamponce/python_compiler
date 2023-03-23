@@ -14,7 +14,7 @@ lex.yy.c: punylex.l
 lex.yy: punygram.tab.h lex.yy.c tree.h
 	$(CC) $(OBJFLAGS) $@.c
 
-main: main.c
+main: main.c symtab.h tree.h
 	$(CC) $(OBJFLAGS) $@.c
 
 punygram.tab: punygram.tab.c
@@ -23,7 +23,7 @@ punygram.tab: punygram.tab.c
 punygram.tab.h punygram.tab.c: punygram.y
 	bison -d punygram.y
 
-tree: tree.c tree.h
+tree: tree.c tree.h symtab.h
 	$(CC) $(OBJFLAGS) $@.c
 
 symtab: symtab.c tree.h symtab.h

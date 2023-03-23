@@ -16,6 +16,7 @@
 #include "symtab.h"
 #define COLOR_BOLD "\e[33m"
 #define COLOR_END "\e[m"
+#define ARRAY_SIZE 10
 
 
 int yylex();
@@ -29,15 +30,22 @@ extern int rows;
 extern int yydebug;
 extern struct tree *root;
 extern int name_counter;
-
+struct sym_table *global;
+struct sym_table *current;
+struct sym_table *tables[ARRAY_SIZE];
 
 
 int main(int argc, char *argv[]){
+    //Beginning Stuff
     if(argc < 2){
         printf("Usage: file");
         exit(1);
     }
+
+    //Goes through all of the command line arguments
     for(int i = 1; i < argc; i++){
+
+        //Checks for .py extension
         char *ext = strrchr(argv[i], '.');
         if(!ext){
             char *extension = ".py";
@@ -47,6 +55,8 @@ int main(int argc, char *argv[]){
             printf("Incorrect file type: Needed .py\n");
             exit(-1);
         }
+
+        //Opens file to add new line at the end
         current_file = argv[i];
         if ((yyin = fopen(argv[i], "a")) == NULL) {
             fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
@@ -58,13 +68,22 @@ int main(int argc, char *argv[]){
             fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
             exit(-1);
         }
-        printf("PRINTING TREE: \n");
-        printf("-------------------------------------------------\n");
+
+        //Begins analysis
         yydebug = 0;
         int r = yyparse();
+        global = init_symbol_table();
+        tables[0] = global;
+        current = global;
         if(r == 0){
             //treeprint(root, 1);
             treetraversal(root);
+            for(int j = 0; j < ARRAY_SIZE; j++){
+                if(tables[j] == NULL){
+                    break;
+                }
+                printSymbolTable(tables[j]);
+            }
         }
         firsttime = 0;
         rows = 1;
