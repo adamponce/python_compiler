@@ -3,23 +3,31 @@
 *
 * @author Javier Reyna Adam Schmidt Nikki Sparacino
 *
-* @date 02/25/2023
+* @date 03/22/2023
 *
-* Assignment: Homework 3
+* Assignment: Homework 4
 */
 
 
 #include "tree.h"
 #include "punygram.tab.h"
+#include "symtab.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 extern int rows;
 extern char *yytext;
 extern char *current_file;
+extern struct sym_table *global;
 char *symbol;
 int atom_found = 0;
 int new_scope = 0;
+int global_stmt = 0;
+int indent = 0;
+int dedent = 0;
+extern struct sym_table *tables[10];
+extern struct sym_table *current;
+int table_count = 1;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -224,35 +232,61 @@ void treetraversal(struct tree *t){
     //finding assignments
     else if(strcmp("eq_yield_or_tlse", humanreadable(t)) == 0 && atom_found == 1){
         //enter saved atom into symbol table
-        printf("Symbol table entry %s\n", symbol);
+        insert_symbol(current, symbol, "any");
         atom_found = 0;
     }
 
     //finding new functions
     else if(strcmp("fundef", humanreadable(t)) == 0){
         //create new symbol table
-        printf("New Scope\n");
+        struct sym_table *new;
         new_scope = 1;
+        new = init_symbol_table();
+        new->name = t->kids[1]->symbolname;
+        tables[table_count] = new;
+        current = new;
     }
     //finding a:int
     else if(strcmp("annassign", humanreadable(t)) == 0 && atom_found == 1){
         //enter saved atom into symbol table
-        printf("Symbol table entry %s\n", symbol);
+        insert_symbol(current, symbol, "any");
         atom_found = 0;
     }
 
-    else if(strcmp("tfdef", humanreadable(t)) == 0 && new_scope == 1){
+    else if(strcmp("tfdef", humanreadable(t)) == 0 && (new_scope == 1)){
         //symbol entry child of tfdef
-        printf("Symbol Table entry %s\n", t->kids[0]->symbolname);
+        if(strcmp("opt_col_test", t->kids[0]->symbolname) != 0){
+            insert_symbol(current, t->kids[0]->symbolname, "any");
+        }
     }
 
-    else if(t->prodrule == 330 && new_scope == 1){
-        //new scope is done return to the old one
+    else if(t->prodrule == 330){
+        dedent++;
+    }
+
+    else if(strcmp("global_stmt", humanreadable(t)) == 0){
+        insert_symbol(current, t->kids[1]->symbolname, "any");        
+        global_stmt = 1;
+    }
+
+    else if(strcmp("comma_name", humanreadable(t)) == 0 && global_stmt == 1){
+        insert_symbol(current, t->kids[1]->symbolname, "any");
+    }
+
+    else if(t->prodrule == 329){
+        indent++;
+        //printf("indent: %d\n", indent);
+    }
+
+    else if((dedent == indent) && (new_scope == 1) && (dedent != 0) && (indent != 0)){
+        table_count++;
         new_scope = 0;
-        printf("Return to old scope\n");
+        dedent = 0;
+        indent = 0;
+        current = tables[0];
     }
 
-    for(int i = 0; i < t->nkids; i++){
+    for(int i = 0; i < t->nkids; i++){\
         treetraversal(t->kids[i]);
     }
 

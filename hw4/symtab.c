@@ -1,10 +1,12 @@
 /**
- * symtab.c
- * Javier Reyna; Adam Schmidt; Nikki Sparacino
- * CSE423 Lab 5 
- * 
- * This program builds a symbol table for our Python compiler.
- */
+* @file symtab.c
+*
+* @author Javier Reyna Adam Schmidt Nikki Sparacino
+*
+* @date 03/22/2023
+*
+* Assignment: Homework 4
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,115 +15,68 @@
 #include "tree.h"
 #include "punygram.tab.h"
 
-char *alloc(int n);
-
-/* compute the hash value */
-int hash(SymbolTable st, char *s){
-   register int h = 0;
-   register char c;
-   while ((c = *s++)) {
-      h += c & 0377;
-      h *= 37;
-      }
-   if (h < 0) h = -h;
-   return h % st->nBuckets;
+int hash(int size, char *s)
+{
+    register int h = 0;
+    register char c;
+    while ((c = *s++)) {
+        h += c & 0377;
+        h *= 37;
+    }
+    if (h < 0) h = -h;
+    return h % size;
 }
 
-/* initialize a new symbol table*/
-SymbolTable new_st(int nbuckets) {
-    // int h; /* h not used */
-    SymbolTable rv;
-    rv = (SymbolTable) alloc((unsigned int) (sizeof(struct sym_table)));
-    rv->tbl = (struct sym_entry **) alloc((unsigned int) (nbuckets * sizeof(struct sym_entry *)));
-    rv->nBuckets = nbuckets;
-    rv->nEntries = 0;
+struct sym_table * init_symbol_table(){
+    struct sym_table * rv = (struct sym_table *) malloc(sizeof(struct sym_table));
+    rv -> nBuckets = MAX_SIZE;
+    rv -> nEntries = 0;
     return rv;
 }
 
-/* traverse the tree and call the printsymbol function for each node */
-void printsyms(struct tree *t){
-    // tree traversal to call printsymbol function
-   int i;
-   if(t == NULL) return;
-   if(t->nkids > 0) {
-      for(i = 0; i < t->nkids; i++){
-         printsyms(t->kids[i]);
-      }
-   } else if (t->leaf) {
-      if(t->leaf->category == NAME) {
-         printsymbol(t->symbolname);
-      }
-   }  
-}
+void insert_symbol(struct sym_table * st, char *name, char *type){
+    int hash_value = hash(MAX_SIZE, name);
+    struct sym_entry * head = st->tbl[hash_value];
 
-/*
- * Insert a symbol into a symbol table.
- */
-int insert_sym(SymbolTable st, char *s, typeptr t) {
+    while(head != NULL){
+        if(strcmp(head->s, name) == 0){
+            return;
+        }
+        head = head->next;
+    }
 
-   register int i;
-   int h;
-   struct sym_entry *se;
-   int l;t
-
-   h = hash(st, s);
-   for (se = st->tbl[h]; se != NULL; se = se->next)
-      if (!strcmp(s, se->s)) {
-         /*
-          * A copy of the string is already in the table.
-          */
-         return 0;
-         }
-
-   /*
-    * The string is not in the table. Add the copy from the
-    *  buffer to the table.
-    */
-   se = (SymbolTableEntry)alloc((unsigned int) sizeof (struct sym_entry));
-   se->next = st->tbl[h];
-   se->table = st;
-   st->tbl[h] = se;
-   se->s = strdup(s);
-   //se->type = t; don't need for hw4
-   st->nEntries++;
-   return 1;
+    struct sym_entry * new_entry = (struct sym_entry *) malloc(sizeof(struct sym_entry));
+    new_entry->s = name;
+    new_entry->type = type;
+    new_entry->table = st;
+    new_entry->next = st->tbl[hash_value];
+    st->tbl[hash_value] = new_entry;
 }
 
 
-/*
- * lookup_st - search the symbol table for a given symbol, return its entry.
- */
-SymbolTableEntry lookup_st(SymbolTable st, char *s) {
+struct sym_entry * find_symbol(struct sym_table * st, char *name){
+    int hash_value = hash(MAX_SIZE, name);
+    struct sym_entry * head = st->tbl[hash_value];
 
-   register int i;
-   int h;
-   SymbolTableEntry se;
+    while(head != NULL){
+        if(strcmp(head->s, name) == 0){
+            return head;
+        }
+        head = head->next;
+    }
 
-   h = hash(st, s);
-   for (se = st->tbl[h]; se != NULL; se = se->next)
-      if (!strcmp(s, se->s)) {
-         /*
-          *  Return a pointer to the symbol table entry.
-          */
-         return se;
-         }
-   return NULL;
+    return NULL;
 }
 
-/* error check calloc for NULL */
-char *alloc(int n) {
-   char *a = calloc(n, sizeof(char));
-   if (a == NULL) {
-      fprintf(stderr, "alloc(%d): out of memory\n", (int)n);
-      exit(-1);
-      }
-   return a;
+void printSymbolTable(struct sym_table *st){
+    struct sym_entry * head;
+    printf("---symbol table for: %s---\n", st->name);
+    for(int i = 0; i < st->nBuckets; i++){
+        head = st->tbl[i];
+        while(head != NULL){
+            printf("\t%s\n", head->s);
+            head = head->next;
+        }
+    } 
 }
 
-
-
-/* print the given symbol, s */
-void printsymbol(char *s)
-{
-   printf("%s\n", s); fflush(stdout);
-}
