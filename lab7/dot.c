@@ -10,16 +10,23 @@ int serial;
 /* add a \ before leading and trailing double quotes */
 char *escape(char *s) {
     char *s2 = malloc(strlen(s)+4);
-    if (s[0] == '\"') {
-        if (s[strlen(s)-1] != '\"') {
-            fprintf(stderr, "What is it?!\n");
+    int len = strlen(s);
+    int j = 0;
+    for(int i = 0; i < len; i++) {
+        if(s[i] == '\"') {
+            if (s[len-1] != '\"') {
+                fprintf(stderr, "What is it?!\n");
+            }
+            s2[j] = '\\';
+            j++;
+            s2[j] = '\"';
+            j++;
+        } else {
+            s2[j] = s[i];
+            j++; 
         }
-        /* sprintf --> prints to a string instead of a file */
-        sprintf(s2, "\\%s", s);
-        strcat(s2+strlen(s2)-1, "\\\"");
-        return s2;
     }
-    else return s;
+    return s2;
 }
 
 char *pretty_print_name(struct tree *t) {
@@ -42,8 +49,7 @@ void print_leaf(struct tree *t, FILE *f) {
     char * s = yyname(t->leaf->category);
     // print_branch(t, f);
     fprintf(f, "N%d [shape=box style=dotted label=\" %s \\n ", t->id, s);
-    fprintf(f, "text = %s \\l lineno = %d \\l\"];\n", escape(t->leaf->text),
-    t->leaf->lineno);
+    fprintf(f, "text = %s \\l lineno = %d \\l\"];\n", escape(t->leaf->text), t->leaf->lineno);
 }
 
 void print_graph2(struct tree *t, FILE *f) {
@@ -63,6 +69,7 @@ void print_graph2(struct tree *t, FILE *f) {
         else { /* NULL kid, epsilon production or something */
             fprintf(f, "N%d -> N%d%d;\n", t->id, t->id, serial);
             fprintf(f, "N%d%d [label=\"%s\"];\n", t->id, serial, "Empty rule");
+            // fprintf(f, "N%d%d [label=\"Empty rule: %s\"];\n", t->id, serial, t->symbolname);
             serial++;
         }
     }

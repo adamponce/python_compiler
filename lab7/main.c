@@ -48,24 +48,21 @@ int main(int argc, char *argv[]){
     }
 
     // check for optional -symtab command line argument
-    int symtab_flag, dot_flag;
+    int symtab_flag = 0, dot_flag = 0;
     if(strcmp(argv[1], "-symtab") == 0) {
         symtab_flag = 1;
-
         if (strcmp(argv[2], "-dot") == 0) {
             dot_flag = 1;
-        } else {
-            dot_flag = 0;
         }
     } else {
-        symtab_flag = 0;
         if (strcmp(argv[1], "-dot") == 0) {
             dot_flag = 1;
-        } else {
-            dot_flag = 0;
+            if (strcmp(argv[2], "-symtab") == 0) {
+                symtab_flag = 1;
+            }
         }
     }
-    int cat = 0;
+    // int cat = 0;
     int flags = symtab_flag + dot_flag;
     //Goes through all of the command line arguments
     for(int i = flags + 1; i < argc; i++){
@@ -115,7 +112,7 @@ int main(int argc, char *argv[]){
         tables[0] = global;
         current = global;
         if(r == 0){
-            treeprint(root, 1);
+            // treeprint(root, 1);
             treetraversal(root);
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");

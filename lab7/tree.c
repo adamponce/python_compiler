@@ -40,6 +40,7 @@ int alctoken(int cat){
     yylval.treeptr->prodrule = cat;
     yylval.treeptr->nkids = 0;
     yylval.treeptr->symbolname = strdup(yytext); 
+    yylval.treeptr->id = serial++;
     yylval.treeptr->leaf = malloc(sizeof (struct token));
     yylval.treeptr->leaf->category = cat;
     yylval.treeptr->leaf->text = strdup(yytext);
@@ -209,7 +210,8 @@ void treeprint(struct tree *t, int depth)
     if(t == NULL){
         return;
     }
-    printf("%*s %s: %d\n", depth*2, " ", humanreadable(t), t->nkids);
+    printf("%d: %*s %s: %d\n", t->id, depth*2, " ", humanreadable(t), t->nkids);
+    // printf("%*s %s: %d\n", depth*2, " ", humanreadable(t), t->nkids);
     for(i = 0; i < t->nkids; i++){
         treeprint(t->kids[i], depth+1);
     }
