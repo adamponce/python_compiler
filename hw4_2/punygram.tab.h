@@ -104,16 +104,16 @@
      DOUBLESLASH = 320,
      DOUBLESLASHEQUAL = 321,
      RARROW = 322,
-     FUNCTION = 323,
-     ELLIPSIS = 324,
-     COLONEQUAL = 325,
-     NAME = 326,
-     NUMBER = 327,
-     STRING = 328,
-     INDENT = 329,
-     DEDENT = 330,
-     IN = 331,
-     TYPE_COMMENT = 332
+     ELLIPSIS = 323,
+     COLONEQUAL = 324,
+     NAME = 325,
+     NUMBER = 326,
+     STRING = 327,
+     INDENT = 328,
+     DEDENT = 329,
+     IN = 330,
+     TYPE_COMMENT = 331,
+     FUNC = 332
    };
 #endif
 /* Tokens.  */
@@ -182,16 +182,16 @@
 #define DOUBLESLASH 320
 #define DOUBLESLASHEQUAL 321
 #define RARROW 322
-#define FUNCTION 323
-#define ELLIPSIS 324
-#define COLONEQUAL 325
-#define NAME 326
-#define NUMBER 327
-#define STRING 328
-#define INDENT 329
-#define DEDENT 330
-#define IN 331
-#define TYPE_COMMENT 332
+#define ELLIPSIS 323
+#define COLONEQUAL 324
+#define NAME 325
+#define NUMBER 326
+#define STRING 327
+#define INDENT 328
+#define DEDENT 329
+#define IN 330
+#define TYPE_COMMENT 331
+#define FUNC 332
 
 
 

@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
     } else {
         symtab_flag = 0;
     }
-
+    int cat = 0;
     //Goes through all of the command line arguments
     for(int i = symtab_flag + 1; i < argc; i++){
 
@@ -90,17 +90,22 @@ int main(int argc, char *argv[]){
         printf("FILE: %s\n", argv[i]);
         printf("----------------------\n");
         yydebug = 0;
+        /*
+        while ((cat = yylex()) > 0){
+            printf("%d\t %s\n", cat, yytext);
+        }
+        */
         int r = yyparse();
         global = init_symbol_table();
         global->name = "Global";
         tables[0] = global;
         current = global;
         if(r == 0){
+            //treeprint(root, 1);
+            treetraversal(root);
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");
             }
-            //treeprint(root, 1);
-            treetraversal(root);
             for(int j = 0; j < ARRAY_SIZE; j++){
                 if(tables[j] == NULL){
                     break;

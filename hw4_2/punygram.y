@@ -76,7 +76,6 @@
 %token <treeptr> DOUBLESLASH
 %token <treeptr> DOUBLESLASHEQUAL
 %token <treeptr> RARROW
-%token <treeptr> FUNCTION
 %token <treeptr> ELLIPSIS
 %token <treeptr> COLONEQUAL
 %token <treeptr> NAME
@@ -86,6 +85,7 @@
 %token <treeptr> DEDENT
 %token <treeptr> IN
 %token <treeptr> TYPE_COMMENT
+%token <treeptr> FUNC
 
 %start file_input
 %type <treeptr> file_input
@@ -130,7 +130,7 @@ opt_comp_iter yield_expr opt_yield_args yield_args func_body_suite opt_type_comm
 zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef small_stmt augassign one_more_except except_clause plus_or_minus
 subscript opt_finally zero_more_comma_argtd
 dictorsetmarker dsm_expr tct_or_dse zero_more_comma_tct_or_dse cf_or_comma_tct_dct dsm_star_expr cf_or_comma_tse opt_dictsetmarker
-everything_in_parenthesis comma_test_or_se comma_isn comma_dsn comma_sub dict_set_maker
+everything_in_parenthesis comma_test_or_se comma_isn comma_dsn comma_sub dict_set_maker opt_semi_colon
 %%
 /*
 Removed:
@@ -143,12 +143,12 @@ opt_tfdef
 
 file_input: zero_more_newline_stmt ENDMARKER{$$ = alctree(1000, "file_input", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL); root = $$;};
 
-zero_more_newline_stmt: {$$=alocnull("zero_more_newline_stmt");} | zero_more_newline_stmt newline_stmt{$$ = alctree(1001, "zero_more_newline_stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+zero_more_newline_stmt: {$$=NULL;} | zero_more_newline_stmt newline_stmt{$$ = alctree(1001, "zero_more_newline_stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 newline_stmt: NEWLINE{$$ = alctree(1002, "NEWLINE", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}| stmt{$$ = alctree(1003, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 funcdef: DEF NAME parameters opt_rarrowtest COLON func_body_suite{$$ = alctree(1004, "fundef", 6, $1, $2, $3, $4, $5, $6, NULL, NULL);};
-opt_rarrowtest: {$$=alocnull("opt_rarrowtest");} | RARROW test{$$ = alctree(1005, "opt_rarrowtest", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+opt_rarrowtest: {$$=NULL;} | RARROW test{$$ = alctree(1005, "opt_rarrowtest", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 parameters: LPAR argumentstd RPAR{$$ = alctree(1006, "parameters", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 //opt_typedargslist: {$$=alocnull();} | typedargslist;
@@ -156,7 +156,7 @@ parameters: LPAR argumentstd RPAR{$$ = alctree(1006, "parameters", 3, $1, $2, $3
 //typedargslist rules
 //===================
 argumentstd: argumenttd zero_more_comma_argtd{$$ = alctree(1006, "argumentstd", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_comma_argtd: {$$=alocnull("zero_more_comma_argtd");} | zero_more_comma_argtd comma_argstd{$$ = alctree(1007, "zero_more_comma_argtd", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+zero_more_comma_argtd: {$$=NULL;} | zero_more_comma_argtd comma_argstd{$$ = alctree(1007, "zero_more_comma_argtd", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 comma_argstd: COMMA argumenttd{$$ = alctree(1008, "comma_argstd", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 argumenttd: tfdef opt_eq_test{$$ = alctree(1009, "argumentd", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
@@ -189,9 +189,8 @@ opt_kwardstd: {$$=alocnull();} | kwargstd;
 // opt_tfdef: {$$=alocnull();} | tfdef;
 
 
-tfdef: NAME{$$ = alctree(1010, "tfdef", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | opt_col_test{$$ = alctree(1011, "tfdef", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_col_test: {$$=alocnull("opt_col_test");} | COLON test{$$ = alctree(1012, "opt_col_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+tfdef: {$$=NULL;}| NAME opt_col_test{$$ = alctree(1011, "tfdef", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+opt_col_test: {$$=NULL;} | COLON test{$$ = alctree(1012, "opt_col_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 //varargslist rules
 //===================
@@ -232,17 +231,20 @@ vfpdef: NAME;
 
 //SIMPLE STATEMENTS
 //===========
-stmt: simple_stmt{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}| compound_stmt{$$ = alctree(1014, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+stmt: simple_stmt{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
+    | compound_stmt{$$ = alctree(1014, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-simple_stmt: small_stmt zero_more_stmts opt_comma NEWLINE{$$ = alctree(1015, "simple_stmt", 4, $1, $2, $3, $4, NULL, NULL, NULL, NULL);};
-zero_more_stmts: {$$=alocnull("zero_more_stmts");} | zero_more_stmts single_stmt{$$ = alctree(1016, "zero_more_stmtms", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-single_stmt: COMMA small_stmt{$$ = alctree(1017, "single_stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+simple_stmt: small_stmt zero_more_stmts opt_semi_colon NEWLINE{$$ = alctree(1015, "simple_stmt", 4, $1, $2, $3, $4, NULL, NULL, NULL, NULL);};
+zero_more_stmts: {$$=NULL;} | zero_more_stmts single_stmt{$$ = alctree(1016, "zero_more_stmtms", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+single_stmt: SEMI small_stmt{$$ = alctree(1017, "single_stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 small_stmt: expr_stmt{$$ = alctree(1018, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    
     | del_stmt{$$ = alctree(1019, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    | pass_stmt{$$ = alctree(1020, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    
     | flow_stmt {$$ = alctree(1021, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    | import_stmt {$$ = alctree(1022, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    
     | global_stmt {$$ = alctree(1023, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    | nonlocal_stmt {$$ = alctree(1024, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    
     | assert_stmt{$$ = alctree(1025, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+    | INDENT;
+
 
 expr_stmt: testlist_star_expr everything_in_parenthesis{$$ = alctree(1026, "expr_stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -254,7 +256,7 @@ everything_in_parenthesis: annassign{$$ = alctree(1026, "everything_in_paranthes
 yield_or_testlist: yield_expr {$$ = alctree(1029, "yield_or_testlist", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    
     | testlist{$$ = alctree(1030, "yield_or_testlist", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-opt_eq_yeild__tc: {$$=alocnull("opt_eq_yeild__tc");} 
+opt_eq_yeild__tc: {$$=NULL;} 
     | one_or_more_eq_yield_or_tlse opt_type_comment{$$ = alctree(1031, "opt_eq_yield__tc", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 one_or_more_eq_yield_or_tlse: eq_yield_or_tlse{$$ = alctree(1032, "one_or_more_eq_yeild_or_tlse", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    
@@ -263,7 +265,7 @@ one_or_more_eq_yield_or_tlse: eq_yield_or_tlse{$$ = alctree(1032, "one_or_more_e
 annassign: COLON test opt_eq_yeild_or_tlse{$$ = alctree(1034, "annassign", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
 
-opt_eq_yeild_or_tlse: {$$=alocnull("opt_eq_yeild_or_tlse");} | eq_yield_or_tlse{$$ = alctree(1035, "opt_eq_yield_or_tlse", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+opt_eq_yeild_or_tlse: {$$=NULL;} | eq_yield_or_tlse{$$ = alctree(1035, "opt_eq_yield_or_tlse", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 eq_yield_or_tlse: EQUAL yield_or_tlse{$$ = alctree(1036, "eq_yield_or_tlse", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -272,7 +274,7 @@ yield_or_tlse: yield_expr{$$ = alctree(1037, "yield_or_tlse", 1, $1, NULL, NULL,
 
 testlist_star_expr: test_or_se zero_more_comma_test_or_se opt_comma{$$ = alctree(1039, "testlist_star_expr", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
-zero_more_comma_test_or_se: {$$=alocnull("zero_more_comma_test_or_se");} 
+zero_more_comma_test_or_se: {$$=NULL;} 
     | zero_more_comma_test_or_se comma_test_or_se{$$ = alctree(1039, "zero_more_comma_test_or_se", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 comma_test_or_se: COMMA test_or_se {$$ = alctree(1040, "comma_test_or_se", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
@@ -300,17 +302,17 @@ flow_stmt: break_stmt{$$ = alctree(1051, "flow_stmt", 1, $1, NULL, NULL, NULL, N
 break_stmt: BREAK{$$ = alctree(1056, "break_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 continue_stmt: CONTINUE{$$ = alctree(1057, "continue_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 return_stmt: RETURN opt_tse{$$ = alctree(1058, "return stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_tse: {$$=alocnull("opt_tse");} 
+opt_tse: {$$=NULL;} 
     | testlist_star_expr{$$ = alctree(1059, "opt_se", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 yield_stmt: yield_expr{$$ = alctree(1060, "yield_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 raise_stmt: RAISE opt_test_opt_from_test{$$ = alctree(1061, "raise_stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-opt_test_opt_from_test: {$$=alocnull("opt_test_opt_from_test");} 
+opt_test_opt_from_test: {$$=NULL;} 
     | test opt_from_test{$$ = alctree(1062, "opt_test_opt_from_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-opt_from_test: {$$=alocnull("opt_from_test");} 
+opt_from_test: {$$=NULL;} 
     | FROM test{$$ = alctree(1063, "opt_from_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 import_stmt: import_name{$$ = alctree(1064, "import_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    
@@ -323,7 +325,7 @@ import_from: FROM dot_ellip_dn_or_one_more_dot_ellip IMPORT star_or_names{$$ = a
 dot_ellip_dn_or_one_more_dot_ellip: zero_more_dot_or_ellip dotted_name{$$ = alctree(1068, "dot_ellip_dn_or_one_more_dot_ellip", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);}    
     | one_more_dot_or_ellip{$$ = alctree(1069, "dot_ellip_dn_or_one_more_dot_ellip", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-zero_more_dot_or_ellip: {$$=alocnull("zero_more_dot_or_ellip");} 
+zero_more_dot_or_ellip: {$$=NULL;} 
     |  zero_more_dot_or_ellip dot_or_ellip{$$ = alctree(1070, "zero_more_dot_or_ellip", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
     
@@ -343,13 +345,13 @@ import_as_name: NAME opt_as_name{$$ = alctree(1079, "import_as_name", 2, $1, $2,
 dotted_as_name: dotted_name opt_as_name{$$ = alctree(1080, "dotted_as_name", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 import_as_names: import_as_name zero_more_comma_isn opt_comma{$$ = alctree(1081, "import_as_names", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
-zero_more_comma_isn: {$$=alocnull("zero_more_comma_isn");} 
+zero_more_comma_isn: {$$=NULL;} 
     | zero_more_comma_isn comma_isn{$$ = alctree(1082, "zero_more_comma_isn", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 comma_isn: COMMA import_as_name{$$ = alctree(1083, "comma_isn", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 dotted_as_names: dotted_as_name zero_more_dsn{$$ = alctree(1084, "dotted_as_names", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_dsn: {$$=alocnull("zero_more_dsn");} 
+zero_more_dsn: {$$=NULL;} 
     | zero_more_dsn comma_dsn{$$ = alctree(1085, "zero_more_dsn", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 comma_dsn: COMMA dotted_as_name{$$ = alctree(1086, "comma_dsn", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
@@ -374,7 +376,7 @@ compound_stmt: if_stmt{$$ = alctree(1089, "compound_stmt", 1, $1, NULL, NULL, NU
     | classdef{$$ = alctree(1092, "compound_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 if_stmt: IF namedexpr_test COLON suite zero_more_elif opt_else{$$ = alctree(1093, "if_stmt", 6, $1, $2, $3, $4, $5, $6, NULL, NULL);};
-zero_more_elif: {$$=alocnull("zero_more_elif");} 
+zero_more_elif: {$$=NULL;} 
     | zero_more_elif elif{$$ = alctree(1094, "zero_more_elif", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 elif: ELIF namedexpr_test COLON suite{$$ = alctree(1095, "elif", 4, $1, $2, $3, $4, NULL, NULL, NULL, NULL);};
@@ -387,7 +389,7 @@ try_stmt: TRY COLON suite except_else_or_finally;
 
 except_else_or_finally: one_more_except opt_else opt_finally
     | FINALLY COLON suite;
-opt_finally: {$$=alocnull("opt_finally");} | FINALLY COLON suite;
+opt_finally: {$$=NULL;} | FINALLY COLON suite;
 
 
 one_more_except: except_stmt
@@ -395,7 +397,7 @@ one_more_except: except_stmt
 except_stmt: except_clause COLON suite;
 
 with_stmt: WITH with_item zero_more_comma_with_item COLON opt_type_comment suite;
-zero_more_comma_with_item: {$$=alocnull("zero_more_comma_with_item");} | zero_more_comma_with_item comma_with_item;
+zero_more_comma_with_item: {$$=NULL;} | zero_more_comma_with_item comma_with_item;
 comma_with_item: COMMA with_item;
 
 with_item: test opt_as_expr;
@@ -411,22 +413,22 @@ one_more_stmt: stmt{$$ = alctree(1100, "one_more_stmt", 1, $1, NULL, NULL, NULL,
 
 
 namedexpr_test: test opt_coleq_test{$$ = alctree(1101, "namedexpr_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_coleq_test: {$$=alocnull("opt_coleq_test");} 
+opt_coleq_test: {$$=NULL;} 
     | COLONEQUAL test{$$ = alctree(1102, "opt_coleq_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 test: or_test opt_if_else{$$ = alctree(1103, "test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_if_else: {$$=alocnull("opt_if_else");} 
+opt_if_else: {$$=NULL;} 
     | IF or_test ELSE test{$$ = alctree(1104, "opt_if_else", 4, $1, $2, $3, $4, NULL, NULL, NULL, NULL);};
 
 test_nocond: or_test{$$ = alctree(1105, "test_nocond", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 or_test: and_test zero_more_or_and_test{$$ = alctree(1106, "or_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_or_and_test: {$$=alocnull("zero_more_or_and_test");} 
+zero_more_or_and_test: {$$=NULL;} 
     | zero_more_or_and_test or_and_test{$$ = alctree(1107, "zero_more_or_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 or_and_test: OR and_test{$$ = alctree(1107, "or_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 and_test: not_test zero_more_and_not_test{$$ = alctree(1108, "and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_and_not_test: {$$=alocnull("zero_more_and_not_test");} 
+zero_more_and_not_test: {$$=NULL;} 
     | zero_more_and_not_test not_and_test{$$ = alctree(1109, "zero_more_and_no_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 not_and_test: AND not_test{$$ = alctree(1107, "not_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -434,7 +436,7 @@ not_test: NOT not_test{$$ = alctree(1110, "not_test", 2, $1, $2, NULL, NULL, NUL
     | comparison{$$ = alctree(1111, "not_test", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 comparison: expr zero_more_comp_op_expr{$$ = alctree(1112, "comparison", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_comp_op_expr: {$$=alocnull("zero_more_comp_op_expr");} 
+zero_more_comp_op_expr: {$$=NULL;} 
     | zero_more_comp_op_expr comp_op_expr{$$ = alctree(1113, "zero_more_comp_op_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 comp_op_expr: comp_op expr{$$ = alctree(1114, "comp_op_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -450,34 +452,34 @@ comp_op: LESS{$$ = alctree(1115, "comp_op", 1, $1, NULL, NULL, NULL, NULL, NULL,
 star_expr: STAR expr{$$ = alctree(1122, "star_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 expr: xor_expr zero_more_or_xor_expr{$$ = alctree(1123, "expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_or_xor_expr: {$$=alocnull("zero_more_or_xor_expr");}  
+zero_more_or_xor_expr: {$$=NULL;}  
     | zero_more_or_xor_expr or_xor_expr{$$ = alctree(1124, "zero_more_or_xor_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 or_xor_expr: "|" xor_expr{$$ = alctree(1125, "or_xor_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 xor_expr: and_expr zero_more_carrot_and_expr{$$ = alctree(1126, "xor_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_carrot_and_expr: {$$=alocnull("zero_more_carrot_and_expr");} 
+zero_more_carrot_and_expr: {$$=NULL;} 
     | zero_more_carrot_and_expr carrot_and_expr{$$ = alctree(1127, "zero_more_carrot_and_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 carrot_and_expr: "^" and_expr{$$ = alctree(1128, "carrot_and_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 and_expr: shift_expr zero_more_and_shift{$$ = alctree(1130, "and_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_and_shift: {$$=alocnull("zero_more_and_shift");} 
+zero_more_and_shift: {$$=NULL;} 
     | zero_more_and_shift and_shift{$$ = alctree(1131, "zero_more_and_shift", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 and_shift: "$" shift_expr{$$ = alctree(1132, "and_shif", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 shift_expr: arith_expr zero_more_double_arrow_arith{$$ = alctree(1133, "shift_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_double_arrow_arith: {$$=alocnull("zero_more_double_arrow_arith");} 
+zero_more_double_arrow_arith: {$$=NULL;} 
     | zero_more_double_arrow_arith double_arrow_arith{$$ = alctree(1134, "zero_more_double_arrow_arith", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 double_arrow_arith: left_or_right arith_expr{$$ = alctree(1135, "double_arrow_arith", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 left_or_right: "<<"{$$ = alctree(1136, "left_or_right", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
     | ">>"{$$ = alctree(1137, "left_or_right", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 arith_expr: term zero_more_plus_minus_term{$$ = alctree(1138, "arith_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_plus_minus_term: {$$=alocnull("zero_more_plus_minus_term");} 
+zero_more_plus_minus_term: {$$=NULL;} 
     | zero_more_plus_minus_term plus_minus_term{$$ = alctree(1139, "zero_more_plus_minus_term", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 plus_minus_term: plus_or_minus term{$$ = alctree(1138, "plus_minus_term", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 term: factor zero_more_factor{$$ = alctree(1140, "term", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_factor: {$$=alocnull("zero_more_faactor");} 
+zero_more_factor: {$$=NULL;} 
     | zero_more_factor symbols_factor{$$ = alctree(1141, "zero_more_factor", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 symbols_factor: symbols_f factor{$$ = alctree(1142, "symbols_factor", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 symbols_f: STAR{$$ = alctree(1143, "symbols_tf", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
@@ -489,11 +491,11 @@ factor: plus_or_minus factor{$$ = alctree(1147, "factor", 2, $1, $2, NULL, NULL,
     | power{$$ = alctree(1148, "term", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 power: atom_expr opt_doublestar_factor{$$ = alctree(1149, "power", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_doublestar_factor: {$$=alocnull("opt_doublestar_factor");} 
+opt_doublestar_factor: {$$=NULL;} 
     | DOUBLESTAR factor{$$ = alctree(1150, "opt_doublestar_factor", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 atom_expr: atom zero_more_trailer{$$ = alctree(11451, "atom_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_trailer: {$$=alocnull("zero_more_trailer");} 
+zero_more_trailer: {$$=NULL;} 
     | zero_more_trailer trailer{$$ = alctree(1152, "zero_more_trailer", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 atom: LPAR opt_yield_tlc RPAR{$$ = alctree(1153, "atom", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);} 
@@ -505,7 +507,8 @@ atom: LPAR opt_yield_tlc RPAR{$$ = alctree(1153, "atom", 3, $1, $2, $3, NULL, NU
     | ELLIPSIS{$$ = alctree(1159, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}  
     | NONE{$$ = alctree(1160, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}  
     | TRUE{$$ = alctree(1161, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}  
-    | FALSE{$$ = alctree(1162, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+    | FALSE{$$ = alctree(1162, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
+    | FUNC{$$ = alctree(1162, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 opt_yield_tlc: testlist_comp {$$ = alctree(1163, "opt_yield_tlc", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
 | yield_expr{$$ = alctree(1164, "opt_yield_tlc", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
@@ -514,13 +517,13 @@ opt_yield_tlc: testlist_comp {$$ = alctree(1163, "opt_yield_tlc", 1, $1, NULL, N
 
 //opt_tlc: /*{$$=alocnull();} | */testlist_comp;
 
-opt_dictsetmarker: {$$=alocnull("opt_dictsetmarker");} 
+opt_dictsetmarker: {$$=NULL;} 
     | dictorsetmarker{$$ = alctree(1165, "opt_dictsetmarker", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
 
 one_more_string: STRING{$$ = alctree(1166, "one_more_string", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}  
     | one_more_string STRING{$$ = alctree(1167, "one_more_sttring", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);} ;
 
-testlist_comp: {$$=alocnull("testlist_comp");} | namedexpr_or_star_expr comp_for_multiple{$$ = alctree(1169, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
+testlist_comp: {$$=NULL;} | namedexpr_or_star_expr comp_for_multiple{$$ = alctree(1169, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
 
 
 // {$$ = alctree(1168, "testlist_comp", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
@@ -528,7 +531,7 @@ testlist_comp: {$$=alocnull("testlist_comp");} | namedexpr_or_star_expr comp_for
 
 comp_for_multiple: comp_for{$$ = alctree(1170, "comp_for_multiple", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
     | zero_more_comma_nt_or_se opt_comma{$$ = alctree(1171, "comp_for_multiple", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);} ;
-zero_more_comma_nt_or_se: {$$=alocnull("zero_more_comma_nt_or_se");} 
+zero_more_comma_nt_or_se: {$$=NULL;} 
     | zero_more_comma_nt_or_se comma_nt_or_se{$$ = alctree(1172, "zero_more_comma_nt_or_se", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 comma_nt_or_se: COMMA namedexpr_or_star_expr{$$ = alctree(1173, "comma_nt_or_se", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -538,21 +541,21 @@ namedexpr_or_star_expr: namedexpr_test{$$ = alctree(1174, "namedexpr_or_star_exp
 trailer: LPAR opt_arglist RPAR{$$ = alctree(1175, "trailer", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);} 
     | LSQB subscriptlist RSQB{$$ = alctree(1176, "trailer", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);} 
     | DOT NAME{$$ = alctree(1176, "trailer", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_arglist: {$$=alocnull("opt_arglist");} | arglist{$$ = alctree(1177, "opt_arglist", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+opt_arglist: {$$=NULL;} | arglist{$$ = alctree(1177, "opt_arglist", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 subscriptlist: subscript zero_more_comma_sub opt_comma{$$ = alctree(1178, "subscriptlist", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
-zero_more_comma_sub: {$$=alocnull("zero_more_comma_sub");} 
+zero_more_comma_sub: {$$=NULL;} 
     | zero_more_comma_sub comma_sub{$$ = alctree(1179, "zero_more_comma_sub", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 comma_sub: COMMA subscript{$$ = alctree(1180, "comma_sub", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 subscript: test{$$ = alctree(1181, "subscrtipt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
     | opt_test COLON opt_test opt_slicop{$$ = alctree(1182, "subscript", 4, $1, $2, $3, $4, NULL, NULL, NULL, NULL);};
-opt_slicop: {$$=alocnull("opt_slicop");} | sliceop{$$ = alctree(1183, "opt_slicop", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+opt_slicop: {$$=NULL;} | sliceop{$$ = alctree(1183, "opt_slicop", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 sliceop: COLON opt_test{$$ = alctree(1184, "sliceop", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 exprlist: expr_or_starexpr zero_more_comma_expr_or_se opt_comma{$$ = alctree(1185, "exprlist", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
-zero_more_comma_expr_or_se: {$$=alocnull("zero_more_comma_expr_or_se");} 
+zero_more_comma_expr_or_se: {$$=NULL;} 
     | zero_more_comma_expr_or_se comma_expr_or_se{$$ = alctree(1186, "zero_more_comma_expr_or_se", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 comma_expr_or_se: COMMA expr_or_starexpr{$$ = alctree(1187, "comma_expr_or_se", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -560,7 +563,7 @@ expr_or_starexpr: expr{$$ = alctree(1188, "expr_or_starexpr", 1, $1, NULL, NULL,
     | star_expr{$$ = alctree(1189, "expr_or_starexpr", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 testlist: test zero_more_comma_test opt_comma{$$ = alctree(1190, "testlist", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
-zero_more_comma_test: {$$=alocnull("zero_more_comma_test");} 
+zero_more_comma_test: {$$=NULL;} 
     | zero_more_comma_test comma_test{$$ = alctree(1191, "zero_more_comma_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 comma_test: COMMA test{$$ = alctree(1192, "comma_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -578,7 +581,7 @@ dsm_expr: tct_or_dse cf_or_comma_tct_dct{$$ = alctree(1195, "dsm_expr", 2, $1, $
 tct_or_dse: test COLON test{$$ = alctree(1196, "tct_or_dse", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);}
     | DOUBLESTAR expr{$$ = alctree(1197, "tct_or_dse", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-zero_more_comma_tct_or_dse: {$$=alocnull("zero_more_comma_tct_or_dse");} 
+zero_more_comma_tct_or_dse: {$$=NULL;} 
     | zero_more_comma_tct_or_dse COMMA tct_or_dse{$$ = alctree(1198, "zero_more_comma_tct_or_dse", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 cf_or_comma_tct_dct: comp_for{$$ = alctree(1199, "cf_or_comma_tct_dct", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
@@ -590,11 +593,11 @@ cf_or_comma_tse: comp_for{$$ = alctree(1202, "cf_or_comma_tse", 1, $1, NULL, NUL
     | zero_more_comma_test_or_se opt_comma{$$ = alctree(1203, "cf_or_comma_tse", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 classdef: CLASS NAME opt_lpar_arglist_rpar COLON suite{$$ = alctree(1204, "classdef", 5, $1, $2, $3, $4, $5, NULL, NULL, NULL);};
-opt_lpar_arglist_rpar: {$$=alocnull("opt_lpar_arglist_rpar");} 
+opt_lpar_arglist_rpar: {$$=NULL;} 
     | LPAR opt_arglist RPAR{$$ = alctree(1205, "opt_lpar_arglist_rpar", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
 arglist: argument zero_more_comma_arguments opt_comma{$$ = alctree(1206, "arglist", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
-zero_more_comma_arguments: {$$=alocnull("zero_more_comma_arguments");} 
+zero_more_comma_arguments: {$$=NULL;} 
     | zero_more_comma_arguments COMMA argument{$$ = alctree(1207, "zero_more_comma_arguments", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
 argument: test opt_comp_for {$$ = alctree(1208, "argument", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);}
@@ -603,7 +606,7 @@ argument: test opt_comp_for {$$ = alctree(1208, "argument", 2, $1, $2, NULL, NUL
     | DOUBLESTAR test{$$ = alctree(1211, "argument", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);} 
     | STAR test{$$ = alctree(1212, "argument", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-opt_comp_for: {$$=alocnull("opt_comp_for");} 
+opt_comp_for: {$$=NULL;} 
     | comp_for{$$ = alctree(1213, "opt_comp_for", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 comp_iter: comp_for{$$ = alctree(1214, "comp_iter", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
@@ -613,18 +616,18 @@ sync_comp_for: FOR exprlist IN or_test opt_comp_iter{$$ = alctree(1216, "sync_co
 
 comp_for: sync_comp_for{$$ = alctree(1217, "comp_for", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
 comp_if: IF test_nocond opt_comp_iter{$$ = alctree(1218, "comp_if", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);} ;
-opt_comp_iter: {$$=alocnull("opt_comp_iter");} 
+opt_comp_iter: {$$=NULL;} 
     | comp_iter{$$ = alctree(1219, "opt_comp_iter", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;
 
 yield_expr: YIELD opt_yield_args;
-opt_yield_args: {$$=alocnull("opt_yield_args");} | yield_args;
+opt_yield_args: {$$=NULL;} | yield_args;
 
 yield_args: FROM test | testlist_star_expr;
 
 func_body_suite: simple_stmt{$$ = alctree(1220, "func_body_suite", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
     | NEWLINE opt_type_comment_newline INDENT one_more_stmt DEDENT{$$ = alctree(1221, "func_body_suite", 5, $1, $2, $3, $4, $5, NULL, NULL, NULL);};
 
-opt_type_comment_newline: {$$=alocnull("opt_type_comment_newline");} 
+opt_type_comment_newline: {$$=NULL;} 
     | TYPE_COMMENT NEWLINE{$$ = alctree(1222, "opt_type_comment_newline", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 //func_type_input: func_type zero_more_newline ENDMARKER;
@@ -638,30 +641,31 @@ opt_type_comment_newline: {$$=alocnull("opt_type_comment_newline");}
 
 //GLOBAL OPT
 //==============
-opt_comma: {$$=alocnull("opt_comma");} 
+opt_comma: {$$=NULL;} 
     | COMMA{$$ = alctree(1223, "opt_comma", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_type_comment: {$$=alocnull("opt_type_comment");} 
+opt_type_comment: {$$=NULL;} 
     | TYPE_COMMENT{$$ = alctree(1224, "opt_type_comment", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_eq_test: {$$=alocnull("opt_eq_test");} 
+opt_eq_test: {$$=NULL;} 
     | EQUAL test{$$ = alctree(1225, "opt_eq_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_as_name: {$$=alocnull("opt_as_name");} 
+opt_as_name: {$$=NULL;} 
     | AS NAME{$$ = alctree(1226, "opt_as_name", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);}; 
-zero_more_comma_name: {$$=alocnull("zero_more_comma_name");} 
+zero_more_comma_name: {$$=NULL;} 
     | zero_more_comma_name comma_name{$$ = alctree(1227, "zero_more_comma_name", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 comma_name: COMMA NAME{$$ = alctree(1228, "comma_name", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-zero_more_dot_name: {$$=alocnull("zero_more_dot_name");} 
+zero_more_dot_name: {$$=NULL;} 
     | zero_more_dot_name dot_name{$$ = alctree(1229, "zero_more_dot_name", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 dot_name: DOT NAME{$$ = alctree(1230, "dot_name", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_comma_test: {$$=alocnull("opt_comma_test");} 
+opt_comma_test: {$$=NULL;} 
     | COMMA test{$$ = alctree(1231, "opt_comma_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_else: {$$=alocnull("opt_else");} 
+opt_else: {$$=NULL;} 
     | ELSE COLON suite{$$ = alctree(1232, "opt_else", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
-opt_as_expr: {$$=alocnull("opt_as_expr");} 
+opt_as_expr: {$$=NULL;} 
     | AS expr{$$ = alctree(1233, "opt_as_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 plus_or_minus: PLUS 
     | MINUS{$$ = alctree(1234, "plus_or_minus", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
-opt_test: {$$=alocnull("opt_test");} 
+opt_test: {$$=NULL;} 
     | test{$$ = alctree(1235, "opt_test", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
+opt_semi_colon: {$$=NULL;} | SEMI{$$ = alctree(1235, "opt_semi_colon", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 %%
