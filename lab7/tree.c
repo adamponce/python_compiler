@@ -33,7 +33,7 @@ int table_count = 1;
 int opt_arglist_found = 0;
 int for_found = 0;
 int testlist_found = 0;
-int serial = 0;
+extern int serial = 0;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
