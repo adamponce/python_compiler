@@ -27,7 +27,7 @@ struct sym_entry{
 };
 
 int hash(int size, char *s);
-void insert_symbol(struct sym_table *st, char *name, int type);
+void insert_symbol(struct sym_table *st, char *name, char *type);
 struct sym_table *init_symbol_table();
 struct sym_entry *find_symbol(struct sym_table *st, char *name);
 void printSymbolTable(struct sym_table *st);

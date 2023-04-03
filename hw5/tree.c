@@ -35,6 +35,8 @@ int opt_arglist_found = 0;
 int for_found = 0;
 int testlist_found = 0;
 extern int serial;
+int annassign_found = 0;
+char *annassign_symbol;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -241,6 +243,12 @@ void treetraversal(struct tree *t){
             symbol = strdup(t->kids[0]->kids[0]->symbolname);
             atom_found = 1;
         }
+
+        else if(annassign_found == 1) {
+            insert_symbol(current, annassign_symbol, t->kids[0]->kids[0]->symbolname);
+            annassign_found = 0;
+        }
+
         else{
             if(t->kids[0]->kids[0]->prodrule == FUNC){
                 return;
@@ -270,7 +278,7 @@ void treetraversal(struct tree *t){
     //finding assignments
     else if(strcmp("eq_yield_or_tlse", humanreadable(t)) == 0 && atom_found == 1){
         //enter saved atom into symbol table
-        insert_symbol(current, symbol, ANY_TYPE);
+        insert_symbol(current, symbol, "any");
         atom_found = 0;
         opt_arglist_found = 1;
     }
@@ -288,14 +296,16 @@ void treetraversal(struct tree *t){
     //finding a:int
     else if(strcmp("annassign", humanreadable(t)) == 0 && atom_found == 1){
         //enter saved atom into symbol table
-        insert_symbol(current, symbol, ANY_TYPE);
+        // insert_symbol(current, symbol, ANY_TYPE);
+        strcpy(annassign_symbol, symbol);
+        annassign_found = 1;
         atom_found = 0;
     }
 
      else if(strcmp("tfdef", humanreadable(t)) == 0 && (new_scope == 1)){
         //symbol entry child of tfdef
         if(t->nkids > 0){
-            insert_symbol(current, t->kids[0]->symbolname, ANY_TYPE);
+            insert_symbol(current, t->kids[0]->symbolname, "any");
         }
     }
 
@@ -304,12 +314,12 @@ void treetraversal(struct tree *t){
     }
 
     else if(strcmp("global_stmt", humanreadable(t)) == 0){
-        insert_symbol(current, t->kids[1]->symbolname, ANY_TYPE);        
+        insert_symbol(current, t->kids[1]->symbolname, "any");        
         global_stmt = 1;
     }
 
     else if(strcmp("comma_name", humanreadable(t)) == 0 && global_stmt == 1){
-        insert_symbol(current, t->kids[1]->symbolname, ANY_TYPE);
+        insert_symbol(current, t->kids[1]->symbolname, "any");
     }
 
     else if(t->prodrule == 329){
