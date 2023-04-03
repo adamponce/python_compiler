@@ -80,7 +80,7 @@ void insert_symbol(struct sym_table *st, char *name, char *type){
     } else if(strcmp(type, "bool") == 0) {
         new_entry->type = alctype(BOOL_TYPE);
         
-    } else if((strcmp(type, "string") == 0)) {
+    } else if((strcmp(type, "str") == 0)) {
         new_entry->type = alctype(STRING_TYPE);
         
     } else if(strcmp(type, "package") == 0) {

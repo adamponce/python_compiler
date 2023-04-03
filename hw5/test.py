@@ -1,7 +1,6 @@
-a : float
+n:int
 
-b = 6
-n = 7
+n = 9
 
-def main(x:int, m:int, l:str):
+def main(x:int, y:str, v:float):
     x = 5

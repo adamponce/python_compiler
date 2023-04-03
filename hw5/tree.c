@@ -37,6 +37,8 @@ int testlist_found = 0;
 extern int serial;
 int annassign_found = 0;
 char *annassign_symbol;
+char *func_parameter;
+int param_found = 0;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -245,6 +247,12 @@ void treetraversal(struct tree *t){
             return;
         }
 
+        if(param_found == 1){
+            insert_symbol(current, func_parameter, t->kids[0]->kids[0]->symbolname);
+            param_found = 0;
+            return;
+        }
+
         if(t->kids[1] == NULL){
             symbol = strdup(t->kids[0]->kids[0]->symbolname);
             atom_found = 1;
@@ -306,7 +314,13 @@ void treetraversal(struct tree *t){
      else if(strcmp("tfdef", humanreadable(t)) == 0 && (new_scope == 1)){
         //symbol entry child of tfdef
         if(t->nkids > 0){
-            insert_symbol(current, t->kids[0]->symbolname, "any");
+            if(t->kids[1] == NULL){
+                insert_symbol(current, t->kids[0]->symbolname, "any");
+            }
+            else{
+                func_parameter = strdup(t->kids[0]->symbolname);
+                param_found = 1;
+            }
         }
     }
 
