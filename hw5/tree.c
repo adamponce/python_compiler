@@ -239,14 +239,15 @@ void treetraversal(struct tree *t){
 
     //finding atoms
     if(strcmp("atom_expr", humanreadable(t)) == 0){
+        if(annassign_found == 1) {
+            insert_symbol(current, annassign_symbol, t->kids[0]->kids[0]->symbolname);
+            annassign_found = 0;
+            return;
+        }
+
         if(t->kids[1] == NULL){
             symbol = strdup(t->kids[0]->kids[0]->symbolname);
             atom_found = 1;
-        }
-
-        else if(annassign_found == 1) {
-            insert_symbol(current, annassign_symbol, t->kids[0]->kids[0]->symbolname);
-            annassign_found = 0;
         }
 
         else{
@@ -297,7 +298,7 @@ void treetraversal(struct tree *t){
     else if(strcmp("annassign", humanreadable(t)) == 0 && atom_found == 1){
         //enter saved atom into symbol table
         // insert_symbol(current, symbol, ANY_TYPE);
-        strcpy(annassign_symbol, symbol);
+        annassign_symbol = strdup(symbol);
         annassign_found = 1;
         atom_found = 0;
     }
