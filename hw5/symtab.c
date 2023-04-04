@@ -76,9 +76,6 @@ void insert_symbol(struct sym_table *st, char *name, char *type){
     } else if(strcmp(type, "int") == 0) {
         new_entry->type = alctype(INT_TYPE);
 
-    } else if(strcmp(type, "class") == 0) {
-        new_entry->type = alctype(CLASS_TYPE);
-
     } else if(strcmp(type, "list") == 0) {
         new_entry->type = alctype(LIST_TYPE);
 

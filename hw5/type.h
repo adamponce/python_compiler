@@ -19,35 +19,30 @@ struct field {			/* members (fields) of structs */
 
 #define NONE_TYPE    1000000
 #define INT_TYPE     1000001
-#define CLASS_TYPE   1000002
-#define LIST_TYPE    1000003
-#define FLOAT_TYPE   1000004
-#define FUNC_TYPE    1000005
-#define DICT_TYPE    1000006
-#define BOOL_TYPE    1000007
-#define STRING_TYPE  1000008
-#define PACKAGE_TYPE 1000009
-#define ANY_TYPE     1000010
+#define LIST_TYPE    1000002
+#define FLOAT_TYPE   1000003
+#define FUNC_TYPE    1000004
+#define DICT_TYPE    1000005
+#define BOOL_TYPE    1000006
+#define STRING_TYPE  1000007
+#define PACKAGE_TYPE 1000008
+#define ANY_TYPE     1000009
 
-#define LAST_TYPE    1000010
+#define LAST_TYPE    1000009
 
 typedef struct typeinfo {
    int basetype;
    union {
       struct funcinfo {
-         char *name; /* ? */
-         int defined; /* 0 == prototype, 1 == not prototype */
-         struct sym_table *st;
-         // struct typeinfo *returntype;
-         // int nparams;
-         // struct param *parameters;
+         // char *name; /* ? */
+         // struct sym_table *st;
+         struct typeinfo *returntype;
+         int nparams;
+         struct param *parameters;
       }f;
-      struct classinfo {
-         struct sym_table *st;
-      }c;
       struct listinfo {
          int size;
-         struct sym_table *st;
+         struct typeinfo *elemtype;
       }l;
       struct dictinfo {
          struct sym_table *st;
@@ -58,13 +53,12 @@ typedef struct typeinfo {
 /* add constructors for other types as needed */
 typeptr alctype(int);
 // typeptr alclist(typeptr etype, struct tree *sz);
-typeptr alcfunctype(struct tree * r, struct tree * p, struct sym_table *st);
+typeptr alcfunctype(struct tree *r, struct tree *p, struct sym_table *st);
 char *typename(typeptr t);
 
 extern struct sym_table *global_table;
 extern typeptr none_typeptr;
 extern typeptr integer_typeptr;
-extern typeptr class_typeptr;
 extern typeptr list_typeptr;
 extern typeptr float_typeptr;
 extern typeptr func_typeptr;

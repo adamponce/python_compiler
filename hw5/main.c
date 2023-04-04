@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    int cat = 0;
+    // int cat = 0;
     int flags = symtab_flag + dot_flag;
     //Goes through all of the command line arguments
     for(int i = flags + 1; i < argc; i++){
