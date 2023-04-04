@@ -72,18 +72,18 @@ typeptr alcfunctype(struct tree *r, struct tree *p, struct sym_table *st)
 }
 
 /* maybe list size determination from a tree noteptr is still reasonable? */
-typeptr alclist(typeptr etype, struct tree *sz)
-{
-   typeptr rv = alctype(LIST_TYPE);
-   rv->u.l.elemtype = etype;
-   // if (sz != NULL && sz->nkids==0 && sz->leaf->category==ICON) {
-   if (sz != NULL && sz->nkids==0) {
-      rv->u.l.size = sz->leaf->ival;
-   }
-   else
-      rv->u.l.size = 0;
-   return rv;
-}
+// typeptr alclist(typeptr etype, struct tree *sz)
+// {
+//    typeptr rv = alctype(LIST_TYPE);
+//    rv->u.l.elemtype = etype;
+//    // if (sz != NULL && sz->nkids==0 && sz->leaf->category==ICON) {
+//    if (sz != NULL && sz->nkids==0) {
+//       rv->u.l.size = sz->leaf->ival;
+//    }
+//    else
+//       rv->u.l.size = 0;
+//    return rv;
+// }
 
 typeptr alcdicttype() {
    typeptr rv = alctype(DICT_TYPE);
@@ -106,7 +106,7 @@ char *typename(typeptr t)
 /* checking types for:
    - functions -> when calling functions, check for correct # params, param types, and return types
    - assignments (a = b stuff)
-   - 
+   - operators
 */
 void typecheck(struct tree *t) {
    if(t == NULL){
