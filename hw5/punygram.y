@@ -239,10 +239,10 @@ simple_stmt: small_or_null zero_more_stmts opt_semi_colon NEWLINE{$$ = alctree(1
 zero_more_stmts: {$$=NULL;} | zero_more_stmts single_stmt{$$ = alctree(1016, "zero_more_stmtms", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 single_stmt: SEMI small_stmt{$$ = alctree(1017, "single_stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-small_or_null: {$$=NULL} | small_stmt;
+small_or_null: {$$=NULL;} | small_stmt;
 
 
-opt_dedent: {$$=NULL} | DEDENT;
+opt_dedent: {$$=NULL;} | DEDENT;
 
 small_stmt: expr_stmt{$$ = alctree(1018, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    
     | del_stmt{$$ = alctree(1019, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    | pass_stmt{$$ = alctree(1020, "small_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}    

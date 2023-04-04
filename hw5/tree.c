@@ -260,7 +260,6 @@ void treetraversal(struct tree *t){
 
         else{
             if(t->kids[0]->kids[0]->prodrule == FUNC){
-                return;
             }
             else{
                 if(t->kids[1]->kids[1]->kids[0]->prodrule == LSQB){
@@ -268,17 +267,21 @@ void treetraversal(struct tree *t){
                     atom_found = 1;
                 }
                 else{
+                    int func_found = 0;
                     for(int i = 0; i < 10; i++){
                         if(tables[i] == NULL){
                             continue;
                         }
                         else if(strcmp(t->kids[0]->kids[0]->symbolname, tables[i]->name) == 0){
-                            return;
+                            func_found = 1;
+                            break;
                         }
                     }
-                    printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-                    printf("Uninizialized Function: \"%s\" filename: %s line number: %d\n", t->kids[0]->kids[0]->leaf->text, current_file, t->kids[0]->kids[0]->leaf->lineno);
-                    exit(3);
+                    if(func_found == 0){
+                        printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                        printf("Uninizialized Function: \"%s\" filename: %s line number: %d\n", t->kids[0]->kids[0]->leaf->text, current_file, t->kids[0]->kids[0]->leaf->lineno);
+                        exit(3);
+                    }
                 }
             }
         }
@@ -305,7 +308,6 @@ void treetraversal(struct tree *t){
     //finding a:int
     else if(strcmp("annassign", humanreadable(t)) == 0 && atom_found == 1){
         //enter saved atom into symbol table
-        // insert_symbol(current, symbol, ANY_TYPE);
         annassign_symbol = strdup(symbol);
         annassign_found = 1;
         atom_found = 0;
@@ -349,7 +351,7 @@ void treetraversal(struct tree *t){
         current = tables[0];
     }
 
-    else if(strcmp("opt_arglist", humanreadable(t)) == 0 && atom_found == 1) {
+    else if(strcmp("opt_arglist", humanreadable(t)) == 0) {
         opt_arglist_found = 1;
         atom_found = 0;
     }    
