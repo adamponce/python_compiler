@@ -24,7 +24,7 @@
 %%
 <<EOF>> {if (firsttime++ == 0){
  			return alctoken(ENDMARKER); } else{return -1;}}
-\\\n		{ rows++; column=1; }
+\\\n		{column=1;}
 \n[ \t]*	{ int il = indentlevel(yytext+1);
                 rows++; column=il+1;
 		  if (il > dentstack[top]) {
@@ -51,8 +51,8 @@
 				rows--;
 				return alctoken(NEWLINE);}
 "False"	{return alctoken(FALSE);}
-"def"	{column+=3; return alctoken(DEF);}
-"if"	{column+=2; return alctoken(IF);}
+"def"	{return alctoken(DEF);}
+"if"	{return alctoken(IF);}
 "raise"	{return alctoken(RAISE);}
 "None"	{return alctoken(NONE);}
 "del"	{return alctoken(DEL);}
@@ -63,9 +63,9 @@
 "in"	{return alctoken(IN);}
 "try"	{return alctoken(TRY);}
 "and"	{return alctoken(AND);}
-"else"	{column+=4; return alctoken(ELSE);}
+"else"	{return alctoken(ELSE);}
 "is"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
-"while"	{column+=5; return alctoken(WHILE);}
+"while"	{return alctoken(WHILE);}
 "as"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "except"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "lambda"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
@@ -136,12 +136,12 @@
 (\'{3}([^\']|\'\')*\'{3})	{return alctoken(STRING);}
 (\"([^\"]|\"\")*\") {int cat = alctoken(STRING); mksval(yytext); yylval.treeptr->leaf->issval = 1; return cat;}
 (\'([^\']|\'\')*\') {int cat = alctoken(STRING); mksval(yytext); yylval.treeptr->leaf->issval = 1; return cat;}
--?[0-9]+	{column += strlen(yytext); int cat = alctoken(NUMBER); yylval.treeptr->leaf->ival = atoi(yytext); return cat;}
--?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)? {column += strlen(yytext); int cat = alctoken(NUMBER); yylval.treeptr->leaf->dval = atof(yytext); return cat;}
-[a-zA-Z_][a-zA-Z0-9_]*	{column += strlen(yytext); name_counter++; return alctoken(NAME);}
+-?[0-9]+	{int cat = alctoken(NUMBER); yylval.treeptr->leaf->ival = atoi(yytext); return cat;}
+-?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)? {int cat = alctoken(NUMBER); yylval.treeptr->leaf->dval = atof(yytext); return cat;}
+[a-zA-Z_][a-zA-Z0-9_]*	{name_counter++; return alctoken(NAME);}
 "#".*   {}
-" "	{column++;}
-.		{column++; printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("%s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}
+" "	{}
+.		{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("%s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}
 %%
 
 int indentlevel(char *s)

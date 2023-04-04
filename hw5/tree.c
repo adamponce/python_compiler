@@ -38,7 +38,11 @@ extern int serial;
 int annassign_found = 0;
 char *annassign_symbol;
 char *func_parameter;
+int weird_bug = 0;
 int param_found = 0;
+int weird_indent = 0;
+int weird_dedent = 0;
+int lineno;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -314,6 +318,7 @@ void treetraversal(struct tree *t){
         annassign_symbol = strdup(symbol);
         annassign_found = 1;
         atom_found = 0;
+        lineno = t->kids[0]->leaf->lineno;
     }
 
      else if(strcmp("tfdef", humanreadable(t)) == 0 && (new_scope == 1)){
@@ -329,8 +334,27 @@ void treetraversal(struct tree *t){
         }
     }
 
-    else if(t->prodrule == DEDENT){
+    else if((t->prodrule == DEDENT) && (weird_bug != 1)){
         dedent++;
+    }
+
+    else if((t->prodrule == INDENT) && (weird_bug != 1)){
+        indent++;
+    }
+
+
+    else if((t->prodrule == DEDENT) && (weird_bug == 1)){
+        weird_dedent = 1;
+    }
+
+    else if((t->prodrule == INDENT) && (weird_bug == 1)){
+        weird_indent = 1;
+    }
+
+    else if((weird_indent == 1) && (weird_dedent == 1) && (weird_bug == 1)){
+        weird_dedent = 0;
+        weird_indent = 0;
+        weird_bug = 0;
     }
 
     else if(strcmp("global_stmt", humanreadable(t)) == 0){
@@ -342,9 +366,7 @@ void treetraversal(struct tree *t){
         insert_symbol(current, t->kids[1]->symbolname, "any");
     }
 
-    else if(t->prodrule == INDENT){
-        indent++;
-    }
+
 
     else if((dedent == indent) && (new_scope == 1) && (dedent != 0) && (indent != 0)){
         table_count++;
@@ -372,6 +394,10 @@ void treetraversal(struct tree *t){
     else if (atom_found == 1 && strcmp("testlist", humanreadable(t)) == 0) {
         opt_arglist_found = 1;
         atom_found = 0;
+    }
+
+    else if(strcmp("weird_buggy_thing", humanreadable(t)) == 0){
+        weird_bug = 1;
     }
 
 
