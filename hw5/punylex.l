@@ -140,7 +140,7 @@
 -?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)? {column += strlen(yytext); int cat = alctoken(NUMBER); yylval.treeptr->leaf->dval = atof(yytext); return cat;}
 [a-zA-Z_][a-zA-Z0-9_]*	{column += strlen(yytext); name_counter++; return alctoken(NAME);}
 "#".*   {}
-" "	{ }
+" "	{column++;}
 .		{column++; printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("%s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}
 %%
 

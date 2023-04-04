@@ -254,8 +254,11 @@ void treetraversal(struct tree *t){
         }
 
         if(t->kids[1] == NULL){
-            symbol = strdup(t->kids[0]->kids[0]->symbolname);
-            atom_found = 1;
+            if(t->kids[0]->kids[0]->prodrule == NUMBER){}
+            else{
+                symbol = strdup(t->kids[0]->kids[0]->symbolname);
+                atom_found = 1;
+            }
         }
 
         else{

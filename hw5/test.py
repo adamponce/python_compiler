@@ -1,2 +1,4 @@
-a : int
-a : str
+a:int
+b:str
+
+c = 5
