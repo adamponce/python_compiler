@@ -139,7 +139,7 @@
 -?[0-9]+	{column += strlen(yytext); int cat = alctoken(NUMBER); yylval.treeptr->leaf->ival = atoi(yytext); return cat;}
 -?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)? {column += strlen(yytext); int cat = alctoken(NUMBER); yylval.treeptr->leaf->dval = atof(yytext); return cat;}
 [a-zA-Z_][a-zA-Z0-9_]*	{column += strlen(yytext); name_counter++; return alctoken(NAME);}
-"#".*   {printf("THERE WAS A COMMENT BEFORE THIS\n");}
+"#".*   {}
 " "	{ }
 .		{column++; printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("%s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}
 %%
@@ -149,7 +149,8 @@ int indentlevel(char *s)
    int column = 1;
    while(*s != '\0') {
       if (*s == '\t') {
-         while ((column % 8) != 0) column++;
+		column++;
+        while (((column - 1) % 8) != 0) column++;
       }
       else if (*s == ' ') column++;
       else { column++; printf("but wtf is %c\n", *s);}

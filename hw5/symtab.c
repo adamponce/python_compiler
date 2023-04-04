@@ -21,6 +21,7 @@
 
 extern char* current_file;
 extern int rows;
+extern int annassign_found;
 
 int hash(int size, char *s)
 {
@@ -47,7 +48,19 @@ void insert_symbol(struct sym_table *st, char *name, char *type){
 
     while(head != NULL){
         if(strcmp(head->s, name) == 0){
-            return;
+            if(annassign_found == 1){
+                if(strcmp(type, typename(head->type)) != 0){
+                    printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                    printf("Redeclaration : \"%s\" filename: %s line number: %d\n", name, current_file, rows);
+                    exit(3);
+                }
+                else{
+                    return;
+                }
+            }
+            else{
+               return; 
+            }
         }
         head = head->next;
     }

@@ -324,7 +324,7 @@ void treetraversal(struct tree *t){
         }
     }
 
-    else if(t->prodrule == 330){
+    else if(t->prodrule == DEDENT){
         dedent++;
     }
 
@@ -337,9 +337,8 @@ void treetraversal(struct tree *t){
         insert_symbol(current, t->kids[1]->symbolname, "any");
     }
 
-    else if(t->prodrule == 329){
+    else if(t->prodrule == INDENT){
         indent++;
-        //printf("indent: %d\n", indent);
     }
 
     else if((dedent == indent) && (new_scope == 1) && (dedent != 0) && (indent != 0)){
