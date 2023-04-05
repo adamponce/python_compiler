@@ -468,9 +468,10 @@ void typecheck(struct tree *t) {
     }
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
-        printf("atom_expr:\t%s\n",  t->kids[0]->kids[0]->symbolname);
+        printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
         if(assignment_found == 1) {
-            printf("assignment found, in atom_expr. current_symbol: %s\n", current_symbol->s);
+            printf("assignment found\n");
+            printf("in atom_expr. current_symbol: %s\n", current_symbol->s);
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
                 printf("type a: %s\t type b: %s\n", typename(current_symbol->type), typename(tmp_symbol->type));
@@ -486,10 +487,27 @@ void typecheck(struct tree *t) {
 
         } else {
             printf("assignment NOT found, in atom_expr\n");
-            current_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
-            if(current_symbol != NULL) {          
-                atom_found = 1;
+            // printf("symbol, prodrule: %s, %d\n", t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->prodrule);
+            if(t->kids[0]->kids[0]->prodrule == NAME) {
+                current_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
+                if(current_symbol != NULL) {        
+                    atom_found = 1;
+                }
             }
+
+            /* check function parameters */
+            // if(t->kids[1] != NULL) {
+            //     if(t->kids[0]->kids[0]->prodrule != FUNC) {
+            //         /* find func:
+            //             func->type->u.f.nparams
+            //                 compare with number of parameter at function call
+            //             func->type->u.f.returntype
+            //                 if is an assignment, compare with type of variable on left side
+            //             symbol table for func
+            //                 check for param flag, compare types
+            //                 !!!! have to see if order is the same*/
+            //     }
+            // }
         }
 
     }
@@ -503,17 +521,6 @@ void typecheck(struct tree *t) {
     if(t->prodrule == NEWLINE) {
         assignment_found = 0;
     }
-
-    /* if*/
-    /*
-    check assignment stuff (a = b)
-        if type a is any, then return
-        if type a is not any, then check if type b matches
-        --> use find_symbol to return entries a and b and then check types */
-    /*
-    check function param stuff
-        start w param number and ... idk
-    */
 
    for(int i = 0; i < t->nkids; i++){
         typecheck(t->kids[i]);
