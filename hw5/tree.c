@@ -474,10 +474,11 @@ void typecheck(struct tree *t) {
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
                 printf("type a: %s\t type b: %s\n", typename(current_symbol->type), typename(tmp_symbol->type));
-                if(strcmp(typename(current_symbol->type), typename(tmp_symbol->type)) == 0) {
-                    printf("type a and type b are a match!\n");
+                // if(strcmp(typename(current_symbol->type), typename(tmp_symbol->type)) == 0) {
+                if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) == 1) {
+                    printf("type a and type b are compatable!\n");
                 } else {
-                    printf("ERROR: type a and type b are different.\n");
+                    incompatable_error(tmp_symbol->s);
                 }
             } else {
                 printf("not a symbol! %s\n", t->kids[0]->kids[0]->symbolname);
@@ -525,13 +526,15 @@ void typecheck(struct tree *t) {
     check assuming a is priority
         i.e. if a is int, can accept float type assignment
 */
-int check_types(struct typeinfo *type1, struct typeinfo *type2) {
-    if(type1->basetype == ANY_TYPE) {
+int check_types(int type1, int type2) {
+    if(type1 == ANY_TYPE) {
         return 1;
-    } else if(type1->basetype == type2->basetype) {
+    } else if(type1 == type2) {
         return 1;
-    }  else if(type1->basetype == INT_TYPE) {
-        if(type2->basetype == FLOAT_TYPE) {
+    }  else if(type1 == INT_TYPE) {
+        if(type2 == FLOAT_TYPE) {
+            return 1;
+        } else if(type2 == BOOL_TYPE) {
             return 1;
         } else {
             return 0;
@@ -539,4 +542,10 @@ int check_types(struct typeinfo *type1, struct typeinfo *type2) {
     } else {
         return 0;
     }
+}
+
+void incompatable_error(char *tmp) {
+    printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+    printf("Incompatable Types: \"%s\", \"%s\" filename: %s line number: %d\n", current_symbol->s, tmp, current_file, rows);
+    exit(3);
 }

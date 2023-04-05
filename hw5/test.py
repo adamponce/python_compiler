@@ -1,4 +1,6 @@
 a : int
-b : float
-b = 2.1
-a = b
+b : bool
+c : float
+b = 1
+c = 5.5
+a = b + c
