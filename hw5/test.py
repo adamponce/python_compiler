@@ -1,3 +1,5 @@
 def func(a : int, b : float):
-    c = a + b
+    c = a
     return c
+    
+func(1, 2.1)

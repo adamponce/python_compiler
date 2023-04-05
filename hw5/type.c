@@ -81,7 +81,6 @@ typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char
 
     if (nparams > 0) {
         struct param *head = NULL;
-        // struct type_info *tmp_type = alctype(ANY_TYPE);
 
         for(int i = 0; i < nparams; i++) {
             struct param *new_param = (paramlist) malloc(sizeof(struct param));
