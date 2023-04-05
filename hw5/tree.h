@@ -40,5 +40,6 @@ void treeprint(struct tree *t, int depth);
 struct tree *alocnull(char *symbol_name);
 char *humanreadable(struct tree *t);
 void treetraversal(struct tree *t);
+void typecheck(struct tree *t);
 
 #endif

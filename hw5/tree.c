@@ -47,6 +47,10 @@ int param_count = 0;
 int return_found = 0;
 char *return_symbol = NULL;
 
+/* for type checking */
+struct sym_entry *current_symbol;
+int assignment_found = 0;
+
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
     yylval.treeptr->prodrule = cat;
@@ -450,4 +454,89 @@ void treetraversal(struct tree *t){
         treetraversal(t->kids[i]);
     }
 
+}
+
+/* checking types for:
+   - functions -> when calling functions, check for correct # params, param types, and return types
+   - assignments (a = b stuff)
+   - operators
+*/
+void typecheck(struct tree *t) {
+    printf("in typecheck: %s\n", humanreadable(t));
+    if(t == NULL) {
+        return;
+    }
+
+    if(strcmp("atom_expr", humanreadable(t)) == 0) {
+        printf("atom_expr:\t%s\n",  t->kids[0]->kids[0]->symbolname);
+        if(assignment_found == 1) {
+            printf("assignment found, in atom_expr. current_symbol: %s\n", current_symbol->s);
+            struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
+            if(tmp_symbol != NULL) {
+                printf("type a: %s\t type b: %s\n", typename(current_symbol->type), typename(tmp_symbol->type));
+                if(strcmp(typename(current_symbol->type), typename(tmp_symbol->type)) == 0) {
+                    printf("type a and type b are a match!\n");
+                } else {
+                    printf("ERROR: type a and type b are different.\n");
+                }
+            } else {
+                printf("not a symbol! %s\n", t->kids[0]->kids[0]->symbolname);
+            }
+
+        } else {
+            printf("assignment NOT found, in atom_expr\n");
+            current_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
+            if(current_symbol != NULL) {          
+                atom_found = 1;
+            }
+        }
+
+    }
+
+    if(strcmp("eq_yield_or_tlse", humanreadable(t)) == 0) {
+        printf("eq_yield_or_tlse typecheck\n");
+        assignment_found = 1;
+        // atom_found = 0
+    }
+
+    if(t->prodrule == NEWLINE) {
+        assignment_found = 0;
+    }
+
+    /* if*/
+    /*
+    check assignment stuff (a = b)
+        if type a is any, then return
+        if type a is not any, then check if type b matches
+        --> use find_symbol to return entries a and b and then check types */
+    /*
+    check function param stuff
+        start w param number and ... idk
+    */
+
+   for(int i = 0; i < t->nkids; i++){
+        typecheck(t->kids[i]);
+    }
+
+}
+
+/* check if tyoes are compatable 
+    return 1 if compatable, 0 if not.
+    check assuming a is priority
+        i.e. if a is int, can accept float type assignment
+*/
+int check_types(struct typeinfo *type1, struct typeinfo *type2) {
+    if(type1->basetype == ANY_TYPE) {
+        return 1;
+    } else if(type1->basetype == type2->basetype) {
+        return 1;
+    }  else if(type1->basetype == INT_TYPE) {
+        if(type2->basetype == FLOAT_TYPE) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
 }

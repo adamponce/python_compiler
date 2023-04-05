@@ -1,2 +1,4 @@
 a : int
-a = "hello"
+b : float
+b = 2.1
+a = b

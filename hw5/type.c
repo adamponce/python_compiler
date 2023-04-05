@@ -12,6 +12,7 @@
 
 extern char* current_file;
 extern int rows;
+struct sym_entry *symbol;
 
 struct typeinfo none_type = { NONE_TYPE };
 struct typeinfo integer_type = { INT_TYPE };
@@ -118,12 +119,6 @@ typeptr return_type(char *type) {
     }
 }
 
-// typeptr alcdicttype() {
-//    typeptr rv = alctype(DICT_TYPE);
-
-//    return rv;
-// }
-
 /* return the typename of a given type as a string */
 char *typename(typeptr t)
 {
@@ -136,30 +131,42 @@ char *typename(typeptr t)
    } 
 }
 
-/* checking types for:
-   - functions -> when calling functions, check for correct # params, param types, and return types
-   - assignments (a = b stuff)
-   - operators
-*/
-void typecheck(struct tree *t) {
-   if(t == NULL){
-      return;
-   }
+// /* checking types for:
+//    - functions -> when calling functions, check for correct # params, param types, and return types
+//    - assignments (a = b stuff)
+//    - operators
+// */
+// void typecheck(struct tree *t) {
+//     if(t == NULL) {
+//         return;
+//     }
 
-   /*
-   check assignment stuff (a = b)
-      if type a is any, then return
-      if type a is not any, then check if type b matches
-      --> use find_symbol to return entries a and b and then check types
-   */
+//     if(strcmp("atom_expr", humanreadable(t)) == 0) {
+//         symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
+//         if(symbol != NULL) {
+//             // symbol = strdup(t->kids[0]->kids[0]->symbolname);
+            
+//             // atom_found = 1;
+//         }
+       
 
-  /*
-  check function param stuff
-      start w param number and ... idk
-   */
+//     }
 
-   for(int i = 0; i < t->nkids; i++){
-        typecheck(t->kids[i]);
-    }
+//     if(strcmp("eq_yield_or_tlse", humanreadable(t)) == 0) {
 
-}
+//     }
+//     /*
+//     check assignment stuff (a = b)
+//         if type a is any, then return
+//         if type a is not any, then check if type b matches
+//         --> use find_symbol to return entries a and b and then check types */
+//     /*
+//     check function param stuff
+//         start w param number and ... idk
+//     */
+
+//    for(int i = 0; i < t->nkids; i++){
+//         typecheck(t->kids[i]);
+//     }
+
+// }
