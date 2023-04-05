@@ -150,6 +150,12 @@ void typecheck(struct tree *t) {
    check assignment stuff (a = b)
       if type a is any, then return
       if type a is not any, then check if type b matches
+      --> use find_symbol to return entries a and b and then check types
+   */
+
+  /*
+  check function param stuff
+      start w param number and ... idk
    */
 
    for(int i = 0; i < t->nkids; i++){
