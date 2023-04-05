@@ -1,11 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "type.h"
 #include "symtab.h"
 #include "tree.h"
 #include "symtab.h"
 #include "punygram.tab.h"
-   
+
+#define COLOR_BOLD "\e[33m"
+#define COLOR_END "\e[m"
+
+extern char* current_file;
+extern int rows;
+
 struct typeinfo none_type = { NONE_TYPE };
 struct typeinfo integer_type = { INT_TYPE };
 struct typeinfo list_type = { LIST_TYPE };
@@ -57,39 +64,65 @@ typeptr alctype(int base)
  * for the return type (r) and the parameter list (p), but the calls to
  * to this function in the example are just passing NULL at present!
  */
-typeptr alcfunctype(struct tree *r, struct tree *p, struct sym_table *st)
+typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams)
 {
    typeptr rv = alctype(FUNC_TYPE);
    if (rv == NULL) return NULL;
-   // rv->u.f.st = st;
-   // rv->u.f.name = 
-   /* defined: prototype=0; not prototype=1 */
-   // rv->u.f.defined = 0;
-   // rv->u.f.returntype = 
-   /* fill in return type and paramlist by traversing subtrees */
-   /* rf->u.f.returntype = ... */
+   if(return_symbol == NULL) {
+      /* return type is NONE_TYPE */
+      rv->u.f.returntype = alctype(NONE_TYPE);
+   } else {
+      struct sym_entry *symbol = find_symbol(st, return_symbol);
+      rv->u.f.returntype = symbol->type;
+   }
+
+   rv->u.f.nparams = nparams;
    return rv;
 }
 
-/* maybe list size determination from a tree noteptr is still reasonable? */
-// typeptr alclist(typeptr etype, struct tree *sz)
-// {
-//    typeptr rv = alctype(LIST_TYPE);
-//    rv->u.l.elemtype = etype;
-//    // if (sz != NULL && sz->nkids==0 && sz->leaf->category==ICON) {
-//    if (sz != NULL && sz->nkids==0) {
-//       rv->u.l.size = sz->leaf->ival;
-//    }
-//    else
-//       rv->u.l.size = 0;
+
+typeptr return_type(char *type) {
+   if(strcmp(type, "none") == 0) {
+        return alctype(NONE_TYPE);
+
+    } else if(strcmp(type, "int") == 0) {
+        return alctype(INT_TYPE);
+
+    } else if(strcmp(type, "list") == 0) {
+        return alctype(LIST_TYPE);
+
+    } else if(strcmp(type, "float") == 0) {
+        return alctype(FLOAT_TYPE);
+
+    } else if(strcmp(type, "func") == 0) {
+        return alctype(FUNC_TYPE);
+        
+    } else if(strcmp(type, "dict") == 0) {
+        return alctype(DICT_TYPE);
+        
+    } else if(strcmp(type, "bool") == 0) {
+        return alctype(BOOL_TYPE);
+        
+    } else if((strcmp(type, "str") == 0)) {
+        return alctype(STRING_TYPE);
+        
+    } else if(strcmp(type, "package") == 0) {
+        return alctype(PACKAGE_TYPE);
+        
+    } else if(strcmp(type, "any") == 0) {
+        return alctype(ANY_TYPE);
+    } else {
+        printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+        printf("Invalid Type: \"%s\" filename: %s line number: %d\n", type, current_file, rows);
+        exit(3);
+    }
+}
+
+// typeptr alcdicttype() {
+//    typeptr rv = alctype(DICT_TYPE);
+
 //    return rv;
 // }
-
-typeptr alcdicttype() {
-   typeptr rv = alctype(DICT_TYPE);
-
-   return rv;
-}
 
 /* return the typename of a given type as a string */
 char *typename(typeptr t)
@@ -112,7 +145,6 @@ void typecheck(struct tree *t) {
    if(t == NULL){
       return;
    }
-
 
 
    for(int i = 0; i < t->nkids; i++){

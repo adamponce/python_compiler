@@ -15,6 +15,7 @@
 #include "tree.h"
 #include "symtab.h"
 #include "dot.h"
+#include "type.h"
 
 #define COLOR_BOLD "\e[33m"
 #define COLOR_END "\e[m"
@@ -109,10 +110,11 @@ int main(int argc, char *argv[]){
         int r = yyparse();
         global = init_symbol_table();
         global->name = "Global";
+        global->type = alctype(NONE_TYPE);
         tables[0] = global;
         current = global;
         if(r == 0){
-            //treeprint(root, 1);
+            treeprint(root, 1);
             treetraversal(root);
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");

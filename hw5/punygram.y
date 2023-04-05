@@ -312,7 +312,7 @@ flow_stmt: break_stmt{$$ = alctree(1051, "flow_stmt", 1, $1, NULL, NULL, NULL, N
 
 break_stmt: BREAK{$$ = alctree(1056, "break_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 continue_stmt: CONTINUE{$$ = alctree(1057, "continue_stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
-return_stmt: RETURN opt_tse{$$ = alctree(1058, "return stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+return_stmt: RETURN opt_tse{$$ = alctree(1058, "return_stmt", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 opt_tse: {$$=NULL;} 
     | testlist_star_expr{$$ = alctree(1059, "opt_se", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 

@@ -43,6 +43,9 @@ int param_found = 0;
 int weird_indent = 0;
 int weird_dedent = 0;
 int lineno;
+int param_count = 0;
+int return_found = 0;
+char *return_symbol = NULL;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -246,13 +249,13 @@ void treetraversal(struct tree *t){
     //finding atoms
     if(strcmp("atom_expr", humanreadable(t)) == 0){
         if(annassign_found == 1) {
-            insert_symbol(current, annassign_symbol, t->kids[0]->kids[0]->symbolname);
+            insert_symbol(current, annassign_symbol, t->kids[0]->kids[0]->symbolname, 0);
             annassign_found = 0;
             return;
         }
 
         if(param_found == 1){
-            insert_symbol(current, func_parameter, t->kids[0]->kids[0]->symbolname);
+            insert_symbol(current, func_parameter, t->kids[0]->kids[0]->symbolname, 1);
             param_found = 0;
             return;
         }
@@ -297,7 +300,7 @@ void treetraversal(struct tree *t){
     //finding assignments
     else if(strcmp("eq_yield_or_tlse", humanreadable(t)) == 0 && atom_found == 1){
         //enter saved atom into symbol table
-        insert_symbol(current, symbol, "any");
+        insert_symbol(current, symbol, "any", 0);
         atom_found = 0;
         opt_arglist_found = 1;
     }
@@ -311,6 +314,7 @@ void treetraversal(struct tree *t){
         new->name = t->kids[1]->symbolname;
         tables[table_count] = new;
         current = new;
+
     }
     //finding a:int
     else if(strcmp("annassign", humanreadable(t)) == 0 && atom_found == 1){
@@ -325,13 +329,14 @@ void treetraversal(struct tree *t){
         //symbol entry child of tfdef
         if(t->nkids > 0){
             if(t->kids[1] == NULL){
-                insert_symbol(current, t->kids[0]->symbolname, "any");
+                insert_symbol(current, t->kids[0]->symbolname, "any", 1);          
             }
             else{
                 func_parameter = strdup(t->kids[0]->symbolname);
                 param_found = 1;
             }
         }
+        param_count++;
     }
 
     else if((t->prodrule == DEDENT) && (weird_bug != 1)){
@@ -358,17 +363,19 @@ void treetraversal(struct tree *t){
     }
 
     else if(strcmp("global_stmt", humanreadable(t)) == 0){
-        insert_symbol(current, t->kids[1]->symbolname, "any");        
+        insert_symbol(current, t->kids[1]->symbolname, "any", 0);        
         global_stmt = 1;
     }
 
     else if(strcmp("comma_name", humanreadable(t)) == 0 && global_stmt == 1){
-        insert_symbol(current, t->kids[1]->symbolname, "any");
+        insert_symbol(current, t->kids[1]->symbolname, "any", 0);
     }
 
-
-
     else if((dedent == indent) && (new_scope == 1) && (dedent != 0) && (indent != 0)){
+        /* if function, add func type stuff */
+        // return type = NONETYPE if no return statement, otherwise type of symbol being returned
+        current->type = alcfunctype(current, return_symbol, param_count);
+
         table_count++;
         new_scope = 0;
         dedent = 0;
@@ -400,6 +407,10 @@ void treetraversal(struct tree *t){
         weird_bug = 1;
     }
 
+    else if(strcmp("return_stmt", humanreadable(t)) == 0) {
+        return_found = 1;   
+        // opt_arglist_found = 1;
+    }
 
     if((opt_arglist_found == 1) && (atom_found == 1) && (t->prodrule == NAME)) {
         if(!find_symbol(current, symbol)) {
@@ -409,6 +420,26 @@ void treetraversal(struct tree *t){
             exit(3);            
         }
         atom_found = 0;
+    }
+
+    // else if(strcmp("one_more_string", humanreadable(t)) == 0) {
+    // }
+
+    else if((return_found == 1) && (atom_found == 1) && (strcmp("atom_expr", humanreadable(t)) == 0)) {
+        // printf("return found\n"); 
+        if(t->kids[0]->kids[0]->prodrule == NAME) {
+            if(!find_symbol(current, symbol)) {
+                // throw error
+                printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                printf("Uninizialized Variable: \"%s\" filename: %s line number: %d\n", symbol, current_file, t->kids[0]->kids[0]->leaf->lineno);
+                exit(3);            
+            }
+
+            return_symbol = strdup(symbol);
+        }
+        return_found = 0;
+        atom_found = 0;
+        
     }
 
     if (t->prodrule == NEWLINE && opt_arglist_found == 1) {

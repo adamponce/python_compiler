@@ -43,7 +43,7 @@ struct sym_table * init_symbol_table(){
     return rv;
 }
 
-void insert_symbol(struct sym_table *st, char *name, char *type){
+void insert_symbol(struct sym_table *st, char *name, char *type, int param){
     int hash_value = hash(MAX_SIZE, name);
     struct sym_entry * head = st->tbl[hash_value];
 
@@ -70,42 +70,9 @@ void insert_symbol(struct sym_table *st, char *name, char *type){
     struct sym_entry * new_entry = (struct sym_entry *) malloc(sizeof(struct sym_entry));
     new_entry->s = name;
     /* type comparisons here */
-    if(strcmp(type, "none") == 0) {
-        new_entry->type = alctype(NONE_TYPE);
-
-    } else if(strcmp(type, "int") == 0) {
-        new_entry->type = alctype(INT_TYPE);
-
-    } else if(strcmp(type, "list") == 0) {
-        new_entry->type = alctype(LIST_TYPE);
-
-    } else if(strcmp(type, "float") == 0) {
-        new_entry->type = alctype(FLOAT_TYPE);
-
-    } else if(strcmp(type, "func") == 0) {
-        new_entry->type = alctype(FUNC_TYPE);
-        
-    } else if(strcmp(type, "dict") == 0) {
-        new_entry->type = alctype(DICT_TYPE);
-        
-    } else if(strcmp(type, "bool") == 0) {
-        new_entry->type = alctype(BOOL_TYPE);
-        
-    } else if((strcmp(type, "str") == 0)) {
-        new_entry->type = alctype(STRING_TYPE);
-        
-    } else if(strcmp(type, "package") == 0) {
-        new_entry->type = alctype(PACKAGE_TYPE);
-        
-    } else if(strcmp(type, "any") == 0) {
-        new_entry->type = alctype(ANY_TYPE);
-        
-    } else {
-        printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-        printf("Invalid Type: \"%s\" filename: %s line number: %d\n", type, current_file, rows);
-        exit(3);
-    }
+    new_entry->type = return_type(type);
     new_entry->table = st;
+    new_entry->param = param;
     new_entry->next = st->tbl[hash_value];
     st->tbl[hash_value] = new_entry;
 }
