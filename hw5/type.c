@@ -146,6 +146,11 @@ void typecheck(struct tree *t) {
       return;
    }
 
+   /*
+   check assignment stuff (a = b)
+      if type a is any, then return
+      if type a is not any, then check if type b matches
+   */
 
    for(int i = 0; i < t->nkids; i++){
         typecheck(t->kids[i]);

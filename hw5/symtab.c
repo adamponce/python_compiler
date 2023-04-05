@@ -40,6 +40,9 @@ struct sym_table * init_symbol_table(){
     struct sym_table * rv = (struct sym_table *) malloc(sizeof(struct sym_table));
     rv -> nBuckets = MAX_SIZE;
     rv -> nEntries = 0;
+    for(int i = 0; i < 10; i++) {
+        rv->tbl[i] = NULL;
+    }
     return rv;
 }
 
