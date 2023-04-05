@@ -65,20 +65,43 @@ typeptr alctype(int base)
  * for the return type (r) and the parameter list (p), but the calls to
  * to this function in the example are just passing NULL at present!
  */
-typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams)
+typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char *tmp_params[])
 {
-   typeptr rv = alctype(FUNC_TYPE);
-   if (rv == NULL) return NULL;
-   if(return_symbol == NULL) {
-      /* return type is NONE_TYPE */
-      rv->u.f.returntype = alctype(NONE_TYPE);
-   } else {
-      struct sym_entry *symbol = find_symbol(st, return_symbol);
-      rv->u.f.returntype = symbol->type;
-   }
+    typeptr rv = alctype(FUNC_TYPE);
+    if (rv == NULL) return NULL;
+    if(return_symbol == NULL) {
+        /* return type is NONE_TYPE */
+        rv->u.f.returntype = alctype(NONE_TYPE);
+    } else {
+        struct sym_entry *symbol = find_symbol(st, return_symbol);
+        rv->u.f.returntype = symbol->type;
+    }
 
-   rv->u.f.nparams = nparams;
-   return rv;
+    rv->u.f.nparams = nparams;
+
+    if (nparams > 0) {
+        struct param *head = NULL;
+        // struct type_info *tmp_type = alctype(ANY_TYPE);
+
+        for(int i = 0; i < nparams; i++) {
+            struct param *new_param = (paramlist) malloc(sizeof(struct param));
+            new_param->name = tmp_params[i];
+            new_param->type = find_symbol(st, tmp_params[i])->type;
+
+            new_param->next = head;
+            head = new_param;
+        }
+        rv->u.f.parameters = head;
+
+        paramlist curr = head;
+        while (curr != NULL) {
+            curr = curr->next;
+        }
+    } else {
+        rv->u.f.parameters = NULL;
+    }
+
+    return rv;
 }
 
 

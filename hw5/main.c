@@ -116,7 +116,7 @@ int main(int argc, char *argv[]){
         if(r == 0){
             // treeprint(root, 1);
             treetraversal(root);
-            typecheck(root);
+            // typecheck(root);
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");
             }

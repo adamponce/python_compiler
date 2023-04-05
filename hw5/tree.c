@@ -18,6 +18,7 @@
 #include <string.h>
 #define COLOR_BOLD "\e[33m"
 #define COLOR_END "\e[m"
+#define MAX_PARAMS 10
 extern int rows;
 extern char *yytext;
 extern char *current_file;
@@ -50,6 +51,7 @@ char *return_symbol = NULL;
 /* for type checking */
 struct sym_entry *current_symbol;
 int assignment_found = 0;
+char *tmp_params[MAX_PARAMS];
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -319,6 +321,10 @@ void treetraversal(struct tree *t){
         tables[table_count] = new;
         current = new;
 
+        // for(int i = 0; i < MAX_PARAMS; i++) {
+        //     tmp_params[i] = NULL;
+        // }
+
     }
     //finding a:int
     else if(strcmp("annassign", humanreadable(t)) == 0 && atom_found == 1){
@@ -340,6 +346,7 @@ void treetraversal(struct tree *t){
                 param_found = 1;
             }
         }
+        tmp_params[param_count] = t->kids[0]->symbolname;
         param_count++;
     }
 
@@ -378,8 +385,7 @@ void treetraversal(struct tree *t){
     else if((dedent == indent) && (new_scope == 1) && (dedent != 0) && (indent != 0)){
         /* if function, add func type stuff */
         // return type = NONETYPE if no return statement, otherwise type of symbol being returned
-        current->type = alcfunctype(current, return_symbol, param_count);
-
+        current->type = alcfunctype(current, return_symbol, param_count, tmp_params);
         table_count++;
         new_scope = 0;
         dedent = 0;
@@ -426,11 +432,7 @@ void treetraversal(struct tree *t){
         atom_found = 0;
     }
 
-    // else if(strcmp("one_more_string", humanreadable(t)) == 0) {
-    // }
-
     else if((return_found == 1) && (atom_found == 1) && (strcmp("atom_expr", humanreadable(t)) == 0)) {
-        // printf("return found\n"); 
         if(t->kids[0]->kids[0]->prodrule == NAME) {
             if(!find_symbol(current, symbol)) {
                 // throw error

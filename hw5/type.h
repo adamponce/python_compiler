@@ -52,7 +52,7 @@ typedef struct typeinfo {
 
 /* add constructors for other types as needed */
 typeptr alctype(int);
-typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams);
+typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char *tmp_params[]);
 char *typename(typeptr t);
 typeptr return_type(char *type);
 

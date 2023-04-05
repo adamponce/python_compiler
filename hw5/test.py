@@ -1,5 +1,3 @@
-a : int = 5
-b : float = 2.1
-c : str = "hello"
-
-a = b + c
+def func(a : int, b : float):
+    c = a + b
+    return c
