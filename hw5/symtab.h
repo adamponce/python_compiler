@@ -25,11 +25,10 @@ struct sym_entry{
    char *s;				/* string */
    struct typeinfo *type;
    struct sym_entry *next;
-   int param; /* 1 if param, 0 if not */
 };
 
 int hash(int size, char *s);
-void insert_symbol(struct sym_table *st, char *name, char *type, int param);
+void insert_symbol(struct sym_table *st, char *name, char *type);
 struct sym_table *init_symbol_table();
 struct sym_entry *find_symbol(struct sym_table *st, char *name);
 void printSymbolTable(struct sym_table *st);

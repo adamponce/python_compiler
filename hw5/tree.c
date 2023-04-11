@@ -45,13 +45,17 @@ int weird_indent = 0;
 int weird_dedent = 0;
 int lineno;
 int param_count = 0;
+/* redo return stuff to look for opt_rarrowtest instead */
 int return_found = 0;
+int opt_rarrowtest_found = 0;
 char *return_symbol = NULL;
 
 /* for type checking */
 struct sym_entry *current_symbol;
 int assignment_found = 0;
 char *tmp_params[MAX_PARAMS];
+int func_found = 0;
+int func_i = 0;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -255,14 +259,20 @@ void treetraversal(struct tree *t){
     //finding atoms
     if(strcmp("atom_expr", humanreadable(t)) == 0){
         if(annassign_found == 1) {
-            insert_symbol(current, annassign_symbol, t->kids[0]->kids[0]->symbolname, 0);
+            insert_symbol(current, annassign_symbol, t->kids[0]->kids[0]->symbolname);
             annassign_found = 0;
             return;
         }
 
         if(param_found == 1){
-            insert_symbol(current, func_parameter, t->kids[0]->kids[0]->symbolname, 1);
+            insert_symbol(current, func_parameter, t->kids[0]->kids[0]->symbolname);
             param_found = 0;
+            return;
+        }
+
+        if(opt_rarrowtest_found == 1) {
+            return_symbol = strdup(t->kids[0]->kids[0]->symbolname);
+            opt_rarrowtest_found = 0;
             return;
         }
 
@@ -306,7 +316,7 @@ void treetraversal(struct tree *t){
     //finding assignments
     else if(strcmp("eq_yield_or_tlse", humanreadable(t)) == 0 && atom_found == 1){
         //enter saved atom into symbol table
-        insert_symbol(current, symbol, "any", 0);
+        insert_symbol(current, symbol, "any");
         atom_found = 0;
         opt_arglist_found = 1;
     }
@@ -330,11 +340,11 @@ void treetraversal(struct tree *t){
         lineno = t->kids[0]->leaf->lineno;
     }
 
-     else if(strcmp("tfdef", humanreadable(t)) == 0 && (new_scope == 1)){
+    else if(strcmp("tfdef", humanreadable(t)) == 0 && (new_scope == 1)){
         //symbol entry child of tfdef
         if(t->nkids > 0){
             if(t->kids[1] == NULL){
-                insert_symbol(current, t->kids[0]->symbolname, "any", 1);          
+                insert_symbol(current, t->kids[0]->symbolname, "any");          
             }
             else{
                 func_parameter = strdup(t->kids[0]->symbolname);
@@ -369,18 +379,22 @@ void treetraversal(struct tree *t){
     }
 
     else if(strcmp("global_stmt", humanreadable(t)) == 0){
-        insert_symbol(current, t->kids[1]->symbolname, "any", 0);        
+        insert_symbol(current, t->kids[1]->symbolname, "any");        
         global_stmt = 1;
     }
 
     else if(strcmp("comma_name", humanreadable(t)) == 0 && global_stmt == 1){
-        insert_symbol(current, t->kids[1]->symbolname, "any", 0);
+        insert_symbol(current, t->kids[1]->symbolname, "any");
     }
 
     else if((dedent == indent) && (new_scope == 1) && (dedent != 0) && (indent != 0)){
         /* if function, add func type stuff */
         // return type = NONETYPE if no return statement, otherwise type of symbol being returned
         current->type = alcfunctype(current, return_symbol, param_count, tmp_params);
+        for(int i = 0; i < param_count; i++) {
+            tmp_params[param_count] = NULL;
+        }
+        param_count = 0;
         table_count++;
         new_scope = 0;
         dedent = 0;
@@ -414,7 +428,10 @@ void treetraversal(struct tree *t){
 
     else if(strcmp("return_stmt", humanreadable(t)) == 0) {
         return_found = 1;   
-        // opt_arglist_found = 1;
+    }
+
+    else if(strcmp("opt_rarrowtest", humanreadable(t)) == 0) {
+        opt_rarrowtest_found = 1;   
     }
 
     if((opt_arglist_found == 1) && (atom_found == 1) && (t->prodrule == NAME)) {
@@ -427,7 +444,9 @@ void treetraversal(struct tree *t){
         atom_found = 0;
     }
 
+    /* catch undeclared variable at return statement */
     else if((return_found == 1) && (atom_found == 1) && (strcmp("atom_expr", humanreadable(t)) == 0)) {
+        // printf("1st loop return type: %s\n", t->kids[0]->kids[0]->symbolname);
         if(t->kids[0]->kids[0]->prodrule == NAME) {
             if(!find_symbol(current, symbol)) {
                 // throw error
@@ -436,7 +455,7 @@ void treetraversal(struct tree *t){
                 exit(3);            
             }
 
-            return_symbol = strdup(symbol);
+            // return_symbol = strdup(symbol);
         }
         return_found = 0;
         atom_found = 0;
@@ -462,23 +481,51 @@ void typecheck(struct tree *t) {
     if(t == NULL) {
         return;
     }
-    printf("in typecheck: %s\n", humanreadable(t));
+    // printf("in typecheck: %s\n", humanreadable(t));
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
-        printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+        // printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+        /* func_found: just for if there is a function call, not declaration */
+        if(func_found == 1) {
+            /* param_count:  NOT for function declarations, just count params for func calls*/
+            param_count++;            
+            // printf("param_count: %d\n", param_count);
+        }
+
         if(assignment_found == 1) {
             // printf("assignment found\n");
             // printf("in atom_expr. current_symbol: %s\n", current_symbol->s);
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
-                printf("type a: %s\t type b: %s\n", typename(current_symbol->type), typename(tmp_symbol->type));
+                // printf("type %s: %s\t type %s: %s\n", current_symbol->s, typename(current_symbol->type), tmp_symbol->s, typename(tmp_symbol->type));
                 if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) == 1) {
-                    printf("type a and type b are compatable!\n");
+                    // printf("type %s and type %s are compatable!\n", current_symbol->s, tmp_symbol->s);
                 } else {
                     incompatable_error(tmp_symbol->s);
                 }
-            } else {
-                printf("not a symbol! %s\n", t->kids[0]->kids[0]->symbolname);
+            }
+            
+            else {
+                // printf("not a symbol! %s, %d\n", t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->prodrule);
+                if(t->kids[1] != NULL) {
+                    /* t->kids[1] = zero_more_trailer: LPAR opt_arglist RPAR */
+                    if(t->kids[0]->kids[0]->prodrule != FUNC) {       
+                        /* if not a FUNC type, then is a user defined func 
+                            -> search table for func and save index of func
+                            -> set func_found flag to know to save all next atoms as func params until newline*/                
+                        for(int i = 0; i < 10; i++){
+                            if(tables[i] == NULL){
+                                break;
+                            }
+                            else if(strcmp(t->kids[0]->kids[0]->symbolname, tables[i]->name) == 0){
+                                // printf("function found in tables[%d]: %s\n", i, tables[i]->name);
+                                func_i = i;
+                                func_found = 1;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
         } else {
@@ -493,22 +540,24 @@ void typecheck(struct tree *t) {
 
             /* check function parameters */
             if(t->kids[1] != NULL) {
+                /* t->kids[1] = zero_more_trailer: LPAR opt_arglist RPAR */
                 if(t->kids[0]->kids[0]->prodrule != FUNC) {
-                    printf("function: %s\n", t->kids[0]->kids[0]->symbolname);
-                    // int func_found = 0;
+                    // printf("function: %s\n", t->kids[0]->kids[0]->symbolname);
+                    /* if not a FUNC type, then is a user defined func 
+                            -> search table for func and save index of func
+                            -> set func_found flag to know to save all next atoms as func params until newline*/
                     for(int i = 0; i < 10; i++){
                         if(tables[i] == NULL){
-                            continue;
+                            break;
                         }
                         else if(strcmp(t->kids[0]->kids[0]->symbolname, tables[i]->name) == 0){
-                            printf("function found in tables[%d]: %s\n", i, tables[i]->name);
+                            // printf("function found in tables[%d]: %s\n", i, tables[i]->name);
+                            func_i = i;
+                            func_found = 1;
+                            break;
                         }
                     }
-                    // if(func_found == 0){
-                    //     printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-                    //     printf("Uninizialized Function: \"%s\" filename: %s line number: %d\n", t->kids[0]->kids[0]->leaf->text, current_file, t->kids[0]->kids[0]->leaf->lineno);
-                    //     exit(3);
-                    // }
+                    // printf("name: %s, nparams: %d, returntype: %s\n", tables[func_i]->name, tables[func_i]->type->u.f.nparams, typename(tables[func_i]->type->u.f.returntype));
 
                     /* find func:
                         func->type->u.f.nparams
@@ -516,7 +565,7 @@ void typecheck(struct tree *t) {
                         func->type->u.f.returntype
                             if is an assignment, compare with type of variable on left side
                         symbol table for func
-                            check for param flag, compare types
+                            go thru func param list struct and compare types
                             !!!! have to see if order is the same*/
                 }
             }
@@ -533,6 +582,7 @@ void typecheck(struct tree *t) {
             else if(strcmp(t->kids[1]->symbolname, tables[i]->name) == 0){
                 current = tables[i];
                 new_scope = 1;
+                // func_found = 1;
             }
         }
         
@@ -559,6 +609,30 @@ void typecheck(struct tree *t) {
 
     if(t->prodrule == NEWLINE) {
         assignment_found = 0;
+        // printf("newline: %d, %d\n", func_found, func_i);
+        /* if newline and if function call exists, then check for type errors */
+        if(func_found == 1 && func_i != 0) {
+            // printf("tables[%d]: %s\n", func_i, tables[func_i]->name);
+            /* check nparams */
+            if(param_count != tables[func_i]->type->u.f.nparams) {
+                printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                printf("Incorrect number of parameters: \"%s\" filename: %s line number: %d\n", tables[func_i]->name, current_file, rows);
+                exit(3);
+            }
+            /* check return type (doesn't matter if return type is NONE)*/
+            if(tables[func_i]->type->u.f.returntype->basetype != NONE_TYPE) {
+                // printf("check type for %s: %s\n", tables[func_i]->name, typename(tables[func_i]->type->u.f.returntype));
+            }
+
+            /* check parameter types match */
+            for(int i = 1; i < param_count; i++) {
+                
+            }
+
+            func_i = 0;
+        }
+        func_found = 0;
+        param_count = 0;
     }
 
    for(int i = 0; i < t->nkids; i++){

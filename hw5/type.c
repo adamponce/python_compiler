@@ -73,8 +73,7 @@ typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char
         /* return type is NONE_TYPE */
         rv->u.f.returntype = alctype(NONE_TYPE);
     } else {
-        struct sym_entry *symbol = find_symbol(st, return_symbol);
-        rv->u.f.returntype = symbol->type;
+        rv->u.f.returntype = return_type(return_symbol);
     }
 
     rv->u.f.nparams = nparams;

@@ -1,5 +1,4 @@
-def func(a : int, b : float):
+def func(a : int) -> float:
     c = a
     return c
-    
-func(1, 2.1)
+func(12)

@@ -46,7 +46,7 @@ struct sym_table * init_symbol_table(){
     return rv;
 }
 
-void insert_symbol(struct sym_table *st, char *name, char *type, int param){
+void insert_symbol(struct sym_table *st, char *name, char *type){
     int hash_value = hash(MAX_SIZE, name);
     struct sym_entry * head = st->tbl[hash_value];
 
@@ -75,7 +75,6 @@ void insert_symbol(struct sym_table *st, char *name, char *type, int param){
     /* type comparisons here */
     new_entry->type = return_type(type);
     new_entry->table = st;
-    new_entry->param = param;
     new_entry->next = st->tbl[hash_value];
     st->tbl[hash_value] = new_entry;
 }
