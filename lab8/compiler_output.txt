@@ -1,0 +1,4 @@
+make: Nothing to be done for `tests/.DS_Store'.
+make: *** No rule to make target `arg1'.  Stop.
+make: Nothing to be done for `tests/puny'.
+make: *** No rule to make target `arg1'.  Stop.
