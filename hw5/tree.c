@@ -56,6 +56,8 @@ int assignment_found = 0;
 char *tmp_params[MAX_PARAMS];
 int func_found = 0;
 int func_i = 0;
+int func_call_param_count[MAX_PARAMS];
+int func_call_param_i = 0;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -472,6 +474,8 @@ void treetraversal(struct tree *t){
 
 }
 
+
+
 /* checking types for:
    - functions -> when calling functions, check for correct # params, param types, and return types
    - assignments (a = b stuff)
@@ -481,15 +485,53 @@ void typecheck(struct tree *t) {
     if(t == NULL) {
         return;
     }
-    // printf("in typecheck: %s\n", humanreadable(t));
+    printf("in typecheck: %s\n", humanreadable(t));
+
+    if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
+        printf("terminal_symbol: %s\n", t->symbolname);
+        if(t->prodrule == RPAR && func_found == 1) {
+            // idk do something
+        }
+    }
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
-        // printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+        printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+
         /* func_found: just for if there is a function call, not declaration */
         if(func_found == 1) {
             /* param_count:  NOT for function declarations, just count params for func calls*/
-            param_count++;            
-            // printf("param_count: %d\n", param_count);
+            /* tmp_params[] --> save either symbol name if in symbol table or type if not in symbol table */
+            struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
+
+            if(tmp_symbol != NULL) {
+                tmp_params[param_count] = t->kids[0]->kids[0]->symbolname;
+            } else {
+                /* isn't a symbol */
+                switch (t->kids[0]->kids[0]->prodrule) {
+                case NUMBER:
+                    tmp_params[param_count] = "number";
+                    break;
+                case NAME:
+                    /* is a nested function call
+                        --> have array of param_counts
+                        --> look for opening and closing parens*/
+                    printf("%s is a name\n", t->kids[0]->kids[0]->symbolname);
+                    tmp_params[param_count] = "name";
+                    break;
+                // case "one_more_string":
+                //     printf("%s is a string\n", t->kids[0]->kids[0]->kids[0]->symbolname);
+                default:
+                    if(strcmp("one_more_string", humanreadable(t->kids[0]->kids[0])) == 0) {
+                        tmp_params[param_count] = "string";
+                    } else {
+                        printf("unknown: %s\n", t->kids[0]->kids[0]->symbolname);
+                        tmp_params[param_count] = "error";
+                    }
+                }
+            }
+            
+            param_count++;
+            printf("param count = %d at %s\n", param_count, t->kids[0]->kids[0]->symbolname);
         }
 
         if(assignment_found == 1) {
@@ -542,7 +584,6 @@ void typecheck(struct tree *t) {
             if(t->kids[1] != NULL) {
                 /* t->kids[1] = zero_more_trailer: LPAR opt_arglist RPAR */
                 if(t->kids[0]->kids[0]->prodrule != FUNC) {
-                    // printf("function: %s\n", t->kids[0]->kids[0]->symbolname);
                     /* if not a FUNC type, then is a user defined func 
                             -> search table for func and save index of func
                             -> set func_found flag to know to save all next atoms as func params until newline*/
@@ -557,7 +598,6 @@ void typecheck(struct tree *t) {
                             break;
                         }
                     }
-                    // printf("name: %s, nparams: %d, returntype: %s\n", tables[func_i]->name, tables[func_i]->type->u.f.nparams, typename(tables[func_i]->type->u.f.returntype));
 
                     /* find func:
                         func->type->u.f.nparams
@@ -625,9 +665,37 @@ void typecheck(struct tree *t) {
             }
 
             /* check parameter types match */
-            for(int i = 1; i < param_count; i++) {
-                
-            }
+            // struct param *curr_param = tables[func_i]->type->u.f.parameters;
+            // struct sym_entry *param_symbol;
+            // for(int i = 1; i <= param_count; i++) {
+            //     param_symbol = find_symbol(current, tmp_params[param_count-i]);
+            //     if(param_symbol != NULL) {
+            //         printf("curr_param: %s(%d), param_symbol: %s(%d)\n", curr_param->name, curr_param->type->basetype, param_symbol->s, param_symbol->type->basetype);
+            //         if(check_types(curr_param->type->basetype, param_symbol->type->basetype) == 0) {
+            //             printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+            //             printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
+            //             exit(3);
+            //         }
+            //     } else {
+            //         if(strcmp("number", tmp_params[param_count-i]) == 0) {
+            //             if(curr_param->type->basetype != INT_TYPE && curr_param->type->basetype != FLOAT_TYPE && curr_param->type->basetype != ANY_TYPE) {
+            //                 printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+            //                 printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
+            //                 exit(3);
+            //             }
+            //         } else if(strcmp("string", tmp_params[param_count-i]) == 0) {
+            //             if(curr_param->type->basetype != STRING_TYPE && curr_param->type->basetype != ANY_TYPE) {
+            //                 printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+            //                 printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
+            //                 exit(3);
+            //             }
+            //         }
+
+            //     }
+
+            //     curr_param = curr_param->next;
+
+            // }
 
             func_i = 0;
         }
