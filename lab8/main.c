@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
             strcat(argv[i], extension);
         }
         else if(strcmp(ext + 1, "py") != 0){
-            printf("Incorrect file type: Needed .py\n");
+            printf("Incorrect file type for %s: Needed .py\n", argv[i]);
             exit(-1);
         }
 

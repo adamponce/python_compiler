@@ -1,0 +1,16 @@
+FILE: tests/errors/conversion.py
+----------------------
+No Errors Detected. Use -symtab to see symbol table
+FILE: tests/errors/mean.py
+----------------------
+No Errors Detected. Use -symtab to see symbol table
+FILE: tests/errors/rpn_calculator.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/errors/rpn_calculator.py line number: 46
+FILE: tests/errors/fractions.py
+----------------------
+[33mSYNTAX ERROR: [m"
+                  " filename: tests/errors/fractions.py line number: 18
+FILE: tests/errors/lettercount.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/errors/lettercount.py line number: 111
