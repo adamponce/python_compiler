@@ -1,0 +1,34 @@
+FILE: tests/python/palindrome.py
+----------------------
+[33mSYNTAX ERROR: [m"-1" filename: tests/python/palindrome.py line number: 6
+FILE: tests/python/statistics107.py
+----------------------
+[33mSYNTAX ERROR: [m"max" filename: tests/python/statistics107.py line number: 1
+FILE: tests/python/piglatin.py
+----------------------
+[33mSYNTAX ERROR: [m"
+                " filename: tests/python/piglatin.py line number: 5
+FILE: tests/python/conversion.py
+----------------------
+No Errors Detected. Use -symtab to see symbol table
+FILE: tests/python/luhns.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/python/luhns.py line number: 19
+FILE: tests/python/mean.py
+----------------------
+No Errors Detected. Use -symtab to see symbol table
+FILE: tests/python/rpn_calculator.py
+----------------------
+No Errors Detected. Use -symtab to see symbol table
+FILE: tests/python/fractions.py
+----------------------
+No Errors Detected. Use -symtab to see symbol table
+FILE: tests/python/date.py
+----------------------
+[33mSYNTAX ERROR: [m"in" filename: tests/python/date.py line number: 12
+FILE: tests/python/lettercount.py
+----------------------
+No Errors Detected. Use -symtab to see symbol table
+FILE: tests/python/readscores.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/python/readscores.py line number: 16

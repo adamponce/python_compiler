@@ -1,35 +1,33 @@
 import os
 import subprocess
 
-# Define the compiler command and arguments
-compiler_command = "./puny"  # Replace with your compiler command
-#compiler_args = [""]  # Replace with your compiler arguments
+compiler_command = "./puny"  
 
-# Define the tests directory
-tests_dir = "tests/errors"  # Replace with your tests directory
+tests_dir = "tests/errors" 
+tests_dir_two = "tests/puny"
+tests_dir_three = "tests/python"
 
-# Define the output file
-output_file = "compiler_output.txt"  # Replace with the name of the output file
+output_file_errors = "compiler_output_errors.txt" 
 
 # Open the output file in write mode
-with open(output_file, "w") as f:
-    # Loop through all the test files in the tests directory
+with open(output_file_errors, "w") as f:
     for test_file in os.listdir(tests_dir):
-        # Construct the full path of the test file
         test_file_path = os.path.join(tests_dir, test_file)
-        
         # Run the compiler on the current test file
         subprocess.run([compiler_command, test_file_path], stdout=f, stderr=subprocess.STDOUT)
 
-# Close the output file
+output_file_puny = "compiler_output_puny.txt" 
 
-# Read the output file
-with open(output_file, "r") as f:
-    output = f.read()
+with open(output_file_puny, "w") as f:
+    # Loop through all the test files in the tests directory
+    for test_file in os.listdir(tests_dir_two):
+        test_file_path = os.path.join(tests_dir_two, test_file)
+        subprocess.run([compiler_command, test_file_path], stdout=f, stderr=subprocess.STDOUT)
 
-# Examine the output for problems
-if "Error" in output or "Failed" in output:
-    print("There were problems with the compiler output:")
-    print(output)
-else:
-    print("Compiler output looks good!")
+output_file_python = "compiler_output_python.txt" 
+
+with open(output_file_python, "w") as f:
+    for test_file in os.listdir(tests_dir_three):
+        test_file_path = os.path.join(tests_dir_three, test_file)
+        subprocess.run([compiler_command, test_file_path], stdout=f, stderr=subprocess.STDOUT)
+

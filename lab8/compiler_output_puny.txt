@@ -1,0 +1,6 @@
+FILE: tests/puny/spiral.py
+----------------------
+[33mSYNTAX ERROR: [m"turtle" filename: tests/puny/spiral.py line number: 13
+FILE: tests/puny/nested.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/puny/nested.py line number: 14
