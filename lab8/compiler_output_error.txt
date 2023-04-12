@@ -1,0 +1,55 @@
+FILE: tests/error/longest_collatz.py
+----------------------
+[33mSYNTAX ERROR: [m"if" filename: tests/error/longest_collatz.py line number: 14
+FILE: tests/error/classwork.py
+----------------------
+[33mSEMANTIC ERROR: [mUninizialized Function: "statistics107" filename: tests/error/classwork.py line number: 2
+FILE: tests/error/def.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/error/def.py line number: 8
+FILE: tests/error/fizzbuzz.py
+----------------------
+[33mSYNTAX ERROR: [m"if" filename: tests/error/fizzbuzz.py line number: 24
+FILE: tests/error/shapes_tutle_error.py
+----------------------
+[33mSYNTAX ERROR: [m"pow" filename: tests/error/shapes_tutle_error.py line number: 6
+FILE: tests/error/horoscope.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/error/horoscope.py line number: 34
+FILE: tests/error/calculator.py
+----------------------
+[33mSEMANTIC ERROR: [mUninizialized Function: "math" filename: tests/error/calculator.py line number: 5
+FILE: tests/error/testlist.py
+----------------------
+[33mSEMANTIC ERROR: [mUninizialized Function: "lst" filename: tests/error/testlist.py line number: 5
+FILE: tests/error/polygons2_tutle_error.py
+----------------------
+[33mSEMANTIC ERROR: [mUninizialized Function: "turtle" filename: tests/error/polygons2_tutle_error.py line number: 8
+FILE: tests/error/functionpep8.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/error/functionpep8.py line number: 6
+FILE: tests/error/collatz.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/error/collatz.py line number: 10
+FILE: tests/error/spiral.py
+----------------------
+[33mSYNTAX ERROR: [m"turtle" filename: tests/error/spiral.py line number: 13
+FILE: tests/error/date.py
+----------------------
+[33mSYNTAX ERROR: [m"
+            " filename: tests/error/date.py line number: 20
+FILE: tests/error/polygons1_tutle_error.py
+----------------------
+[33mSEMANTIC ERROR: [mUninizialized Function: "turtle" filename: tests/error/polygons1_tutle_error.py line number: 3
+FILE: tests/error/function.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/error/function.py line number: 6
+FILE: tests/error/lettercount.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/error/lettercount.py line number: 13
+FILE: tests/error/navigate_turtle_error.py
+----------------------
+[33mSYNTAX ERROR: [m"if" filename: tests/error/navigate_turtle_error.py line number: 25
+FILE: tests/error/nested.py
+----------------------
+[33mSYNTAX ERROR: [m"def" filename: tests/error/nested.py line number: 14

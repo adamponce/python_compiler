@@ -32,11 +32,9 @@ def select_col(array, index):
     bob = 0
     if type(array[0]) is list:
         while bob < len(array):
-
             list_question.append(array[bob][index])
             bob = bob + 1
     else:
-
         list_question.append(array[index])
 
     return list_question
@@ -78,7 +76,6 @@ def run_tests():
                 passed += 1
             else:
                 failed += 1
-
                 # f.__name__ is the function's name
                 # for example, select_row.__name__ is the string "select_row"
                 print("Function '{}' given arguments {}, {}".format(
@@ -92,7 +89,6 @@ def run_tests():
                 passed += 1
             else:
                 failed += 1
-
                 # f.__name__ is the function's name
                 # for example, select_row.__name__ is the string "select_row"
                 print("Function '{}' given argument {}".format(

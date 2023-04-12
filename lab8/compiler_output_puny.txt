@@ -1,6 +1,6 @@
-FILE: tests/puny/spiral.py
+FILE: tests/puny/conversion.py
 ----------------------
-[33mSYNTAX ERROR: [m"turtle" filename: tests/puny/spiral.py line number: 13
-FILE: tests/puny/nested.py
+No Errors Detected. Use -symtab to see symbol table
+FILE: tests/puny/mean.py
 ----------------------
-[33mSYNTAX ERROR: [m"def" filename: tests/puny/nested.py line number: 14
+No Errors Detected. Use -symtab to see symbol table

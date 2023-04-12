@@ -1,34 +1,27 @@
-FILE: tests/python/palindrome.py
+FILE: tests/python/scorehist.py
 ----------------------
-[33mSYNTAX ERROR: [m"-1" filename: tests/python/palindrome.py line number: 6
-FILE: tests/python/statistics107.py
+[33mLEXICAL ERROR: [m"as" this Python feature is not in PunY in file "tests/python/scorehist.py" in line 4
+FILE: tests/python/markov.py
 ----------------------
-[33mSYNTAX ERROR: [m"max" filename: tests/python/statistics107.py line number: 1
-FILE: tests/python/piglatin.py
+[33mSYNTAX ERROR: [m"def" filename: tests/python/markov.py line number: 12
+FILE: tests/python/tes.py
 ----------------------
-[33mSYNTAX ERROR: [m"
-                " filename: tests/python/piglatin.py line number: 5
-FILE: tests/python/conversion.py
+[33mLEXICAL ERROR: [m"with" this Python feature is not in PunY in file "tests/python/tes.py" in line 5
+FILE: tests/python/simplediff.py
 ----------------------
-No Errors Detected. Use -symtab to see symbol table
-FILE: tests/python/luhns.py
+[33mSYNTAX ERROR: [m"t" filename: tests/python/simplediff.py line number: 2
+FILE: tests/python/test.py
 ----------------------
-[33mSYNTAX ERROR: [m"def" filename: tests/python/luhns.py line number: 19
-FILE: tests/python/mean.py
+[33mLEXICAL ERROR: [m"as" this Python feature is not in PunY in file "tests/python/test.py" in line 1
+FILE: tests/python/final_contacts.py
 ----------------------
-No Errors Detected. Use -symtab to see symbol table
-FILE: tests/python/rpn_calculator.py
+[33mSYNTAX ERROR: [m"def" filename: tests/python/final_contacts.py line number: 34
+FILE: tests/python/word_count.py
 ----------------------
-No Errors Detected. Use -symtab to see symbol table
-FILE: tests/python/fractions.py
+[33mLEXICAL ERROR: [m"with" this Python feature is not in PunY in file "tests/python/word_count.py" in line 3
+FILE: tests/python/scorebar.py
 ----------------------
-No Errors Detected. Use -symtab to see symbol table
-FILE: tests/python/date.py
-----------------------
-[33mSYNTAX ERROR: [m"in" filename: tests/python/date.py line number: 12
-FILE: tests/python/lettercount.py
-----------------------
-No Errors Detected. Use -symtab to see symbol table
+[33mLEXICAL ERROR: [m"as" this Python feature is not in PunY in file "tests/python/scorebar.py" in line 4
 FILE: tests/python/readscores.py
 ----------------------
-[33mSYNTAX ERROR: [m"def" filename: tests/python/readscores.py line number: 16
+[33mLEXICAL ERROR: [m"with" this Python feature is not in PunY in file "tests/python/readscores.py" in line 4

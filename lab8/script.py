@@ -3,14 +3,14 @@ import subprocess
 
 compiler_command = "./puny"  
 
-tests_dir = "tests/errors" 
+tests_dir = "tests/error" 
 tests_dir_two = "tests/puny"
 tests_dir_three = "tests/python"
 
-output_file_errors = "compiler_output_errors.txt" 
+output_file_error = "compiler_output_error.txt" 
 
 # Open the output file in write mode
-with open(output_file_errors, "w") as f:
+with open(output_file_error, "w") as f:
     for test_file in os.listdir(tests_dir):
         test_file_path = os.path.join(tests_dir, test_file)
         # Run the compiler on the current test file
