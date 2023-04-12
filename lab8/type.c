@@ -12,7 +12,7 @@
 
 extern char* current_file;
 extern int rows;
-struct sym_entry *symbol;
+// struct sym_entry *symbol_entry;
 
 struct typeinfo none_type = { NONE_TYPE };
 struct typeinfo integer_type = { INT_TYPE };

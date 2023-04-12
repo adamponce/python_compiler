@@ -1,6 +1,0 @@
-FILE: tests/puny/conversion.py
-----------------------
-No Errors Detected. Use -symtab to see symbol table
-FILE: tests/puny/mean.py
-----------------------
-No Errors Detected. Use -symtab to see symbol table
