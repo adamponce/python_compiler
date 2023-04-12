@@ -2,11 +2,12 @@ import os
 import subprocess
 
 # Define the compiler command and arguments
+command_clean = "make clean"
 compiler_command = "make"  # Replace with your compiler command
 compiler_args = ["arg1", "arg2"]  # Replace with your compiler arguments
 
 # Define the tests directory
-tests_dir = "tests"  # Replace with your tests directory
+tests_dir = "tests/python"  # Replace with your tests directory
 
 # Define the output file
 output_file = "compiler_output.txt"  # Replace with the name of the output file
@@ -19,7 +20,7 @@ with open(output_file, "w") as f:
         test_file_path = os.path.join(tests_dir, test_file)
         
         # Run the compiler on the current test file
-        subprocess.run([compiler_command, test_file_path] + compiler_args, stdout=f, stderr=subprocess.STDOUT)
+        subprocess.run([command_clean, compiler_command, test_file_path] + compiler_args, stdout=f, stderr=subprocess.STDOUT)
 
 # Close the output file
 
