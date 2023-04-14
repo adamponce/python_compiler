@@ -26,6 +26,8 @@ struct instr {
    struct addr dest, src1, src2;
    struct instr *next;
 };
+
+
 /* Opcodes, per lecture notes */
 #define O_ADD   3001
 #define O_SUB   3002
@@ -62,6 +64,6 @@ char *regionname(int i);
 char *opcodename(int i);
 char *pseudoname(int i);
 struct addr *genlabel();
-struct instr append(struct instrl1, struct instr *l2);
+struct instr *append(struct instr *l1, struct instr *l2);
 
 #endif
