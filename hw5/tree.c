@@ -487,51 +487,78 @@ void typecheck(struct tree *t) {
     }
     printf("in typecheck: %s\n", humanreadable(t));
 
+    /* initialize param count */
+
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
         printf("terminal_symbol: %s\n", t->symbolname);
         if(t->prodrule == RPAR && func_found == 1) {
-            // idk do something
+            /* check nparams first */
+            printf("RPAR func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
+
+            if(func_call_param_count[func_call_param_i] != tables[func_i]->type->u.f.nparams) {
+                printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                printf("Incorrect number of parameters: \"%s\" filename: %s line number: %d\n", tables[func_i]->name, current_file, rows);
+                // exit(3);
+            }
+
+            /* func_call_param_i will be greater than 0 if nested func calls
+                if func_call_param_i == 0, then do nothing
+            */
+            if(func_call_param_i != 0) {
+                func_call_param_count[func_call_param_i] = 0;
+                func_call_param_i--;
+            }
         }
     }
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
         printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
 
-        /* func_found: just for if there is a function call, not declaration */
+        /* func_found: set only if there is a function call, not declaration */
         if(func_found == 1) {
             /* param_count:  NOT for function declarations, just count params for func calls*/
             /* tmp_params[] --> save either symbol name if in symbol table or type if not in symbol table */
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
 
             if(tmp_symbol != NULL) {
-                tmp_params[param_count] = t->kids[0]->kids[0]->symbolname;
+                tmp_params[func_call_param_count[func_call_param_i]] = t->kids[0]->kids[0]->symbolname;
+                func_call_param_count[func_call_param_i]++;
             } else {
                 /* isn't a symbol */
                 switch (t->kids[0]->kids[0]->prodrule) {
                 case NUMBER:
-                    tmp_params[param_count] = "number";
+                    tmp_params[func_call_param_count[func_call_param_i]] = "number";
+                    func_call_param_count[func_call_param_i]++;
                     break;
                 case NAME:
                     /* is a nested function call
                         --> have array of param_counts
                         --> look for opening and closing parens*/
                     printf("%s is a name\n", t->kids[0]->kids[0]->symbolname);
-                    tmp_params[param_count] = "name";
+                    tmp_params[func_call_param_count[func_call_param_i]] = "name";
+                    func_call_param_count[func_call_param_i]++;
+                    func_call_param_i++;
+                    func_call_param_count[func_call_param_i] = 0;
+                    printf("NAME func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
                     break;
-                // case "one_more_string":
-                //     printf("%s is a string\n", t->kids[0]->kids[0]->kids[0]->symbolname);
+                case FUNC:
+                    printf("%s is a func\n", t->kids[0]->kids[0]->symbolname);
+                    // func_call_param_count[func_call_param_i]++;
+                    break;
                 default:
                     if(strcmp("one_more_string", humanreadable(t->kids[0]->kids[0])) == 0) {
-                        tmp_params[param_count] = "string";
+                        tmp_params[func_call_param_count[func_call_param_i]] = "string";
                     } else {
                         printf("unknown: %s\n", t->kids[0]->kids[0]->symbolname);
-                        tmp_params[param_count] = "error";
+                        tmp_params[func_call_param_count[func_call_param_i]] = "error";
                     }
+                    func_call_param_count[func_call_param_i]++;
                 }
             }
+
+            // func_call_param_count[func_call_param_i]++;
+            printf("func_call_param_count[%d] = %d at %s\n", func_call_param_i, func_call_param_count[func_call_param_i], t->kids[0]->kids[0]->symbolname);
             
-            param_count++;
-            printf("param count = %d at %s\n", param_count, t->kids[0]->kids[0]->symbolname);
         }
 
         if(assignment_found == 1) {
@@ -622,7 +649,6 @@ void typecheck(struct tree *t) {
             else if(strcmp(t->kids[1]->symbolname, tables[i]->name) == 0){
                 current = tables[i];
                 new_scope = 1;
-                // func_found = 1;
             }
         }
         
@@ -654,10 +680,11 @@ void typecheck(struct tree *t) {
         if(func_found == 1 && func_i != 0) {
             // printf("tables[%d]: %s\n", func_i, tables[func_i]->name);
             /* check nparams */
-            if(param_count != tables[func_i]->type->u.f.nparams) {
+            printf("nparams func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
+            if(func_call_param_count[func_call_param_i] != tables[func_i]->type->u.f.nparams) {
                 printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
                 printf("Incorrect number of parameters: \"%s\" filename: %s line number: %d\n", tables[func_i]->name, current_file, rows);
-                exit(3);
+                // exit(3);
             }
             /* check return type (doesn't matter if return type is NONE)*/
             if(tables[func_i]->type->u.f.returntype->basetype != NONE_TYPE) {
@@ -700,7 +727,8 @@ void typecheck(struct tree *t) {
             func_i = 0;
         }
         func_found = 0;
-        param_count = 0;
+        // param_count = 0;
+        func_call_param_count[func_call_param_i] = 0;
     }
 
    for(int i = 0; i < t->nkids; i++){
