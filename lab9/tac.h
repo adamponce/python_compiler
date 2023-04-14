@@ -65,5 +65,6 @@ char *opcodename(int i);
 char *pseudoname(int i);
 struct addr *genlabel();
 struct instr *append(struct instr *l1, struct instr *l2);
+void tacprint(struct instr *tac);
 
 #endif

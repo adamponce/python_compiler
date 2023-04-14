@@ -2,48 +2,13 @@
 #include "tac.h"
 #include <string.h>
 
-
-void print_address(struct addr a){
-	if(a.region != R_NONE){
-		if(a.region == R_NAME){
-			if(strcmp(a.u.name, "str") == 0){
-				printf("%s: 0", a.u.name);
-			}else if(strcmp(a.u.name, "tostr") == 0){
-				printf("%s, 1", a.u.name);
-			}else if(strcmp(a.u.name, "cat") == 0){
-				printf("%s, 2", a.u.name);
-			}else if(strcmp(a.u.name, "println") == 0){
-				printf("%s, 1", a.u.name);
-			}
-		}else
-			printf("%s: %d", regionname(a.region), a.u.offset);
-	}
-}
-
-void tacprint(struct instr *rv){
-	printf("%s\t", opcodename(rv->opcode));
-	print_address(rv->dest);
-	if(rv->src1.region != R_NONE)
-		printf(", ");
-	print_address(rv->src1);
-	if(rv->src2.region != R_NONE)
-		printf(", ");
-	print_address(rv->src2);
-	printf("\n");
-	if(rv->next != NULL){
-		tacprint(rv->next);
-	}
-}
-
 int main(int argc, char *argv[]){
-
 	struct addr loc_0 = {R_LOCAL, {0}};
 	struct addr cont_5 = {R_CONST, {5}};
 	struct addr none_addr = {R_NONE, {0}};
 	struct instr *tac = gen(O_ASN, loc_0, cont_5, none_addr);
 
 	struct addr loc_8 = {R_LOCAL, {8}};
-	//struct addr
 	struct instr *temp = gen(O_MUL, loc_8, loc_0, loc_0);
 	tac = append(tac, temp);
 
