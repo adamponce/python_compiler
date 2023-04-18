@@ -15,6 +15,8 @@
 	int top = 0;
 	int dedentcount;
 	int firsttime, rows = 1, words = 0, column = 1;
+	int pendingdedent = 0;
+	int eolflag = 0;
 	extern char *current_file;
 	int start_token;
 	int name_counter = 0;
@@ -22,8 +24,25 @@
 
 %}
 %%
-<<EOF>> {if (firsttime++ == 0){
- 			return alctoken(ENDMARKER); } else{return -1;}}
+<<EOF>> {if (firsttime == 0){
+			firsttime++;
+			dedentcount = 0;
+			int il = 0;
+			while(top > 0 && dentstack[top] > il){
+				dedentcount++;
+				top--;
+			}
+			if (dentstack[top] != il) {
+		       fprintf(stderr, "Python indent error line %d\n", rows);
+		       fflush(stderr); exit(1);
+		    }
+			return alctoken(NEWLINE);}
+			else if(firsttime == 1){
+				firsttime++;
+				eolflag = 1;
+				return alctoken(NEWLINE);
+			}
+			else{return -1;}}
 \\\n		{column=1;}
 \n[ \t]*	{ int il = indentlevel(yytext+1);
                 rows++; column=il+1;
@@ -34,7 +53,8 @@
                     }
 		  else if (il < dentstack[top]) {
                     /* return one or more DEDENT tokens */
-		    dedentcount=0;
+			if(pendingdedent > 1){
+		    	dedentcount=0;
                     /* count how many */
 		    while (top>0 && dentstack[top]>il) {
                        dedentcount++; top--; }
@@ -42,6 +62,10 @@
 		       fprintf(stderr, "Python indent error line %d\n", rows);
 		       fflush(stderr); exit(1);
 		       }
+			}
+			else if(pendingdedent > 1){
+				pendingdedent--;
+			}
 		    /* need to dedent by dedentcount, but returning NEWLINE */
                     }
 		  else {
@@ -51,21 +75,21 @@
 				rows--;
 				return alctoken(NEWLINE);}
 "False"	{return alctoken(FALSE);}
-"def"	{return alctoken(DEF);}
-"if"	{return alctoken(IF);}
+"def"	{pendingdedent++; return alctoken(DEF);}
+"if"	{pendingdedent++; return alctoken(IF);}
 "raise"	{return alctoken(RAISE);}
 "None"	{return alctoken(NONE);}
 "del"	{return alctoken(DEL);}
 "import"	{return alctoken(IMPORT);}
 "return"	{return alctoken(RETURN);}
 "True"	{return alctoken(TRUE);}
-"elif"	{return alctoken(ELIF);}
+"elif"	{pendingdedent++;return alctoken(ELIF);}
 "in"	{return alctoken(IN);}
 "try"	{return alctoken(TRY);}
 "and"	{return alctoken(AND);}
-"else"	{return alctoken(ELSE);}
+"else"	{pendingdedent++;return alctoken(ELSE);}
 "is"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
-"while"	{return alctoken(WHILE);}
+"while"	{pendingdedent++;return alctoken(WHILE);}
 "as"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "except"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "lambda"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
@@ -75,7 +99,7 @@
 "nonlocal"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "yield"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "break"	{return alctoken(BREAK);}
-"for"	{return alctoken(FOR);}
+"for"	{pendingdedent++; return alctoken(FOR);}
 "not"	{return alctoken(NOT);}
 "class"	{return alctoken(CLASS);}
 "from"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
@@ -150,7 +174,7 @@ int indentlevel(char *s)
    while(*s != '\0') {
       if (*s == '\t') {
 		column++;
-        while (((column - 1) % 8) != 0) column++;
+        while ((column % 8) != 0) column++;
       }
       else if (*s == ' ') column++;
       else { column++; printf("but wtf is %c\n", *s);}
@@ -199,5 +223,10 @@ int yylex() {
      dedentcount--;
 	 return alctoken(DEDENT);
     }
+	if(eolflag == 1){
+	 eolflag=0;
+	 printf("firsttime: %d\n", firsttime);
+     return alctoken(ENDMARKER);
+   }
    return real_yylex();
 }

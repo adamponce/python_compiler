@@ -131,7 +131,7 @@ zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef small_stmt augassi
 subscript opt_finally zero_more_comma_argtd
 dictorsetmarker dsm_expr tct_or_dse zero_more_comma_tct_or_dse cf_or_comma_tct_dct dsm_star_expr cf_or_comma_tse opt_dictsetmarker
 everything_in_parenthesis comma_test_or_se comma_isn comma_dsn comma_sub dict_set_maker opt_semi_colon
-small_or_null weird_buggy_thing one_more_newline
+small_or_null one_more_newline
 %%
 /*
 Removed:
@@ -234,9 +234,9 @@ vfpdef: NAME;
 //===========
 stmt: simple_stmt{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
     | compound_stmt{$$ = alctree(1014, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | weird_buggy_thing{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+    //| weird_buggy_thing{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-weird_buggy_thing: DEDENT one_more_newline INDENT {$$ = alctree(1278, "weird_buggy_thing", 1, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
+//weird_buggy_thing: DEDENT one_more_newline INDENT {$$ = alctree(1278, "weird_buggy_thing", 1, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
 one_more_newline: NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
     | one_more_newline NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
@@ -635,14 +635,19 @@ opt_yield_args: {$$=NULL;} | yield_args;
 
 yield_args: FROM test | testlist_star_expr;
 
+//MAKE NEWLINE zero or more.
+
 func_body_suite: simple_stmt{$$ = alctree(1220, "func_body_suite", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
-    | NEWLINE opt_type_comment_newline INDENT one_more_stmt DEDENT{$$ = alctree(1221, "func_body_suite", 5, $1, $2, $3, $4, $5, NULL, NULL, NULL);};
+    | one_more_newline opt_type_comment_newline INDENT one_more_stmt DEDENT{$$ = alctree(1221, "func_body_suite", 5, $1, $2, $3, $4, $5, NULL, NULL, NULL);};
 
 opt_type_comment_newline: {$$=NULL;} 
     | TYPE_COMMENT NEWLINE{$$ = alctree(1222, "opt_type_comment_newline", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
+
 //func_type_input: func_type zero_more_newline ENDMARKER;
-//zero_more_newline: {$$=alocnull();} | zero_more_newline NEWLINE;
+//zero_more_newline: {$$=NULL;} | zero_more_newline NEWLINE;
+
+
 
 //func_type: LPAR opt_typelist RPAR RARROW test;
 //opt_typelist: {$$=alocnull();} | opt_typelist;
