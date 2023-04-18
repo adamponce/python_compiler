@@ -485,12 +485,12 @@ void typecheck(struct tree *t) {
     if(t == NULL) {
         return;
     }
-    printf("in typecheck: %s\n", humanreadable(t));
+    //printf("in typecheck: %s\n", humanreadable(t));
 
     /* initialize param count */
 
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
-        printf("terminal_symbol: %s\n", t->symbolname);
+        //printf("terminal_symbol: %s\n", t->symbolname);
         if(t->prodrule == RPAR && func_found == 1) {
             /* check nparams first */
             printf("RPAR func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
@@ -512,7 +512,7 @@ void typecheck(struct tree *t) {
     }
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
-        printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+        //printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
 
         /* func_found: set only if there is a function call, not declaration */
         if(func_found == 1) {

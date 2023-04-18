@@ -225,7 +225,7 @@ int yylex() {
     }
 	if(eolflag == 1){
 	 eolflag=0;
-	 printf("firsttime: %d\n", firsttime);
+	 //printf("firsttime: %d\n", firsttime);
      return alctoken(ENDMARKER);
    }
    return real_yylex();
