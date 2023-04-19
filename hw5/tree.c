@@ -58,6 +58,7 @@ int func_found = 0;
 int func_i = 0;
 int func_call_param_count[MAX_PARAMS];
 int func_call_param_i = 0;
+int built_in_found = 0;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -487,27 +488,31 @@ void typecheck(struct tree *t) {
     }
     printf("in typecheck: %s\n", humanreadable(t));
 
-    /* initialize param count */
-
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
         printf("terminal_symbol: %s\n", t->symbolname);
         if(t->prodrule == RPAR && func_found == 1) {
             /* check nparams first */
-            printf("RPAR func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
+            // printf("RPAR func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
 
-            if(func_call_param_count[func_call_param_i] != tables[func_i]->type->u.f.nparams) {
-                printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-                printf("Incorrect number of parameters: \"%s\" filename: %s line number: %d\n", tables[func_i]->name, current_file, rows);
-                // exit(3);
+            if(built_in_found == 1) {
+                built_in_found = 0;
+            } else {
+                if(func_call_param_count[func_call_param_i] != tables[func_i]->type->u.f.nparams) {
+                    printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                    printf("Incorrect number of parameters: \"%s\" filename: %s line number: %d\n", tables[func_i]->name, current_file, rows);
+                    exit(3);
+                }
+
+                /* func_call_param_i will be greater than 0 if nested func calls
+                    if func_call_param_i == 0, then do nothing
+                */
+                if(func_call_param_i != 0) {
+                    func_call_param_count[func_call_param_i] = 0;
+                    func_call_param_i--;
+                }
             }
 
-            /* func_call_param_i will be greater than 0 if nested func calls
-                if func_call_param_i == 0, then do nothing
-            */
-            if(func_call_param_i != 0) {
-                func_call_param_count[func_call_param_i] = 0;
-                func_call_param_i--;
-            }
+            
         }
     }
 
@@ -534,30 +539,29 @@ void typecheck(struct tree *t) {
                     /* is a nested function call
                         --> have array of param_counts
                         --> look for opening and closing parens*/
-                    printf("%s is a name\n", t->kids[0]->kids[0]->symbolname);
+                    // printf("%s is a name\n", t->kids[0]->kids[0]->symbolname);
                     tmp_params[func_call_param_count[func_call_param_i]] = "name";
                     func_call_param_count[func_call_param_i]++;
                     func_call_param_i++;
                     func_call_param_count[func_call_param_i] = 0;
-                    printf("NAME func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
+                    // printf("NAME func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
                     break;
                 case FUNC:
-                    printf("%s is a func\n", t->kids[0]->kids[0]->symbolname);
-                    // func_call_param_count[func_call_param_i]++;
+                    // printf("%s is a func\n", t->kids[0]->kids[0]->symbolname);
+                    built_in_found = 1;
                     break;
                 default:
                     if(strcmp("one_more_string", humanreadable(t->kids[0]->kids[0])) == 0) {
                         tmp_params[func_call_param_count[func_call_param_i]] = "string";
                     } else {
-                        printf("unknown: %s\n", t->kids[0]->kids[0]->symbolname);
+                        // printf("unknown: %s\n", t->kids[0]->kids[0]->symbolname);
                         tmp_params[func_call_param_count[func_call_param_i]] = "error";
                     }
                     func_call_param_count[func_call_param_i]++;
                 }
             }
 
-            // func_call_param_count[func_call_param_i]++;
-            printf("func_call_param_count[%d] = %d at %s\n", func_call_param_i, func_call_param_count[func_call_param_i], t->kids[0]->kids[0]->symbolname);
+            // printf("func_call_param_count[%d] = %d at %s\n", func_call_param_i, func_call_param_count[func_call_param_i], t->kids[0]->kids[0]->symbolname);
             
         }
 
@@ -625,15 +629,6 @@ void typecheck(struct tree *t) {
                             break;
                         }
                     }
-
-                    /* find func:
-                        func->type->u.f.nparams
-                            compare with number of parameter at function call
-                        func->type->u.f.returntype
-                            if is an assignment, compare with type of variable on left side
-                        symbol table for func
-                            go thru func param list struct and compare types
-                            !!!! have to see if order is the same*/
                 }
             }
         }
@@ -677,7 +672,7 @@ void typecheck(struct tree *t) {
         assignment_found = 0;
         // printf("newline: %d, %d\n", func_found, func_i);
         /* if newline and if function call exists, then check for type errors */
-        if(func_found == 1 && func_i != 0) {
+        if(func_found >= 1 && func_i != 0 && built_in_found == 0) {
             // printf("tables[%d]: %s\n", func_i, tables[func_i]->name);
             /* check nparams */
             printf("nparams func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
@@ -686,43 +681,40 @@ void typecheck(struct tree *t) {
                 printf("Incorrect number of parameters: \"%s\" filename: %s line number: %d\n", tables[func_i]->name, current_file, rows);
                 // exit(3);
             }
-            /* check return type (doesn't matter if return type is NONE)*/
-            if(tables[func_i]->type->u.f.returntype->basetype != NONE_TYPE) {
-                // printf("check type for %s: %s\n", tables[func_i]->name, typename(tables[func_i]->type->u.f.returntype));
-            }
 
             /* check parameter types match */
-            // struct param *curr_param = tables[func_i]->type->u.f.parameters;
-            // struct sym_entry *param_symbol;
-            // for(int i = 1; i <= param_count; i++) {
-            //     param_symbol = find_symbol(current, tmp_params[param_count-i]);
-            //     if(param_symbol != NULL) {
-            //         printf("curr_param: %s(%d), param_symbol: %s(%d)\n", curr_param->name, curr_param->type->basetype, param_symbol->s, param_symbol->type->basetype);
-            //         if(check_types(curr_param->type->basetype, param_symbol->type->basetype) == 0) {
-            //             printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-            //             printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
-            //             exit(3);
-            //         }
-            //     } else {
-            //         if(strcmp("number", tmp_params[param_count-i]) == 0) {
-            //             if(curr_param->type->basetype != INT_TYPE && curr_param->type->basetype != FLOAT_TYPE && curr_param->type->basetype != ANY_TYPE) {
-            //                 printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-            //                 printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
-            //                 exit(3);
-            //             }
-            //         } else if(strcmp("string", tmp_params[param_count-i]) == 0) {
-            //             if(curr_param->type->basetype != STRING_TYPE && curr_param->type->basetype != ANY_TYPE) {
-            //                 printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-            //                 printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
-            //                 exit(3);
-            //             }
-            //         }
+            struct param *curr_param = tables[func_i]->type->u.f.parameters;
+            struct sym_entry *param_symbol;
+            for(int i = 1; i <= func_call_param_count[func_call_param_i]; i++) {
+                param_symbol = find_symbol(current, tmp_params[func_call_param_count[func_call_param_i]-i]);
+                // printf("IN LOOP: param_symbol = %s\n", param_symbol->s);
+                if(param_symbol != NULL) {
+                    printf("curr_param: %s(%d), param_symbol: %s(%d)\n", curr_param->name, curr_param->type->basetype, param_symbol->s, param_symbol->type->basetype);
+                    if(check_types(curr_param->type->basetype, param_symbol->type->basetype) == 0) {
+                        printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                        printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
+                        exit(3);
+                    }
+                } else {
+                    if(strcmp("number", tmp_params[func_call_param_count[func_call_param_i]-i]) == 0) {
+                        if(curr_param->type->basetype != INT_TYPE && curr_param->type->basetype != FLOAT_TYPE && curr_param->type->basetype != ANY_TYPE) {
+                            printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                            printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
+                            exit(3);
+                        }
+                    } else if(strcmp("string", tmp_params[func_call_param_count[func_call_param_i]-i]) == 0) {
+                        if(curr_param->type->basetype != STRING_TYPE && curr_param->type->basetype != ANY_TYPE) {
+                            printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+                            printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
+                            exit(3);
+                        }
+                    }
 
-            //     }
+                }
 
-            //     curr_param = curr_param->next;
+                curr_param = curr_param->next;
 
-            // }
+            }
 
             func_i = 0;
         }
