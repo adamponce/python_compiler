@@ -5,5 +5,5 @@ def f(n1 : float):
    n2 : float
    y : int
 
-   n1 : int # same as name of parameter
+   n1 : float # same as name of parameter
    print(n1)
