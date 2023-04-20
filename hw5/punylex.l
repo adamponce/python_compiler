@@ -10,6 +10,7 @@
 	#include <stdlib.h>	
 	#include <string.h>
 	void mksval(char *text);
+	void dodedents();
 	int dentstack[100] = {0};
 	int indentlevel(char *s);
 	int top = 0;
@@ -18,6 +19,8 @@
 	int pendingdedent = 0;
 	int eolflag = 0;
 	extern char *current_file;
+	int defcount=0;
+	int deftransition = 0;
 	int start_token;
 	int name_counter = 0;
 	#define yylex real_yylex
@@ -26,24 +29,23 @@
 %%
 <<EOF>> {if (firsttime == 0){
 			firsttime++;
-			dedentcount = 0;
-			int il = 0;
-			while(top > 0 && dentstack[top] > il){
-				dedentcount++;
-				top--;
+			dodedents();
+			return alctoken(NEWLINE);
 			}
-			if (dentstack[top] != il) {
-		       fprintf(stderr, "Python indent error line %d\n", rows);
-		       fflush(stderr); exit(1);
-		    }
-			return alctoken(NEWLINE);}
 			else if(firsttime == 1){
 				firsttime++;
 				eolflag = 1;
 				return alctoken(NEWLINE);
 			}
-			else{return -1;}}
+			else{
+				return -1;
+			}
+		}
+
+
 \\\n		{column=1;}
+
+
 \n[ \t]*	{ int il = indentlevel(yytext+1);
                 rows++; column=il+1;
 		  if (il > dentstack[top]) {
@@ -53,21 +55,50 @@
                     }
 		  else if (il < dentstack[top]) {
                     /* return one or more DEDENT tokens */
-			if(pendingdedent > 1){
+			if(pendingdedent > 0 && defcount > 0){
 		    	dedentcount=0;
                     /* count how many */
-		    while (top>0 && dentstack[top]>il) {
-                       dedentcount++; top--; }
-		    if (dentstack[top] != il) {
-		       fprintf(stderr, "Python indent error line %d\n", rows);
-		       fflush(stderr); exit(1);
+		   		 while (top>pendingdedent && dentstack[top]>il) {
+                       	dedentcount++; top--; }
+
+		    if (il > 0) {
+				if(dentstack[top] != il){
+		       		fprintf(stderr, "Python indent error line %d\n", rows);
+		       		fflush(stderr); exit(1);
 		       }
 			}
-			else if(pendingdedent > 1){
+			else if(il == 0){
+				if(dentstack[top] < il){
+					fprintf(stderr, "Python indent error line %d\n", rows);
+		       		fflush(stderr); exit(1);
+				}
+			}
+			pendingdedent--;
+			}
+			else if(pendingdedent>0 && defcount == 0){
+				dedentcount=0;
+                /* count how many */
+				/*printf("top->%d, pen->%d, stack->%d, il->%d\n",top,pendingdedent,dentstack[top],il);*/
+				while (top >= pendingdedent && dentstack[top]>il) {
+					   /*printf("top->%d, def->%d, stack->%d, il->%d\n",top,defcount,dentstack[top],il);*/
+                       dedentcount++; top--; }
+					   
+			   if(il>0){
+		          if (dentstack[top] != il) {
+		          fprintf(stderr, "Python indent error line %d\n", rows);
+		          fflush(stderr); exit(1);
+				  }
+			   }
+				else if(il==0){
+				  if (dentstack[top] < il) {
+				  fprintf(stderr, "Python indent error line %d\n", rows);
+		          fflush(stderr); exit(1);
+					}
+				}
 				pendingdedent--;
 			}
+		}
 		    /* need to dedent by dedentcount, but returning NEWLINE */
-                    }
 		  else {
                     /* still at ILEVEL il, no INDENT or DEDENT */
                 }
@@ -75,19 +106,23 @@
 				rows--;
 				return alctoken(NEWLINE);}
 "False"	{return alctoken(FALSE);}
-"def"	{pendingdedent++; return alctoken(DEF);}
+"def"	{defcount++; return alctoken(DEF);}
 "if"	{pendingdedent++; return alctoken(IF);}
 "raise"	{return alctoken(RAISE);}
 "None"	{return alctoken(NONE);}
 "del"	{return alctoken(DEL);}
 "import"	{return alctoken(IMPORT);}
-"return"	{return alctoken(RETURN);}
+"return"	{if(defcount==1){
+				deftransition = 1;
+				defcount = 0;
+			}
+			return alctoken(RETURN);}
 "True"	{return alctoken(TRUE);}
-"elif"	{pendingdedent++;return alctoken(ELIF);}
+"elif"	{pendingdedent++; return alctoken(ELIF);}
 "in"	{return alctoken(IN);}
 "try"	{return alctoken(TRY);}
 "and"	{return alctoken(AND);}
-"else"	{pendingdedent++;return alctoken(ELSE);}
+"else"	{pendingdedent++; return alctoken(ELSE);}
 "is"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "while"	{pendingdedent++;return alctoken(WHILE);}
 "as"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
@@ -212,6 +247,21 @@ void mksval(char *text){
 	}
 }
 
+
+void dodedents(){
+    dedentcount=0;
+	/*printf("top->%d\n", top);*/
+	int il=0;
+	while (top>0 && dentstack[top]>il) {
+		/*printf("funct top->%d, def->%d, stack->%d, il->%d\n",top,defcount,dentstack[top],il);*/
+		dedentcount++; top--; }
+	if (dentstack[top] != il) {
+	    fprintf(stderr, "Python indent error line %d\n", rows);
+		fflush(stderr); exit(1);
+	}
+}
+
+
 #undef yylex
 
 int yylex() {
@@ -225,8 +275,11 @@ int yylex() {
     }
 	if(eolflag == 1){
 	 eolflag=0;
-	 //printf("firsttime: %d\n", firsttime);
      return alctoken(ENDMARKER);
+   }
+   if(deftransition == 1 && *yytext == '\n'){
+		deftransition = 0;
+		dodedents();
    }
    return real_yylex();
 }
