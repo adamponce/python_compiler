@@ -82,12 +82,7 @@ typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char
         struct param *head = NULL;
 
         for(int i = 0; i < nparams; i++) {
-            struct param *new_param = (paramlist) malloc(sizeof(struct param));
-            new_param->name = tmp_params[i];
-            new_param->type = find_symbol(st, tmp_params[i])->type;
-
-            new_param->next = head;
-            head = new_param;
+            add_to_list(&head, tmp_params[i], find_symbol(st, tmp_params[i])->type);
         }
         rv->u.f.parameters = head;
 
@@ -100,6 +95,27 @@ typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char
     }
 
     return rv;
+}
+
+void add_to_list(struct param **head, char *name, struct typeinfo *tmp_type) {
+    /* Allocate memory for the new node */
+    struct param *new_node = (struct param*) malloc(sizeof(struct param));
+    new_node->name = name;
+    new_node->type = tmp_type;
+    new_node->next = NULL;
+
+    /* If the list is empty, insert the new node at the beginning */
+    if (*head == NULL) {
+        *head = new_node;
+        return;
+    }
+
+    /* Insert the new node at the end of the list */
+    struct param *curr = *head;
+    while (curr->next != NULL) {
+        curr = curr->next;
+    }
+    curr->next = new_node;
 }
 
 

@@ -1,5 +1,4 @@
-def func(a : int, b) -> float:
-    c = a
-    return c
-a : int = int(1.2)
-func(func(a, a), 12)
+def foo(x:int, y:str)-> int:
+   return x
+def main(a):
+   z : int = foo(5, "funf")
