@@ -684,6 +684,7 @@ opt_test: {$$=NULL;}
 
 opt_semi_colon: {$$=NULL;} | SEMI{$$ = alctree(1235, "opt_semi_colon", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
+
 %%
 
 const char *yyname(int sym)
