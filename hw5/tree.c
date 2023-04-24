@@ -60,7 +60,6 @@ int func_call_param_count[MAX_PARAMS];
 int func_call_param_i = 0;
 int built_in_found = 0;
 struct param *curr_param = NULL;
-int tmp_flag = 0;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -297,7 +296,6 @@ void treetraversal(struct tree *t){
             else{
                 if(t->kids[1]->kids[1]->kids[0]->prodrule == LSQB){
                     symbol = strdup(t->kids[0]->kids[0]->symbolname);
-                    printf("------ (2)symbol is %s\n", symbol);
                     atom_found = 1;
                 }
                 else{
@@ -338,7 +336,6 @@ void treetraversal(struct tree *t){
         new->name = t->kids[1]->symbolname;
         tables[table_count] = new;
         current = new;
-        printf("fundef: tables[%d] is %s\n", table_count, new->name);
     }
     //finding a:int
     else if(strcmp("annassign", humanreadable(t)) == 0 && atom_found == 1){
@@ -360,7 +357,7 @@ void treetraversal(struct tree *t){
                 param_found = 1;
             }
         }
-        tmp_params[param_count] = t->kids[0]->symbolname;
+        tmp_params[param_count] = strdup(t->kids[0]->symbolname);
         param_count++;
     }
 
@@ -399,25 +396,19 @@ void treetraversal(struct tree *t){
     else if((dedent == indent) && (new_scope == 1) && (dedent != 0) && (indent != 0)){
         /* if function, add func type stuff */
         // return type = NONETYPE if no return statement, otherwise type of symbol being returned
-        printf("current is %s\n", current->name);
         // current->type = alcfunctype(current, return_symbol, param_count, tmp_params);
-        struct typeinfo *tmp_type = alcfunctype(current, return_symbol, param_count, tmp_params);
-        tables[table_count]->type = tmp_type;
-        current->type = tmp_type;
+        // struct typeinfo *tmp_type = alcfunctype(current, return_symbol, param_count, tmp_params);
+        alcfunctype(current, return_symbol, param_count, tmp_params);
         for(int i = 0; i < param_count; i++) {
             tmp_params[param_count] = NULL;
         }
+        return_symbol = NULL;
         param_count = 0;
         table_count++;
         new_scope = 0;
         dedent = 0;
         indent = 0;
         current = tables[0];
-        printf("table_count is %d\n", table_count);
-        for(int i = 0; i < table_count; i++) {
-            printf("tables[%d] is %s\n", i, tables[i]->name);
-            printf("\t nparams: %d\n", tables[i]->type->u.f.nparams);
-        }
     }
 
     else if(strcmp("opt_arglist", humanreadable(t)) == 0) {
@@ -500,19 +491,9 @@ void typecheck(struct tree *t) {
         return;
     }
 
-    if(tmp_flag == 0) {
-        tmp_flag = 1;
-        // printf("table_count is %d\n", table_count);
-        // for(int i = 0; i < table_count; i++) {
-        //     printf("tables[%d] is %s\n", i, tables[i]->name);
-        // }
-    }
-
     // printf("in typecheck: %s\n", humanreadable(t));
 
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
-        // printf("terminal_symbol: %s\n", t->symbolname);
-
         /* if RPAR --> means end of function */
         if(t->prodrule == RPAR && func_found == 1) {
             /* check nparams first */
@@ -540,28 +521,19 @@ void typecheck(struct tree *t) {
     }
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
-        printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+        // printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
 
         /* func_found: set only if there is a function call, not declaration */
         if(func_found == 1) {
-            printf("function found\n");
-            for(int i = 0; i < table_count; i++) {
-                printf("tables[%d] is %s\n", i, tables[i]->name);
-                printf("tables[%d] number params is %d\n", i, tables[i]->type->u.f.nparams);
-            }
+
             /* param_count:  NOT for function declarations, just count params for func calls*/
             /* tmp_params[] --> save either symbol name if in symbol table or type if not in symbol table */
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if (curr_param == NULL) {
-                printf("curr_param is NULL -> setting here\n");
-                printf("tables[%d] is %s\n", func_i, tables[func_i]->name);
-                printf("tables[%d] number params is %d\n", func_i, tables[func_i]->type->u.f.nparams);
                 curr_param = tables[func_i]->type->u.f.parameters;
-                printf("curr param is now: %s\n", curr_param->name);
             }
 
             if(tmp_symbol != NULL) {
-                printf("is in symbol table\n");
                 /* is in the symbol table */
                 // tmp_params[func_call_param_count[func_call_param_i]] = strdup(t->kids[0]->kids[0]->symbolname);
                 if(check_types(curr_param->type->basetype, tmp_symbol->type->basetype) == 0) {
@@ -572,7 +544,6 @@ void typecheck(struct tree *t) {
                 func_call_param_count[func_call_param_i]++;
                 curr_param = curr_param->next;
             } else {
-                printf("is NOT in symbol table\n");
                 /* isn't a symbol */
                 switch (t->kids[0]->kids[0]->prodrule) {
                 case NUMBER:
@@ -588,29 +559,21 @@ void typecheck(struct tree *t) {
                     /* is a nested function call
                         --> have array of param_counts
                         --> look for opening and closing parens*/
-                    // printf("%s is a name\n", t->kids[0]->kids[0]->symbolname);
                     tmp_params[func_call_param_count[func_call_param_i]] = "name";
-                    // func_call_param_count[func_call_param_i]++;
                     func_call_param_i++;
                     func_call_param_count[func_call_param_i] = 0;
-                    // printf("NAME func_call_param_count[%d]: %d\n", func_call_param_i, func_call_param_count[func_call_param_i]);
                     break;
                 case FUNC:
-                    // printf("%s is a func\n", t->kids[0]->kids[0]->symbolname);
                     built_in_found = 1;
                     break;
                 default:
                     if(strcmp("one_more_string", humanreadable(t->kids[0]->kids[0])) == 0) {
-                        // tmp_params[func_call_param_count[func_call_param_i]] = "string";
-                        // printf("IN ONE-MORE-STRING: curr_param->type->basetype = %s; %s\n", typename(curr_param->type));
                         if(curr_param->type->basetype != STRING_TYPE && curr_param->type->basetype != ANY_TYPE) {
                             printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
                             printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
                             exit(3);
                         }
                     } else {
-                        // printf("unknown: %s\n", t->kids[0]->kids[0]->symbolname);
-                        // tmp_params[func_call_param_count[func_call_param_i]] = "error";
                         printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
                         printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
                         exit(3);
@@ -621,25 +584,19 @@ void typecheck(struct tree *t) {
 
             }
 
-            // printf("func_call_param_count[%d] = %d at %s\n", func_call_param_i, func_call_param_count[func_call_param_i], t->kids[0]->kids[0]->symbolname);
             
         }
 
         if(assignment_found == 1) {
-            // printf("assignment found\n");
-            // printf("in atom_expr. current_symbol: %s\n", current_symbol->s);
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
-                // printf("type %s: %s\t type %s: %s\n", current_symbol->s, typename(current_symbol->type), tmp_symbol->s, typename(tmp_symbol->type));
                 if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) == 1) {
-                    // printf("type %s and type %s are compatable!\n", current_symbol->s, tmp_symbol->s);
                 } else {
                     incompatable_error(tmp_symbol->s);
                 }
             }
             
             else {
-                // printf("not a symbol! %s, %d\n", t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->prodrule);
                 if(t->kids[1] != NULL) {
                     /* t->kids[1] = zero_more_trailer: LPAR opt_arglist RPAR */
                     if(t->kids[0]->kids[0]->prodrule != FUNC) {       
@@ -651,7 +608,6 @@ void typecheck(struct tree *t) {
                                 break;
                             }
                             else if(strcmp(t->kids[0]->kids[0]->symbolname, tables[i]->name) == 0){
-                                // printf("function found in tables[%d]: %s\n", i, tables[i]->name);
                                 func_i = i;
                                 func_found = 1;
                                 break;
@@ -681,7 +637,6 @@ void typecheck(struct tree *t) {
                             break;
                         }
                         else if(strcmp(t->kids[0]->kids[0]->symbolname, tables[i]->name) == 0){
-                            // printf("function found in tables[%d]: %s\n", i, tables[i]->name);
                             func_i = i;
                             func_found = 1;
                             break;

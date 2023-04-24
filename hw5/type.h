@@ -34,8 +34,6 @@ typedef struct typeinfo {
    int basetype;
    union {
       struct funcinfo {
-         // char *name; /* ? */
-         // struct sym_table *st;
          struct typeinfo *returntype;
          int nparams;
          struct param *parameters;
@@ -52,7 +50,7 @@ typedef struct typeinfo {
 
 /* add constructors for other types as needed */
 typeptr alctype(int);
-typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char *tmp_params[]);
+void alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char *tmp_params[]);
 void add_to_list(struct param **head, char *name, struct typeinfo *tmp_type);
 char *typename(typeptr t);
 typeptr return_type(char *type);
