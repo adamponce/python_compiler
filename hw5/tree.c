@@ -45,7 +45,6 @@ int weird_indent = 0;
 int weird_dedent = 0;
 int lineno;
 int param_count = 0;
-/* redo return stuff to look for opt_rarrowtest instead */
 int return_found = 0;
 int opt_rarrowtest_found = 0;
 char *return_symbol = NULL;
@@ -60,6 +59,8 @@ int func_call_param_count[MAX_PARAMS];
 int func_call_param_i = 0;
 int built_in_found = 0;
 struct param *curr_param = NULL;
+int operation_count = 0;
+int operation_type = 0;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -491,7 +492,7 @@ void typecheck(struct tree *t) {
         return;
     }
 
-    // printf("in typecheck: %s\n", humanreadable(t));
+    printf("in typecheck: %s\n", humanreadable(t));
 
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
         /* if RPAR --> means end of function */
@@ -522,6 +523,9 @@ void typecheck(struct tree *t) {
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
         // printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+        if(operation_count > 0) {
+            operation_type = 
+        }
 
         /* func_found: set only if there is a function call, not declaration */
         if(func_found == 1) {
@@ -590,14 +594,14 @@ void typecheck(struct tree *t) {
         if(assignment_found == 1) {
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
-                if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) == 1) {
-                } else {
-                    incompatable_error(tmp_symbol->s);
+                if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) != 1) {
+                    /* for assignment, change type of assignee instead of throwing an error */
+                    current_symbol->type = alctype(tmp_symbol->type->basetype);
                 }
             }
             
             else {
-                if(t->kids[1] != NULL) {
+                if(t->kids[1] != NULL) { /* is a function */
                     /* t->kids[1] = zero_more_trailer: LPAR opt_arglist RPAR */
                     if(t->kids[0]->kids[0]->prodrule != FUNC) {       
                         /* if not a FUNC type, then is a user defined func 
@@ -612,6 +616,27 @@ void typecheck(struct tree *t) {
                                 func_found = 1;
                                 break;
                             }
+                        }
+                    }
+                } else {
+                    if(current_symbol->type->basetype != ANY_TYPE) {
+                        if(t->kids[0]->kids[0]->kids[0] != NULL) {
+                            /* is a string */
+                            current_symbol->type = alctype(STRING_TYPE);
+                        } else {
+                            if(t->kids[0]->kids[0]->prodrule == NUMBER) {
+                                /* is an int or a float */
+                                if(t->kids[0]->kids[0]->leaf->ival != '\0') {
+                                    current_symbol->type = alctype(INT_TYPE);
+                                } else {
+                                    current_symbol->type = alctype(FLOAT_TYPE);
+                                }
+                            } else if((t->kids[0]->kids[0]->prodrule == TRUE) || (t->kids[0]->kids[0]->prodrule == FALSE)) {
+                                current_symbol->type = alctype(BOOL_TYPE);
+                            } else if(t->kids[0]->kids[0]->prodrule == LSQB) {
+                                current_symbol->type = alctype(LIST_TYPE);
+                            }
+
                         }
                     }
                 }
@@ -646,7 +671,7 @@ void typecheck(struct tree *t) {
             }
         }
 
-    }
+    } /* end of if atom_expr*/
 
     /* if enters a function, switch symbol table */
     else if(strcmp("fundef", humanreadable(t)) == 0){
@@ -679,8 +704,11 @@ void typecheck(struct tree *t) {
         dedent = 0;
         indent = 0;
         current = tables[0];
+    } else if((strcmp("zero_more_plus_minus_term", humanreadable(t)) == 0) || (strcmp("zero_more_factor", humanreadable(t)) == 0)) {
+        printf("\t is operation\n");
+        operation_count++;
     }
-
+ 
     if(t->prodrule == NEWLINE) {
         assignment_found = 0;
         func_found = 0;
@@ -699,26 +727,8 @@ void typecheck(struct tree *t) {
         i.e. if a is int, can accept float type assignment
 */
 int check_types(int type1, int type2) {
-    if(type1 == ANY_TYPE) {
+    if((type1 == ANY_TYPE) || (type1 == type2)) {
         return 1;
-    }else if(type1 == type2) {
-        return 1;
-    }  else if(type1 == INT_TYPE) {
-        if(type2 == FLOAT_TYPE) {
-            return 1;
-        } else if(type2 == BOOL_TYPE) {
-            return 1;
-        } else {
-            return 0;
-        }
-    } else if(type1 == FLOAT_TYPE) {
-        if(type2 == FLOAT_TYPE) {
-            return 1;
-        } else if(type2 == BOOL_TYPE) {
-            return 1;
-        } else {
-            return 0;
-        }
     } else {
         return 0;
     }

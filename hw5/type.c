@@ -65,39 +65,6 @@ typeptr alctype(int base)
  * for the return type (r) and the parameter list (p), but the calls to
  * to this function in the example are just passing NULL at present!
  */
-// typeptr alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char *tmp_params[])
-// {
-//     struct typeinfo *rv = (struct typeinfo*) malloc(sizeof(struct typeinfo));
-//     rv = alctype(FUNC_TYPE);
-//     if (rv == NULL) return NULL;
-//     if(return_symbol == NULL) {
-//         /* return type is NONE_TYPE */
-//         rv->u.f.returntype = alctype(NONE_TYPE);
-//     } else {
-//         rv->u.f.returntype = return_type(return_symbol);
-//     }
-
-//     rv->u.f.nparams = nparams;
-
-//     if (nparams > 0) {
-//         struct param *head = NULL;
-
-//         for(int i = 0; i < nparams; i++) {
-//             add_to_list(&head, tmp_params[i], find_symbol(st, tmp_params[i])->type);
-//         }
-//         rv->u.f.parameters = head;
-
-//         // struct param *curr = head;
-//         // while (curr != NULL) {
-//         //     curr = curr->next;
-//         // }
-//     } else {
-//         rv->u.f.parameters = NULL;
-//     }
-
-//     return rv;
-// }
-
 void alcfunctype(struct sym_table *st, char *return_symbol, int nparams, char *tmp_params[]) {
     st->type = (typeptr) malloc(sizeof(struct typeinfo) + sizeof(struct funcinfo));
     st->type->basetype = FUNC_TYPE;

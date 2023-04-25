@@ -131,7 +131,7 @@ zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef small_stmt augassi
 subscript opt_finally zero_more_comma_argtd
 dictorsetmarker dsm_expr tct_or_dse zero_more_comma_tct_or_dse cf_or_comma_tct_dct dsm_star_expr cf_or_comma_tse opt_dictsetmarker
 everything_in_parenthesis comma_test_or_se comma_isn comma_dsn comma_sub dict_set_maker opt_semi_colon
-small_or_null weird_buggy_thing one_more_newline
+small_or_null
 %%
 /*
 Removed:
@@ -233,13 +233,13 @@ vfpdef: NAME;
 //SIMPLE STATEMENTS
 //===========
 stmt: simple_stmt{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | compound_stmt{$$ = alctree(1014, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | weird_buggy_thing{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+    | compound_stmt{$$ = alctree(1014, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+    // | weird_buggy_thing{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-weird_buggy_thing: DEDENT one_more_newline INDENT {$$ = alctree(1278, "weird_buggy_thing", 1, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
+// weird_buggy_thing: DEDENT one_more_newline INDENT {$$ = alctree(1278, "weird_buggy_thing", 1, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
-one_more_newline: NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | one_more_newline NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+// one_more_newline: NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
+//     | one_more_newline NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 simple_stmt: small_or_null zero_more_stmts opt_semi_colon NEWLINE{$$ = alctree(1015, "simple_stmt", 4, $1, $2, $3, $4, NULL, NULL, NULL, NULL);};
 zero_more_stmts: {$$=NULL;} | zero_more_stmts single_stmt{$$ = alctree(1016, "zero_more_stmtms", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
