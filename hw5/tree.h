@@ -1,13 +1,3 @@
-/**
-* @file tree.h
-*
-* @author Javier Reyna Adam Schmidt Nikki Sparacino
-*
-* @date 02/25/2023
-*
-* Assignment: Homework 3
-*/
-
 #ifndef TREE_H
 #define TREE_H
 
@@ -22,6 +12,15 @@ struct token{
    int issval;
 };
 
+struct addr {
+  int region;
+  union {
+  int offset;
+  char *name;
+  } u;
+};
+
+
 struct tree {
    int prodrule;
    char *symbolname;
@@ -30,6 +29,11 @@ struct tree {
    struct tree *kids[8]; /*Max number of children in the production rules in the grammar *//* if nkids >0 */
    int sn;
    int id;     /* unique identifier for Dot */
+   int first;
+   int follow;
+   int onTrue;
+   int onFalse;
+   struct addr label;
 };
 
 int alctoken(int cat);

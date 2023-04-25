@@ -1,18 +1,8 @@
-/**
-* @file tree.c
-*
-* @author Javier Reyna Adam Schmidt Nikki Sparacino
-*
-* @date 03/22/2023
-*
-* Assignment: Homework 4
-*/
-
-
 #include "tree.h"
 #include "punygram.tab.h"
 #include "symtab.h"
 #include "type.h"
+#include "tac.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

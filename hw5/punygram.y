@@ -436,12 +436,13 @@ test_nocond: or_test{$$ = alctree(1105, "test_nocond", 1, $1, NULL, NULL, NULL, 
 or_test: and_test zero_more_or_and_test{$$ = alctree(1106, "or_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 zero_more_or_and_test: {$$=NULL;} 
     | zero_more_or_and_test or_and_test{$$ = alctree(1107, "zero_more_or_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-or_and_test: OR and_test{$$ = alctree(1107, "or_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+
+or_and_test: OR and_test{$$ = alctree(2000, "or_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 and_test: not_test zero_more_and_not_test{$$ = alctree(1108, "and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 zero_more_and_not_test: {$$=NULL;} 
     | zero_more_and_not_test not_and_test{$$ = alctree(1109, "zero_more_and_no_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-not_and_test: AND not_test{$$ = alctree(1107, "not_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+not_and_test: AND not_test{$$ = alctree(2001, "not_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 not_test: NOT not_test{$$ = alctree(1110, "not_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);}
     | comparison{$$ = alctree(1111, "not_test", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};

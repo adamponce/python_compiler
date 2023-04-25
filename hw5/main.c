@@ -1,14 +1,3 @@
-/**
-* @file main.c
-*
-* @author Javier Reyna Adam Schmidt Nikki Sparacino
-*
-* @date 03/22/2023
-*
-* Assignment: Homework 4
-*/
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +5,7 @@
 #include "symtab.h"
 #include "dot.h"
 #include "type.h"
+#include "tac.h"
 
 #define COLOR_BOLD "\e[33m"
 #define COLOR_END "\e[m"
@@ -101,7 +91,7 @@ int main(int argc, char *argv[]){
         //Begins analysis
         printf("FILE: %s\n", argv[i]);
         printf("----------------------\n");
-        yydebug = 1;
+        yydebug = 0;
         /*
         while ((cat = yylex()) > 0){
             printf("%d\t %s\n", cat, yytext);
@@ -114,8 +104,10 @@ int main(int argc, char *argv[]){
         tables[0] = global;
         current = global;
         if(r == 0){
-            treeprint(root, 1);
+            //treeprint(root, 1);
             //treetraversal(root);
+            call_func(root);
+            print_code_flow(root);
             //typecheck(root);
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");
