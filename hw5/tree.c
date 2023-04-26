@@ -61,6 +61,7 @@ int built_in_found = 0;
 struct param *curr_param = NULL;
 int operation_count = 0;
 int operation_type = 0;
+int type_func_check = 0;
 
 int alctoken(int cat){
     yylval.treeptr = malloc(sizeof (struct tree));
@@ -492,7 +493,7 @@ void typecheck(struct tree *t) {
         return;
     }
 
-    // printf("in typecheck: %s\n", humanreadable(t));
+    printf("in typecheck: %s\n", humanreadable(t));
 
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
         /* if RPAR --> means end of function */
@@ -522,14 +523,31 @@ void typecheck(struct tree *t) {
     }
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
-        // printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+        printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+
+        /* type checking right-hand-side if an operation exists */
         if(operation_count > 0) {
-            // operation_type = 
+            // printf("atom_expr: %d\n",  t->kids[0]->kids[0]->leaf->ival);
+            if(operation_type == 0) {
+                /*
+                    set operation_type differently depending on if number, string, or variable in symbol table.
+                */
+                printf("set operation type:\n");
+                struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
+                if(tmp_symbol != NULL) {
+                    /* operand is in symbol table */
+                }
+                // operation_type = t->kids[0]->kids[0]-> ???
+            }
+            // operation_type = INT_TYPE;
+            operation_count--;
+            if(operation_count == 0) {
+                operation_type = 0;
+            }
         }
 
         /* func_found: set only if there is a function call, not declaration */
         if(func_found == 1) {
-
             /* param_count:  NOT for function declarations, just count params for func calls*/
             /* tmp_params[] --> save either symbol name if in symbol table or type if not in symbol table */
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
@@ -591,8 +609,12 @@ void typecheck(struct tree *t) {
         if(assignment_found == 1) {
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
-                if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) != 1) {
-                    incompatable_error(tmp_symbol->s, t->kids[0]->kids[0]->leaf->lineno);
+                if(type_func_check == 1) {
+                    type_func_check = 0;
+                } else {
+                    if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) != 1) {
+                        incompatable_error(tmp_symbol->s, t->kids[0]->kids[0]->leaf->lineno);
+                    }
                 }
             }
             
@@ -613,23 +635,63 @@ void typecheck(struct tree *t) {
                                 break;
                             }
                         }
+                    } else {
+                        /* built in funcs for type stuff:
+                            int
+                            str
+                            bool
+                            dict
+                            float
+                            list
+                            */
+                        if(current_symbol->type->basetype != ANY_TYPE) {
+                            if(strcmp("int", t->kids[0]->kids[0]->symbolname) == 0) {
+                                if(current_symbol->type->basetype == INT_TYPE) {
+                                    type_func_check = 1;
+                                }
+                            } else if(strcmp("str", t->kids[0]->kids[0]->symbolname) == 0) {
+                                if(current_symbol->type->basetype == STRING_TYPE) {
+                                    type_func_check = 1;
+                                }
+                            } else if(strcmp("bool", t->kids[0]->kids[0]->symbolname) == 0) {
+                                if(current_symbol->type->basetype == BOOL_TYPE) {
+                                    type_func_check = 1;
+                                }
+                            } else if(strcmp("dict", t->kids[0]->kids[0]->symbolname) == 0) {
+                                if(current_symbol->type->basetype == DICT_TYPE) {
+                                    type_func_check = 1;
+                                }
+                            } else if(strcmp("float", t->kids[0]->kids[0]->symbolname) == 0) {
+                                if(current_symbol->type->basetype == FLOAT_TYPE) {
+                                    type_func_check = 1;
+                                }
+                            } else if(strcmp("list", t->kids[0]->kids[0]->symbolname) == 0) {
+                                if(current_symbol->type->basetype == LIST_TYPE) {
+                                    type_func_check = 1;
+                                }
+                            }
+                        }
                     }
                 } else {
-                    if(current_symbol->type->basetype != ANY_TYPE) {
-                        if((t->kids[0]->kids[0]->kids[0] != NULL) && (current_symbol->type->basetype != STRING_TYPE)) {
-                            incompatable_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
-                        } else {
-                            if((t->kids[0]->kids[0]->leaf->ival != '\0') && (current_symbol->type->basetype != INT_TYPE)) {
-                                incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
-                            }
-                            else if((t->kids[0]->kids[0]->leaf->dval != '\0') && (current_symbol->type->basetype != FLOAT_TYPE)) {
-                                incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
-                            }
-                            else if(((t->kids[0]->kids[0]->prodrule == TRUE) || (t->kids[0]->kids[0]->prodrule == FALSE)) && (current_symbol->type->basetype != BOOL_TYPE)) {
-                                incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
-                            }
-                            else if((t->kids[0]->kids[0]->prodrule == LSQB) && (current_symbol->type->basetype != LIST_TYPE)) {
-                                incompatable_error("[]", t->kids[0]->kids[0]->leaf->lineno);
+                    if(type_func_check == 1) {
+                        type_func_check = 0;
+                    } else {
+                        if(current_symbol->type->basetype != ANY_TYPE) {
+                            if((t->kids[0]->kids[0]->kids[0] != NULL) && (current_symbol->type->basetype != STRING_TYPE)) {
+                                incompatable_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
+                            } else {
+                                if((t->kids[0]->kids[0]->leaf->ival != '\0') && (current_symbol->type->basetype != INT_TYPE)) {
+                                    incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                                }
+                                else if((t->kids[0]->kids[0]->leaf->dval != '\0') && (current_symbol->type->basetype != FLOAT_TYPE)) {
+                                    incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                                }
+                                else if(((t->kids[0]->kids[0]->prodrule == TRUE) || (t->kids[0]->kids[0]->prodrule == FALSE)) && (current_symbol->type->basetype != BOOL_TYPE)) {
+                                    incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                                }
+                                else if((t->kids[0]->kids[0]->prodrule == LSQB) && (current_symbol->type->basetype != LIST_TYPE)) {
+                                    incompatable_error("[]", t->kids[0]->kids[0]->leaf->lineno);
+                                }
                             }
                         }
                     }
@@ -702,6 +764,11 @@ void typecheck(struct tree *t) {
     
     else if((strcmp("zero_more_plus_minus_term", humanreadable(t)) == 0) || (strcmp("zero_more_factor", humanreadable(t)) == 0)) {
         printf("\t is operation\n");
+        operation_count++;
+    }
+
+    else if((strcmp("arith_expr", humanreadable(t)) == 0) && t->kids[1] != NULL) {
+        printf("\tis operation\n");
         operation_count++;
     }
  

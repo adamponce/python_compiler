@@ -1,3 +1,3 @@
-a : int = 1
-b = 5
-a = int(b)
+a : int
+b = 1
+a = b
