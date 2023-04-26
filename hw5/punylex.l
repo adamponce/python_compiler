@@ -33,6 +33,9 @@
 			if(top > 0){
 				dodedentseolpendings();
 			}
+			else{
+				eolflagcompleted = 1;
+			}
 			return alctoken(NEWLINE);
 		}
 		else{
@@ -41,7 +44,7 @@
 }
 
 
-\\\n		{column=1;}
+
 
 
 \n[ \t]*	{int il = indentlevel(yytext+1);
@@ -89,7 +92,7 @@
 
 
 "False"	{return alctoken(FALSE);}
-"def"	{rootlevel=0;if(top>0){dodedentsdefpendings();}else{}; alctoken(DEF);}
+"def"	{rootlevel=0;if(top>0){dodedentsdefpendings(); return alctoken(NEWLINE);}else{return alctoken(DEF);};}
 "if"	{return alctoken(IF);}
 "raise"	{return alctoken(RAISE);}
 "None"	{return alctoken(NONE);}
@@ -183,12 +186,12 @@
 %%
 
 int indentlevel(char *s)
-{      
+{
    int column = 1;
    while(*s != '\0') {
       if (*s == '\t') {
-		column++;
-        while ((column % 8) != 0) column++;
+         column++; /* tab adds at least one space */
+         while (((column-1) % 8) != 0) column++;
       }
       else if (*s == ' ') column++;
       else { column++; printf("but wtf is %c\n", *s);}

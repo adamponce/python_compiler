@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
         //Begins analysis
         printf("FILE: %s\n", argv[i]);
         printf("----------------------\n");
-        yydebug = 0;
+        yydebug = 1;
         /*
         while ((cat = yylex()) > 0){
             printf("%d\t %s\n", cat, yytext);
