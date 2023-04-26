@@ -492,7 +492,7 @@ void typecheck(struct tree *t) {
         return;
     }
 
-    printf("in typecheck: %s\n", humanreadable(t));
+    // printf("in typecheck: %s\n", humanreadable(t));
 
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
         /* if RPAR --> means end of function */
@@ -524,7 +524,7 @@ void typecheck(struct tree *t) {
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
         // printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
         if(operation_count > 0) {
-            operation_type = 
+            // operation_type = 
         }
 
         /* func_found: set only if there is a function call, not declaration */
@@ -585,18 +585,14 @@ void typecheck(struct tree *t) {
                     func_call_param_count[func_call_param_i]++;
                 }
                 curr_param = curr_param->next;
-
             }
-
-            
         }
 
         if(assignment_found == 1) {
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
                 if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) != 1) {
-                    /* for assignment, change type of assignee instead of throwing an error */
-                    current_symbol->type = alctype(tmp_symbol->type->basetype);
+                    incompatable_error(tmp_symbol->s, t->kids[0]->kids[0]->leaf->lineno);
                 }
             }
             
@@ -620,23 +616,21 @@ void typecheck(struct tree *t) {
                     }
                 } else {
                     if(current_symbol->type->basetype != ANY_TYPE) {
-                        if(t->kids[0]->kids[0]->kids[0] != NULL) {
-                            /* is a string */
-                            current_symbol->type = alctype(STRING_TYPE);
+                        if((t->kids[0]->kids[0]->kids[0] != NULL) && (current_symbol->type->basetype != STRING_TYPE)) {
+                            incompatable_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
                         } else {
-                            if(t->kids[0]->kids[0]->prodrule == NUMBER) {
-                                /* is an int or a float */
-                                if(t->kids[0]->kids[0]->leaf->ival != '\0') {
-                                    current_symbol->type = alctype(INT_TYPE);
-                                } else {
-                                    current_symbol->type = alctype(FLOAT_TYPE);
-                                }
-                            } else if((t->kids[0]->kids[0]->prodrule == TRUE) || (t->kids[0]->kids[0]->prodrule == FALSE)) {
-                                current_symbol->type = alctype(BOOL_TYPE);
-                            } else if(t->kids[0]->kids[0]->prodrule == LSQB) {
-                                current_symbol->type = alctype(LIST_TYPE);
+                            if((t->kids[0]->kids[0]->leaf->ival != '\0') && (current_symbol->type->basetype != INT_TYPE)) {
+                                incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
                             }
-
+                            else if((t->kids[0]->kids[0]->leaf->dval != '\0') && (current_symbol->type->basetype != FLOAT_TYPE)) {
+                                incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                            }
+                            else if(((t->kids[0]->kids[0]->prodrule == TRUE) || (t->kids[0]->kids[0]->prodrule == FALSE)) && (current_symbol->type->basetype != BOOL_TYPE)) {
+                                incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                            }
+                            else if((t->kids[0]->kids[0]->prodrule == LSQB) && (current_symbol->type->basetype != LIST_TYPE)) {
+                                incompatable_error("[]", t->kids[0]->kids[0]->leaf->lineno);
+                            }
                         }
                     }
                 }
@@ -704,7 +698,9 @@ void typecheck(struct tree *t) {
         dedent = 0;
         indent = 0;
         current = tables[0];
-    } else if((strcmp("zero_more_plus_minus_term", humanreadable(t)) == 0) || (strcmp("zero_more_factor", humanreadable(t)) == 0)) {
+    }
+    
+    else if((strcmp("zero_more_plus_minus_term", humanreadable(t)) == 0) || (strcmp("zero_more_factor", humanreadable(t)) == 0)) {
         printf("\t is operation\n");
         operation_count++;
     }
@@ -734,8 +730,8 @@ int check_types(int type1, int type2) {
     }
 }
 
-void incompatable_error(char *tmp) {
+void incompatable_error(char *tmp, int line) {
     printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-    printf("Incompatable Types: \"%s\", \"%s\" filename: %s line number: %d\n", current_symbol->s, tmp, current_file, rows);
+    printf("Incompatable Types: %s, %s filename: %s line number: %d\n", current_symbol->s, tmp, current_file, line);
     exit(3);
 }
