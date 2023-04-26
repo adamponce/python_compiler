@@ -311,6 +311,10 @@ void treetraversal(struct tree *t){
                     symbol = strdup(t->kids[0]->kids[0]->symbolname);
                     atom_found = 1;
                 }
+                else if(t->kids[1]->kids[0] != NULL){
+                    if(t->kids[1]->kids[0]->kids[1]->prodrule == 2900){
+                    }
+                }
                 else{
                     int func_found = 0;
                     for(int i = 0; i < 10; i++){
@@ -322,7 +326,7 @@ void treetraversal(struct tree *t){
                             break;
                         }
                     }
-                    if(func_found == 0 && dot_func == 0){
+                    if(func_found == 0){
                         printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
                         printf("Uninitialized Function: \"%s\" filename: %s line number: %d\n", t->kids[0]->kids[0]->leaf->text, current_file, t->kids[0]->kids[0]->leaf->lineno);
                         exit(3);

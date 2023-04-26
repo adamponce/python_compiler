@@ -113,6 +113,7 @@ int main(int argc, char *argv[]){
         global->type = alctype(NONE_TYPE);
         tables[0] = global;
         current = global;
+        insert_symbol(current, "__name__", "any");
         if(r == 0){
             //treeprint(root, 1);
             treetraversal(root);
