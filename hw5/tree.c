@@ -49,6 +49,8 @@ int param_count = 0;
 int return_found = 0;
 int opt_rarrowtest_found = 0;
 char *return_symbol = NULL;
+int import_stmt = 0;
+int dot_func = 0;
 
 /* for type checking */
 struct sym_entry *current_symbol;
@@ -280,6 +282,17 @@ void treetraversal(struct tree *t){
             return;
         }
 
+        //NOT CONSISTENTLY WORKING
+        /*
+        if(t->kids[1] != NULL){
+            if(t->kids[1]->kids[0]->kids[1]->prodrule == 2900){
+                dot_func = 1;
+                return;
+            }
+        }
+        */
+
+
         if(t->kids[1] == NULL){
             if(t->kids[0]->kids[0]->prodrule == NUMBER){}
             else{
@@ -309,7 +322,7 @@ void treetraversal(struct tree *t){
                             break;
                         }
                     }
-                    if(func_found == 0){
+                    if(func_found == 0 && dot_func == 0){
                         printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
                         printf("Uninitialized Function: \"%s\" filename: %s line number: %d\n", t->kids[0]->kids[0]->leaf->text, current_file, t->kids[0]->kids[0]->leaf->lineno);
                         exit(3);
@@ -473,7 +486,22 @@ void treetraversal(struct tree *t){
         opt_arglist_found = 0;
     }
 
-    for(int i = 0; i < t->nkids; i++){\
+    //inserting library functions into symbol table
+    if(t->prodrule == 332){
+        insert_symbol(current, t->symbolname, "func");
+    }
+
+    //Inseting Import stmts into symbol table
+    if(t->prodrule == 1066){
+        import_stmt = 1;
+        insert_symbol(current, t->kids[1]->kids[0]->kids[0]->kids[0]->symbolname, "package");
+    }
+    //continued.
+    if((t->prodrule == 1086) && import_stmt == 1){
+        insert_symbol(current, t->kids[1]->kids[0]->kids[0]->symbolname, "package");
+    }
+
+    for(int i = 0; i < t->nkids; i++){
         treetraversal(t->kids[i]);
     }
 

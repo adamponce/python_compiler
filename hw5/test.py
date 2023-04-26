@@ -1,6 +1,8 @@
-def foo(x:int, y)-> int:
-   return x
-def main(a):
-   z : int = foo(1, foo(1, 2))
-def test(l, m, n):
-   return m
+import math
+
+a = math.acos(3)
+
+#its acros that throwing the problem because it is a function.
+# Have a flag thats set to allow for it to be called if a dot is found
+#t->kids[1]->kids[0]->kids[1]->prodrule
+

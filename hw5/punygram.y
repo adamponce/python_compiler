@@ -131,7 +131,7 @@ zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef small_stmt augassi
 subscript opt_finally zero_more_comma_argtd
 dictorsetmarker dsm_expr tct_or_dse zero_more_comma_tct_or_dse cf_or_comma_tct_dct dsm_star_expr cf_or_comma_tse opt_dictsetmarker
 everything_in_parenthesis comma_test_or_se comma_isn comma_dsn comma_sub dict_set_maker opt_semi_colon
-small_or_null weird_buggy_thing one_more_newline
+small_or_null
 %%
 /*
 Removed:
@@ -234,12 +234,12 @@ vfpdef: NAME;
 //===========
 stmt: simple_stmt{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
     | compound_stmt{$$ = alctree(1014, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | weird_buggy_thing{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+//    | weird_buggy_thing{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-weird_buggy_thing: DEDENT one_more_newline INDENT {$$ = alctree(1278, "weird_buggy_thing", 1, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
+//weird_buggy_thing: DEDENT one_more_newline INDENT {$$ = alctree(1278, "weird_buggy_thing", 1, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
-one_more_newline: NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | one_more_newline NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+//one_more_newline: NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
+  //  | one_more_newline NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 simple_stmt: small_or_null zero_more_stmts opt_semi_colon NEWLINE{$$ = alctree(1015, "simple_stmt", 4, $1, $2, $3, $4, NULL, NULL, NULL, NULL);};
 zero_more_stmts: {$$=NULL;} | zero_more_stmts single_stmt{$$ = alctree(1016, "zero_more_stmtms", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
@@ -505,7 +505,7 @@ power: atom_expr opt_doublestar_factor{$$ = alctree(1149, "power", 2, $1, $2, NU
 opt_doublestar_factor: {$$=NULL;} 
     | DOUBLESTAR factor{$$ = alctree(1150, "opt_doublestar_factor", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-atom_expr: atom zero_more_trailer{$$ = alctree(11451, "atom_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+atom_expr: atom zero_more_trailer{$$ = alctree(1151, "atom_expr", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 zero_more_trailer: {$$=NULL;} 
     | zero_more_trailer trailer{$$ = alctree(1152, "zero_more_trailer", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
@@ -547,11 +547,11 @@ zero_more_comma_nt_or_se: {$$=NULL;}
 comma_nt_or_se: COMMA namedexpr_or_star_expr{$$ = alctree(1173, "comma_nt_or_se", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 namedexpr_or_star_expr: namedexpr_test{$$ = alctree(1174, "namedexpr_or_star_expr", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | star_expr{$$ = alctree(1175, "namedexpr_or_star_expr", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+    | star_expr{$$ = alctree(2998, "namedexpr_or_star_expr", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 trailer: LPAR opt_arglist RPAR{$$ = alctree(1175, "trailer", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);} 
     | LSQB subscriptlist RSQB{$$ = alctree(1176, "trailer", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);} 
-    | DOT NAME{$$ = alctree(1176, "trailer", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+    | DOT NAME{$$ = alctree(2900, "trailer", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 opt_arglist: {$$=NULL;} | arglist{$$ = alctree(1177, "opt_arglist", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 subscriptlist: subscript zero_more_comma_sub opt_comma{$$ = alctree(1178, "subscriptlist", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
