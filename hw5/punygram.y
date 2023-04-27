@@ -148,7 +148,9 @@ zero_more_newline_stmt: {$$=NULL;} | zero_more_newline_stmt newline_stmt{$$ = al
 
 newline_stmt: NEWLINE{$$ = alctree(1002, "NEWLINE", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}| stmt{$$ = alctree(1003, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-funcdef: DEF NAME parameters opt_rarrowtest COLON func_body_suite{$$ = alctree(1004, "fundef", 6, $1, $2, $3, $4, $5, $6, NULL, NULL);};
+funcdef: DEF NAME parameters opt_rarrowtest COLON func_body_suite{$$ = alctree(1004, "fundef", 6, $1, $2, $3, $4, $5, $6, NULL, NULL);}
+    | DEF NAME parameters opt_rarrowtest NEWLINE{yyerror("colon");};
+
 opt_rarrowtest: {$$=NULL;} | RARROW test{$$ = alctree(1005, "opt_rarrowtest", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 parameters: LPAR argumentstd RPAR{$$ = alctree(1006, "parameters", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};

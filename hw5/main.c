@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
         //Begins analysis
         printf("FILE: %s\n", argv[i]);
         printf("----------------------\n");
-        yydebug = 1;
+        yydebug = 0;
         /*
         while ((cat = yylex()) > 0){
             printf("%d\t %s\n", cat, yytext);
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]){
             //print_code_flow(root);
             //typecheck(root);
             if(symtab_flag == 0){
-                printf("No Errors Detected. Use -symtab to see symbol table");
+                //printf("No Errors Detected. Use -symtab to see symbol table");
             }
             for(int j = 0; j < ARRAY_SIZE; j++){
                 if(tables[j] == NULL){
@@ -144,7 +144,14 @@ int main(int argc, char *argv[]){
 
 
 int yyerror(char *s){
-    printf(COLOR_BOLD "SYNTAX ERROR: " COLOR_END);
-    printf("\"%s\" filename: %s line number: %d\n", yytext, current_file, rows);
-    exit(2);
+    if(strcmp(s, "colon") == 0){
+       printf(COLOR_BOLD "SYNTAX ERROR: " COLOR_END);
+        printf("MISSING \":\" filename: %s line number: %d\n", current_file, rows-1);
+        exit(2); 
+    }
+    else{
+        printf(COLOR_BOLD "SYNTAX ERROR: " COLOR_END);
+        printf("\"%s\" filename: %s line number: %d\n", yytext, current_file, rows);
+        exit(2);
+    }
 }

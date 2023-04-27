@@ -22,6 +22,7 @@
 	int nameflagcompleted=0;
 	int eolflagcompleted=0;
 	int rootlevel=1;
+	int comment = 0;
 	int firsttime, rows = 1, words = 0, column = 1;
 	int name_counter = 0;
 	extern char *current_file;
@@ -66,12 +67,12 @@
 			pendingtransition=0;
 		   }
 		   /*printf("after stack->%d, il->%d, pendingtrans->%d, sizetext->%d, top->%d, rows->%d\n",dentstack[top], il, pendingtransition,(int)strlen(yytext),top,rows);*/
-		  if (il > dentstack[top]) {
+		  if (il > dentstack[top] && comment == 0) {
 		    dentstack[++top] = il;
                     /* return an INDENT token, except NEWLINE first */
 		    dedentcount = -1;
                     }
-		  else if (il < dentstack[top]&& pendingtransition == 0 && top>=1) {
+		  else if (il < dentstack[top]&& pendingtransition == 0 && top>=1 && comment == 0) {
                     /* return one or more DEDENT tokens */
 		    dedentcount=0;
                     /* count how many */
@@ -82,7 +83,10 @@
 		       fflush(stderr); exit(1);
 		       }
 		    /* need to dedent by dedentcount, but returning NEWLINE */
-                    } 
+                    }
+		  else if(comment == 1){
+			comment = 0;
+		  }
 		  else {
                     /* still at ILEVEL il, no INDENT or DEDENT */
                 }
@@ -180,18 +184,17 @@
 -?[0-9]+	{int cat = alctoken(NUMBER); yylval.treeptr->leaf->ival = atoi(yytext); return cat;}
 -?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)? {int cat = alctoken(NUMBER); yylval.treeptr->leaf->dval = atof(yytext); return cat;}
 [a-zA-Z_][a-zA-Z0-9_]*	{if(top == 1 && column == 2 && rootlevel==0){dodedentsnamependings();rootlevel=1;return alctoken(NEWLINE);}else{return alctoken(NAME);};column += strlen(yytext); }
-"#".*   {}
+"#".*   {comment = 1;}
 " "	{}
 .		{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("%s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}
 %%
 
 int indentlevel(char *s)
-{
+{      
    int column = 1;
    while(*s != '\0') {
       if (*s == '\t') {
-         column++; /* tab adds at least one space */
-         while (((column-1) % 8) != 0) column++;
+         while ((column % 8) != 0) column++;
       }
       else if (*s == ' ') column++;
       else { column++; printf("but wtf is %c\n", *s);}
