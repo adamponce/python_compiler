@@ -113,8 +113,9 @@ int main(int argc, char *argv[]){
         global->type = alctype(NONE_TYPE);
         tables[0] = global;
         current = global;
+        insert_symbol(current, "__name__", "any");
         if(r == 0){
-            // treeprint(root, 1);
+            //treeprint(root, 1);
             treetraversal(root);
             typecheck(root);
             if(symtab_flag == 0){
@@ -152,7 +153,14 @@ int main(int argc, char *argv[]){
 
 
 int yyerror(char *s){
-    printf(COLOR_BOLD "SYNTAX ERROR: " COLOR_END);
-    printf("\"%s\" filename: %s line number: %d\n", yytext, current_file, rows);
-    exit(2);
+    if(strcmp(s, "colon") == 0){
+       printf(COLOR_BOLD "SYNTAX ERROR: " COLOR_END);
+        printf("MISSING \":\" filename: %s line number: %d\n", current_file, rows-1);
+        exit(2); 
+    }
+    else{
+        printf(COLOR_BOLD "SYNTAX ERROR: " COLOR_END);
+        printf("\"%s\" filename: %s line number: %d\n", yytext, current_file, rows);
+        exit(2);
+    }
 }

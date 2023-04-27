@@ -48,6 +48,7 @@ int param_count = 0;
 int return_found = 0;
 int opt_rarrowtest_found = 0;
 char *return_symbol = NULL;
+int import_stmt = 0;
 
 /* for type checking */
 struct sym_entry *current_symbol;
@@ -276,6 +277,12 @@ void treetraversal(struct tree *t){
             return;
         }
 
+        if(for_found == 1){
+            insert_symbol(current, strdup(t->kids[0]->kids[0]->symbolname), "any");
+            for_found = 0;
+            return;
+        }
+
         if(opt_rarrowtest_found == 1) {
             return_symbol = strdup(t->kids[0]->kids[0]->symbolname);
             opt_rarrowtest_found = 0;
@@ -299,6 +306,10 @@ void treetraversal(struct tree *t){
                 if(t->kids[1]->kids[1]->kids[0]->prodrule == LSQB){
                     symbol = strdup(t->kids[0]->kids[0]->symbolname);
                     atom_found = 1;
+                }
+                else if(t->kids[1]->kids[0] != NULL){
+                    if(t->kids[1]->kids[0]->kids[1]->prodrule == 2900){
+                    }
                 }
                 else{
                     int func_found = 0;
@@ -475,6 +486,21 @@ void treetraversal(struct tree *t){
         opt_arglist_found = 0;
     }
 
+    //inserting library functions into symbol table
+    if(t->prodrule == 332){
+        insert_symbol(current, t->symbolname, "func");
+    }
+
+    //Inseting Import stmts into symbol table
+    if(t->prodrule == 1066){
+        import_stmt = 1;
+        insert_symbol(current, t->kids[1]->kids[0]->kids[0]->kids[0]->symbolname, "package");
+    }
+    //continued.
+    if((t->prodrule == 1086) && import_stmt == 1){
+        insert_symbol(current, t->kids[1]->kids[0]->kids[0]->symbolname, "package");
+    }
+
     for(int i = 0; i < t->nkids; i++){\
         treetraversal(t->kids[i]);
     }
@@ -493,7 +519,7 @@ void typecheck(struct tree *t) {
         return;
     }
 
-    printf("in typecheck: %s\n", humanreadable(t));
+    // printf("in typecheck: %s\n", humanreadable(t));
 
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
         /* if RPAR --> means end of function */
@@ -523,28 +549,77 @@ void typecheck(struct tree *t) {
     }
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
-        printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
+        // printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
 
         /* type checking right-hand-side if an operation exists */
-        if(operation_count > 0) {
-            // printf("atom_expr: %d\n",  t->kids[0]->kids[0]->leaf->ival);
-            if(operation_type == 0) {
-                /*
-                    set operation_type differently depending on if number, string, or variable in symbol table.
-                */
-                printf("set operation type:\n");
-                struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
-                if(tmp_symbol != NULL) {
-                    /* operand is in symbol table */
-                }
-                // operation_type = t->kids[0]->kids[0]-> ???
-            }
-            // operation_type = INT_TYPE;
-            operation_count--;
-            if(operation_count == 0) {
-                operation_type = 0;
-            }
-        }
+        // if(operation_count > 0) {
+        //     // printf("current_symbol is: %s\n", typename(current_symbol->type));
+        //     if(operation_type == 0) {
+        //         /* set operation_type differently depending on if number, string, or variable in symbol table. */
+        //         printf("set operation type:\n");
+        //         // operation_type = get_type(t->kids[0]->kids[0]);
+        //         // struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
+        //         // if(tmp_symbol != NULL) {
+        //         //     /* operand is in symbol table */
+        //         //     /* if type is any, check contents (ival, dval, sval) to see if num or string */
+
+        //         // } else if(t->kids[0]->kids[0]->kids[0] != NULL) {
+        //         //     /* operand is a string */
+        //         //     operation_type = STRING_TYPE;
+        //         // } else if(t->kids[0]->kids[0]->prodrule == NUMBER) {
+        //         //     /* operand is int or float */
+        //         //     if(t->kids[0]->kids[0]->leaf->ival != '\0') {
+        //         //         operation_type = INT_TYPE;
+        //         //     } else if(t->kids[0]->kids[0]->leaf->dval != '\0') {
+        //         //         operation_type = FLOAT_TYPE;
+        //         //     } else {
+        //         //         printf("Weird error -- number but not int or float.\n");
+        //         //         exit(2);
+        //         //     }
+
+        //         // } else if((t->kids[0]->kids[0]->prodrule == TRUE) || (t->kids[0]->kids[0]->prodrule == FALSE)) {
+        //         //     /* operand is bool -> treat as int
+        //         //         True = 1; False = 0 */
+        //         //     operation_type = INT_TYPE;
+        //         // } else if(t->kids[0]->kids[0]->prodrule == LSQB) {
+        //         //     /* operand is list */
+        //         //     operation_type = LIST_TYPE;
+        //         // } else {
+        //         //     /* else - throw error -> unsupported type for (operation) */
+
+        //         //     /* if dict -> throw error 
+        //         //             TypeError: unsupported operand type(s) for +: 'dict' and 'dict' */
+        //         //     printf("need to specify for: %s (%d)\n", t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->prodrule);
+        //         // }
+        //         // operation_type = t->kids[0]->kids[0]-> ???
+        //     } else {
+        //         // switch(operation_type) {
+        //         // case INT_TYPE:
+        //         //     // if()
+        //         //     break;
+        //         // case FLOAT_TYPE:
+        //         //     break;
+        //         // case LIST_TYPE:
+        //         //     break;
+        //         // case STRING_TYPE:
+        //         //     break;
+        //         // default:
+        //         //     printf("type is %d\n", operation_type);
+        //         // }
+        //     }
+
+
+        //     operation_count--;
+        //     if(operation_count == 0) {
+        //         /* check if issue with funal operation type and type of symbol*/ 
+        //         if(current_symbol != NULL) {
+        //             if((current_symbol->type->basetype != ANY_TYPE) && (current_symbol->type->basetype != operation_type)) {
+        //                 incompatable_error(typenam[operation_type-1000000], t->kids[0]->kids[0]->leaf->lineno);
+        //             }
+        //         }
+        //         operation_type = 0;
+        //     }
+        // }
 
         /* func_found: set only if there is a function call, not declaration */
         if(func_found == 1) {
@@ -763,12 +838,12 @@ void typecheck(struct tree *t) {
     }
     
     else if((strcmp("zero_more_plus_minus_term", humanreadable(t)) == 0) || (strcmp("zero_more_factor", humanreadable(t)) == 0)) {
-        printf("\t is operation\n");
+        // printf("\t is operation\n");
         operation_count++;
     }
 
     else if((strcmp("arith_expr", humanreadable(t)) == 0) && t->kids[1] != NULL) {
-        printf("\tis operation\n");
+        // printf("\tis operation\n");
         operation_count++;
     }
  
@@ -797,8 +872,51 @@ int check_types(int type1, int type2) {
     }
 }
 
+// int get_type(struct tree t) {
+//     struct sym_entry *tmp_symbol = find_symbol(current, t->symbolname);
+//     if(tmp_symbol != NULL) {
+//         /* operand is in symbol table */
+//         /* if type is any, check contents (ival, dval, sval) to see if num or string */
+
+//     } else if(t->kids[0]->kids[0]->kids[0] != NULL) {
+//         /* operand is a string */
+//         operation_type = STRING_TYPE;
+//     } else if(t->kids[0]->kids[0]->prodrule == NUMBER) {
+//         /* operand is int or float */
+//         if(t->kids[0]->kids[0]->leaf->ival != '\0') {
+//             operation_type = INT_TYPE;
+//         } else if(t->kids[0]->kids[0]->leaf->dval != '\0') {
+//             operation_type = FLOAT_TYPE;
+//         } else {
+//             printf("Weird error -- number but not int or float.\n");
+//             exit(2);
+//         }
+
+//     } else if((t->kids[0]->kids[0]->prodrule == TRUE) || (t->kids[0]->kids[0]->prodrule == FALSE)) {
+//         /* operand is bool -> treat as int
+//             True = 1; False = 0 */
+//         operation_type = INT_TYPE;
+//     } else if(t->kids[0]->kids[0]->prodrule == LSQB) {
+//         /* operand is list */
+//         operation_type = LIST_TYPE;
+//     } else {
+//         /* else - throw error -> unsupported type for (operation) */
+
+//         /* if dict -> throw error 
+//                 TypeError: unsupported operand type(s) for +: 'dict' and 'dict' */
+//         printf("need to specify for: %s (%d)\n", t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->prodrule);
+//     }
+    
+// }
+
 void incompatable_error(char *tmp, int line) {
     printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
     printf("Incompatable Types: %s, %s filename: %s line number: %d\n", current_symbol->s, tmp, current_file, line);
     exit(3);
 }
+
+// void operand_error(char *tmp, int line) {
+//     printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+//     printf("");
+//     exit(3);
+// }
