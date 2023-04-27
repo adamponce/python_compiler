@@ -51,6 +51,7 @@ int opt_rarrowtest_found = 0;
 char *return_symbol = NULL;
 int import_stmt = 0;
 int dot_func = 0;
+int for_loop = 0;
 
 /* for type checking */
 struct sym_entry *current_symbol;
@@ -281,6 +282,11 @@ void treetraversal(struct tree *t){
             opt_rarrowtest_found = 0;
             return;
         }
+        if(for_loop == 1){
+            insert_symbol(current, t->kids[0]->kids[0]->symbolname, "any");
+            for_loop = 0;
+            return;
+        }
 
         //NOT CONSISTENTLY WORKING
         /*
@@ -361,6 +367,10 @@ void treetraversal(struct tree *t){
         annassign_found = 1;
         atom_found = 0;
         lineno = t->kids[0]->leaf->lineno;
+    }
+
+    else if(t->prodrule == 1097){
+        for_loop = 1;
     }
 
     else if(strcmp("tfdef", humanreadable(t)) == 0 && (new_scope == 1)){
