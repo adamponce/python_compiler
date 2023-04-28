@@ -1,3 +1,2 @@
-c = 1
-a : int = 0
-a = a + c
+if("hi" <= 10):
+    print(1)

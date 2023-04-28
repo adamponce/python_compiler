@@ -568,6 +568,8 @@ void typecheck(struct tree *t) {
                             /* incompatable types */
                             if(tmp_type == STRING_TYPE) {
                                 operation_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
+                            } else if(tmp_type == LIST_TYPE) {
+                                operation_error("list", t->kids[0]->kids[0]->leaf->lineno);
                             } else {
                                 operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
                             }
@@ -836,7 +838,7 @@ void typecheck(struct tree *t) {
         current = tables[0];
     }
     
-    else if((strcmp("zero_more_plus_minus_term", humanreadable(t)) == 0) || (strcmp("zero_more_factor", humanreadable(t)) == 0)) {
+    else if((strcmp("zero_more_plus_minus_term", humanreadable(t)) == 0) || (strcmp("zero_more_factor", humanreadable(t)) == 0) || (strcmp("zero_more_comp_op_expr", humanreadable(t)) == 0)) {
         operation_count++;
     }
 
@@ -845,6 +847,10 @@ void typecheck(struct tree *t) {
     }
 
     else if((strcmp("arith_expr", humanreadable(t)) == 0) && t->kids[0]->kids[1] != NULL) {
+        operation_count++;
+    }
+
+    else if((strcmp("comparison", humanreadable(t)) == 0) && t->kids[1] != NULL) {
         operation_count++;
     }
  
@@ -929,7 +935,13 @@ void incompatable_error(char *tmp, int line) {
 }
 
 void operation_error(char *tmp, int line) {
-    printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-    printf("TypeError: unsupported operand type(s): %s, %s filename: %s line number: %d\n", current_symbol->s, tmp, current_file, line);
-    exit(3);
+    if(current_symbol != NULL) {
+        printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+        printf("TypeError: unsupported operand type(s): %s, %s filename: %s line number: %d\n", current_symbol->s, tmp, current_file, line);
+        exit(3);
+    } else {
+        printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
+        printf("TypeError: unsupported operand type(s): %s, %s filename: %s line number: %d\n", typenam[operation_type - 1000000], tmp, current_file, line);
+        exit(3);
+    }
 }
