@@ -4,6 +4,13 @@ def rpn_calculator(operation):
     stack = []
     enough_operators = True
     result_operation = 0
+
+
+
+
+
+
+
     is_operator = False
     while counter < len(operation) and enough_operators:
         if operation[counter].isdigit():
@@ -39,6 +46,12 @@ def rpn_calculator(operation):
         elif operation[counter] == "-":
             if len(stack) >= 2:
                 second_operand = stack.pop()
+
+
+
+
+
+
                 first_operand = stack.pop()
                 result_operation = float(first_operand) - float(second_operand)
                 stack.append(str(result_operation))
@@ -49,6 +62,11 @@ def rpn_calculator(operation):
             stack.append(digit_number)
             digit_number = " "
         counter += 1
+
+    
+
+
+
     if len(stack) > 1:
         return "Not enough operands"
     elif not enough_operators:
@@ -61,6 +79,7 @@ def main():
     operation = input("Enter rpn operation >>> ")
     print(rpn_calculator(operation))
 
-
+'''
 if __name__ == "__main__":
     main()
+'''
