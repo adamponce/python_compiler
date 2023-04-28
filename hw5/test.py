@@ -79,7 +79,7 @@ def main():
     operation = input("Enter rpn operation >>> ")
     print(rpn_calculator(operation))
 
-'''
+
 if __name__ == "__main__":
     main()
-'''
+
