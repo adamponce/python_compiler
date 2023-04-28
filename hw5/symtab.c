@@ -90,7 +90,6 @@ struct sym_entry * find_symbol(struct sym_table * st, char *name){
         }
         head = head->next;
     }
-
     return NULL;
 }
 

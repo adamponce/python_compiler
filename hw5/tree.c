@@ -549,42 +549,53 @@ void typecheck(struct tree *t) {
     }
 
     if(strcmp("atom_expr", humanreadable(t)) == 0) {
-        // printf("atom_expr: %s\n",  t->kids[0]->kids[0]->symbolname);
-
         /* type checking right-hand-side if an operation exists */
         if(operation_count > 0) {
-            // printf("current_symbol is: %s\n", typename(current_symbol->type));
             if(operation_type == 0) {
                 /* set operation_type differently depending on if number, string, or variable in symbol table. */
-                printf("set operation type:\n");
                 operation_type = get_type(t->kids[0]->kids[0]);
             } else {
                 int tmp_type = get_type(t->kids[0]->kids[0]);
                 if(tmp_type != operation_type) {
                     switch(operation_type) {
+                    case ANY_TYPE:
+                        operation_type = tmp_type;
+                        break;
                     case INT_TYPE:
                         if(tmp_type == FLOAT_TYPE) {
                             operation_type = FLOAT_TYPE;
-                        } else if(tmp_type == BOOL_TYPE) {
-                            /* do nothing */
-                        } else {
+                        } else if((tmp_type != BOOL_TYPE) && (tmp_type != ANY_TYPE)) {
                             /* incompatable types */
-                            operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                            if(tmp_type == STRING_TYPE) {
+                                operation_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
+                            } else {
+                                operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                            }
                         }
                         break;
                     case FLOAT_TYPE:
-                        if((tmp_type == INT_TYPE) || (tmp_type == BOOL_TYPE)) {
-                            /* do nothing */
-                        } else {
+                        if((tmp_type != INT_TYPE) && (tmp_type != BOOL_TYPE) && (tmp_type != ANY_TYPE)) {
                             /* incompatable types */
-                            operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                            if(tmp_type == STRING_TYPE) {
+                                operation_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
+                            } else {
+                                operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                            }
                         }
                         break;
                     case LIST_TYPE:
-                        operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                        if(tmp_type != ANY_TYPE) {
+                            if(tmp_type == STRING_TYPE) {
+                                operation_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
+                            } else {
+                                operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                            }   
+                        }
                         break;
                     case STRING_TYPE:
-                        operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                        if(tmp_type != ANY_TYPE) {
+                            operation_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
+                        }
                         break;
                     }
                 }
@@ -597,12 +608,11 @@ void typecheck(struct tree *t) {
                         incompatable_error(typenam[operation_type-1000000], t->kids[0]->kids[0]->leaf->lineno);
                     }
                 }
-                operation_type = 0;
             }
         }
 
         /* func_found: set only if there is a function call, not declaration */
-        if(func_found == 1) {
+        else if(func_found == 1) {
             /* param_count:  NOT for function declarations, just count params for func calls*/
             /* tmp_params[] --> save either symbol name if in symbol table or type if not in symbol table */
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
@@ -661,7 +671,7 @@ void typecheck(struct tree *t) {
             }
         }
 
-        if(assignment_found == 1) {
+        else if(assignment_found == 1) {
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
                 if(type_func_check == 1) {
@@ -747,6 +757,15 @@ void typecheck(struct tree *t) {
                                 else if((t->kids[0]->kids[0]->prodrule == LSQB) && (current_symbol->type->basetype != LIST_TYPE)) {
                                     incompatable_error("[]", t->kids[0]->kids[0]->leaf->lineno);
                                 }
+                                else if((t->kids[0]->kids[0]->prodrule == LBRACE) && (current_symbol->type->basetype != DICT_TYPE)) {
+                                    incompatable_error("{}", t->kids[0]->kids[0]->leaf->lineno);
+                                }
+                                else if((t->kids[0]->kids[0]->prodrule == LBRACE) && (current_symbol->type->basetype == DICT_TYPE)) {
+                                    return;
+                                }
+                                else if((t->kids[0]->kids[0]->prodrule == LSQB) && (current_symbol->type->basetype == LIST_TYPE)) {
+                                    return;
+                                }
                             }
                         }
                     }
@@ -818,12 +837,14 @@ void typecheck(struct tree *t) {
     }
     
     else if((strcmp("zero_more_plus_minus_term", humanreadable(t)) == 0) || (strcmp("zero_more_factor", humanreadable(t)) == 0)) {
-        // printf("\t is operation\n");
         operation_count++;
     }
 
     else if((strcmp("arith_expr", humanreadable(t)) == 0) && t->kids[1] != NULL) {
-        // printf("\tis operation\n");
+        operation_count++;
+    }
+
+    else if((strcmp("arith_expr", humanreadable(t)) == 0) && t->kids[0]->kids[1] != NULL) {
         operation_count++;
     }
  
@@ -832,6 +853,7 @@ void typecheck(struct tree *t) {
         func_found = 0;
         func_call_param_count[func_call_param_i] = 0;
         current_symbol = NULL;
+        operation_type = 0;
     }
 
    for(int i = 0; i < t->nkids; i++){
@@ -857,7 +879,22 @@ int get_type(struct tree *t) {
     struct sym_entry *tmp_symbol = find_symbol(current, t->symbolname);
     if(tmp_symbol != NULL) {
         /* operand is in symbol table */
-        /* if type is any, check contents (ival, dval, sval) to see if num or string */
+        switch(tmp_symbol->type->basetype) {
+        case ANY_TYPE:
+        case INT_TYPE:
+        case FLOAT_TYPE:
+        case STRING_TYPE:
+        case LIST_TYPE:
+            return tmp_symbol->type->basetype;
+            break;
+        case BOOL_TYPE:
+            return INT_TYPE;
+            break;
+        case DICT_TYPE:
+        case PACKAGE_TYPE:
+            operation_error(t->symbolname, t->leaf->lineno);
+            break;
+        }
 
     } else if(t->kids[0] != NULL) {
         /* operand is a string */
@@ -870,14 +907,13 @@ int get_type(struct tree *t) {
             return FLOAT_TYPE;
         } else {
             printf("Error -- number but not int or float.\n");
-            exit(2);
+            exit(3);
         }
-
     } else if((t->prodrule == TRUE) || (t->prodrule == FALSE)) {
         /* operand is bool -> treat as int
             True = 1; False = 0 */
         return INT_TYPE;
-    } else if(t->kids[0]->kids[0]->prodrule == LSQB) {
+    } else if(t->prodrule == LSQB) {
         /* operand is list */
         return LIST_TYPE;
     } else {
