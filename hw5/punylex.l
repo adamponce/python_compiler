@@ -13,8 +13,10 @@
 	void dodedentsdefpendings();
 	int dodedentsnamependings();
 	void dodedentseolpendings();
+	void dodedentsifpendings();
 	int dentstack[100] = {0};
 	int indentlevel(char *s);
+	int ifflagcompleted;
 	int top = 0;
 	int dedentcount;
 	int defflagcompleted=0;
@@ -97,7 +99,7 @@
 
 "False"	{return alctoken(FALSE);}
 "def"	{rootlevel=0;if(top>0){dodedentsdefpendings(); return alctoken(NEWLINE);}else{return alctoken(DEF);};}
-"if"	{return alctoken(IF);}
+"if"	{if(top>0 && column == 2 && rootlevel==0){dodedentsifpendings();rootlevel=1; return alctoken(NEWLINE);}else{return alctoken(IF);}}
 "raise"	{return alctoken(RAISE);}
 "None"	{return alctoken(NONE);}
 "del"	{return alctoken(DEL);}
@@ -276,6 +278,21 @@ void dodedentseolpendings(){
 	eolflagcompleted=1;
 }
 
+void dodedentsifpendings(){
+dedentcount=0;
+	/*printf("deindentacion pendiente eof\n");*/
+	int il=0;
+	while (top>0 && dentstack[top]>il) {
+		/*printf("funct top->%d, def->%d, stack->%d, il->%d\n",top,defcount,dentstack[top],il);*/
+		dedentcount++; top--; }
+	if (dentstack[top] != il) {
+	    fprintf(stderr, "Python indent error line %d\n", rows);
+		fflush(stderr); exit(1);
+	}
+	ifflagcompleted=1;
+
+}
+
 
 #undef yylex
 
@@ -299,6 +316,10 @@ int yylex() {
 	if(eolflagcompleted==1){
 		eolflagcompleted=0;
         return alctoken(ENDMARKER);
+	}
+	if(ifflagcompleted==1){
+		ifflagcompleted=0;
+        return alctoken(IF);
 	}
    return real_yylex();
 }
