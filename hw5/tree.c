@@ -900,7 +900,23 @@ int get_type(struct tree *t) {
         case PACKAGE_TYPE:
             operation_error(t->symbolname, t->leaf->lineno);
             break;
+        case FUNC_TYPE:
+            if(strcmp("int", t->symbolname) == 0) {
+                return INT_TYPE;
+            } else if(strcmp("str", t->symbolname) == 0) {
+                return STRING_TYPE;
+            } else if(strcmp("bool", t->symbolname) == 0) {
+                return INT_TYPE;
+            } else if(strcmp("dict", t->symbolname) == 0) {
+                operation_error(t->symbolname, t->leaf->lineno);
+            } else if(strcmp("float", t->symbolname) == 0) {
+                return FLOAT_TYPE;
+            } else if(strcmp("list", t->symbolname) == 0) {
+                return LIST_TYPE;
+            }
+            break;
         }
+        
 
     } else if(t->kids[0] != NULL) {
         /* operand is a string */
@@ -923,8 +939,10 @@ int get_type(struct tree *t) {
         /* operand is list */
         return LIST_TYPE;
     } else {
+        printf("\telse\n");
         operation_error(t->symbolname, t->leaf->lineno);
     }
+    printf("\treturning 0\n");
     return 0;
 }
 
