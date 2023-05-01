@@ -5,7 +5,7 @@ targets=puny
 
 all: $(targets)
 
-puny: punygram.tab.o lex.yy.o main.o tree.o symtab.o dot.o type.o
+puny: punygram.tab.o lex.yy.o main.o tree.o symtab.o dot.o type.o unicon.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 lex.yy.c: punylex.l
@@ -33,6 +33,9 @@ dot: dot.c dot.h tree.h
 	$(CC) $(OBJFLAGS) $@.c
 
 type: type.c type.h tree.h symtab.h
+	$(CC) $(OBJFLAGS) $@.c
+
+unicon: unicon.c unicon.h tree.h
 	$(CC) $(OBJFLAGS) $@.c
 
 clean:

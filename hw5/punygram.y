@@ -522,7 +522,7 @@ atom: LPAR opt_yield_tlc RPAR{$$ = alctree(1153, "atom", 3, $1, $2, $3, NULL, NU
     | NONE{$$ = alctree(1160, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}  
     | TRUE{$$ = alctree(1161, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}  
     | FALSE{$$ = alctree(1162, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | FUNC{$$ = alctree(1162, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+    | FUNC{$$ = alctree(2056, "atom", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 opt_yield_tlc: testlist_comp {$$ = alctree(1163, "opt_yield_tlc", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
 | yield_expr{$$ = alctree(1164, "opt_yield_tlc", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} ;

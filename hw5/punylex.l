@@ -10,19 +10,14 @@
 	#include <stdlib.h>	
 	#include <string.h>
 	void mksval(char *text);
-	void dodedentsdefpendings();
-	int dodedentsnamependings();
-	void dodedentseolpendings();
-	void dodedentsifpendings();
+	void dodedentpendings();
 	int dentstack[100] = {0};
 	int indentlevel(char *s);
-	int ifflagcompleted;
 	int top = 0;
+	int flagcompleted=0;
 	int dedentcount;
-	int defflagcompleted=0;
 	int pendingtransition=0;
-	int nameflagcompleted=0;
-	int eolflagcompleted=0;
+	int labeltoken = -1;
 	int rootlevel=1;
 	int comment = 0;
 	int firsttime, rows = 1, words = 0, column = 1;
@@ -32,12 +27,12 @@
 
 %}
 %%
-<<EOF>> {if(firsttime ++ == 0){
+<<EOF>> {labeltoken = ENDMARKER; if(firsttime ++ == 0){
 			if(top > 0){
-				dodedentseolpendings();
+				dodedentpendings();
 			}
 			else{
-				eolflagcompleted = 1;
+				flagcompleted = 1;
 			}
 			return alctoken(NEWLINE);
 		}
@@ -55,7 +50,7 @@
 				
 				
 		  /*printf("stack->%d, il->%d, pendingtrans->%d, top->%d, root->%d, size->%d\n",dentstack[top], il, pendingtransition,top, rootlevel,(int)strlen(yytext));*/
-		  if(top>0 && il==0 && pendingtransition == 0 && strlen(yytext) == 1 && pendingtransition == 0){
+		  if(top>0 && il==0 && pendingtransition == 0 && strlen(yytext) == 1){
 			/*printf("spaces between instructions\n");*/
 			pendingtransition=1;
 		  }
@@ -98,15 +93,15 @@
 
 
 "False"	{return alctoken(FALSE);}
-"def"	{rootlevel=0;if(top>0){dodedentsdefpendings(); return alctoken(NEWLINE);}else{return alctoken(DEF);};}
-"if"	{if(top>0 && column == 2 && rootlevel==0){dodedentsifpendings();rootlevel=1; return alctoken(NEWLINE);}else{return alctoken(IF);}}
+"def"	{pendingtransition=0;rootlevel=0; labeltoken = DEF;if(top>0){dodedentpendings();return alctoken(NEWLINE);}else{return alctoken(DEF);}}
+"if"	{labeltoken = IF;if(top>0 && column == 2 && rootlevel==0){dodedentpendings();rootlevel=1; return alctoken(NEWLINE);}else{return alctoken(IF);}}
 "raise"	{return alctoken(RAISE);}
 "None"	{return alctoken(NONE);}
 "del"	{return alctoken(DEL);}
-"import"	{return alctoken(IMPORT);}
+"import"	{pendingtransition=0;labeltoken = IMPORT;if(top>0 && column == 2 && rootlevel==0){dodedentpendings();rootlevel=1; return alctoken(NEWLINE);}else{return alctoken(IMPORT);}}
 "return"	{return alctoken(RETURN);}
 "True"	{return alctoken(TRUE);}
-"elif"	{return alctoken(ELIF);}
+"elif"	{labeltoken=ELIF; if(top>0 && column==2){dodedentpendings();return alctoken(NEWLINE);}else {return alctoken(ELIF);}}
 "in"	{return alctoken(IN);}
 "try"	{return alctoken(TRY);}
 "and"	{return alctoken(AND);}
@@ -130,7 +125,7 @@
 "continue"	{return alctoken(CONTINUE);}
 "global"	{return alctoken(GLOBAL);}
 "pass"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
-"print"	{name_counter++; return alctoken(FUNC);}
+"print"	{labeltoken=FUNC; if(top>0 && column==2){dodedentpendings();return alctoken(NEWLINE);}else {return alctoken(FUNC);}}
 "input"	{name_counter++; return alctoken(FUNC);}
 "int"	{name_counter++; return alctoken(FUNC);}
 "str"	{name_counter++; return alctoken(FUNC);}
@@ -185,7 +180,7 @@
 (\'([^\']|\'\')*\') {int cat = alctoken(STRING); mksval(yytext); yylval.treeptr->leaf->issval = 1; return cat;}
 -?[0-9]+	{int cat = alctoken(NUMBER); yylval.treeptr->leaf->ival = atoi(yytext); return cat;}
 -?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)? {int cat = alctoken(NUMBER); yylval.treeptr->leaf->dval = atof(yytext); return cat;}
-[a-zA-Z_][a-zA-Z0-9_]*	{if(top == 1 && column == 2 && rootlevel==0){dodedentsnamependings();rootlevel=1;return alctoken(NEWLINE);}else{return alctoken(NAME);};column += strlen(yytext); }
+[a-zA-Z_][a-zA-Z0-9_]*	{pendingtransition=0;labeltoken = NAME; if(top >0 && column == 2 && rootlevel==0){dodedentpendings();rootlevel=1; return alctoken(NEWLINE);}else{return alctoken(labeltoken);};column += strlen(yytext);}
 "#".*   {comment = 1;}
 " "	{}
 .		{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("%s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}
@@ -235,50 +230,7 @@ void mksval(char *text){
 }
 
 
-void dodedentsdefpendings(){
-    dedentcount=0;
-	/*printf("deindentacion pendiente def\n");*/
-	int il=0;
-	while (top>0 && dentstack[top]>il) {
-		/*printf("funct top->%d, def->%d, stack->%d, il->%d\n",top,defcount,dentstack[top],il);*/
-		dedentcount++; top--; }
-	if (dentstack[top] != il) {
-	    fprintf(stderr, "Python indent error line %d\n", rows);
-		fflush(stderr); exit(1);
-	}
-	defflagcompleted=1;
-}
-
-int dodedentsnamependings(){
-    dedentcount=0;
-	/*printf("deindentacion pendiente name\n");*/
-	int il=0;
-	while (top>0 && dentstack[top]>il) {
-		/*printf("funct top->%d, def->%d, stack->%d, il->%d\n",top,defcount,dentstack[top],il);*/
-		dedentcount++; top--; }
-	if (dentstack[top] != il) {
-	    fprintf(stderr, "Python indent error line %d\n", rows);
-		fflush(stderr); exit(1);
-	}
-	nameflagcompleted=1;
-    return alctoken(NEWLINE);
-}
-
-void dodedentseolpendings(){
-    dedentcount=0;
-	/*printf("deindentacion pendiente eof\n");*/
-	int il=0;
-	while (top>0 && dentstack[top]>il) {
-		/*printf("funct top->%d, def->%d, stack->%d, il->%d\n",top,defcount,dentstack[top],il);*/
-		dedentcount++; top--; }
-	if (dentstack[top] != il) {
-	    fprintf(stderr, "Python indent error line %d\n", rows);
-		fflush(stderr); exit(1);
-	}
-	eolflagcompleted=1;
-}
-
-void dodedentsifpendings(){
+void dodedentpendings(){
 dedentcount=0;
 	/*printf("deindentacion pendiente eof\n");*/
 	int il=0;
@@ -289,7 +241,7 @@ dedentcount=0;
 	    fprintf(stderr, "Python indent error line %d\n", rows);
 		fflush(stderr); exit(1);
 	}
-	ifflagcompleted=1;
+	flagcompleted=1;
 
 }
 
@@ -305,21 +257,9 @@ int yylex() {
      dedentcount--;
      return alctoken(DEDENT);
      }
-	if(defflagcompleted == 1){
-	  defflagcompleted=0;
-      return alctoken(DEF);
-	}
-	if(nameflagcompleted == 1){
-	  nameflagcompleted=0;
-      return alctoken(NAME);
-	}
-	if(eolflagcompleted==1){
-		eolflagcompleted=0;
-        return alctoken(ENDMARKER);
-	}
-	if(ifflagcompleted==1){
-		ifflagcompleted=0;
-        return alctoken(IF);
+	if(flagcompleted == 1){
+		flagcompleted = 0;
+		return alctoken(labeltoken);
 	}
    return real_yylex();
 }

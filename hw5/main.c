@@ -16,6 +16,7 @@
 #include "symtab.h"
 #include "dot.h"
 #include "type.h"
+#include "unicon.h"
 
 #define COLOR_BOLD "\e[33m"
 #define COLOR_END "\e[m"
@@ -39,6 +40,7 @@ struct sym_table *tables[ARRAY_SIZE];
 extern int table_count;
 extern int dedent;
 extern int indent;
+FILE *unicon;
 
 
 int main(int argc, char *argv[]){
@@ -98,10 +100,11 @@ int main(int argc, char *argv[]){
             fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
             exit(-1);
         }
+        unicon = fopen("unicon.icn", "w");
         //Begins analysis
         printf("FILE: %s\n", argv[i]);
         printf("----------------------\n");
-        yydebug = 0;
+        yydebug = 1;
         /*
         while ((cat = yylex()) > 0){
             printf("%d\t %s\n", cat, yytext);
@@ -113,11 +116,15 @@ int main(int argc, char *argv[]){
         global->type = alctype(NONE_TYPE);
         tables[0] = global;
         current = global;
-        insert_symbol(current, "__name__", "any");
+        //insert_symbol(current, "__name__", "string");
         if(r == 0){
             //treeprint(root, 1);
             treetraversal(root);
-            typecheck(root);
+            //typecheck(root);
+            //start_unicon();
+            //generate_code(root);
+            //end_unicon();
+
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");
             }

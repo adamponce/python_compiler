@@ -501,7 +501,7 @@ void treetraversal(struct tree *t){
         insert_symbol(current, t->kids[1]->kids[0]->kids[0]->symbolname, "package");
     }
 
-    for(int i = 0; i < t->nkids; i++){\
+    for(int i = 0; i < t->nkids; i++){
         treetraversal(t->kids[i]);
     }
 
