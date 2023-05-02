@@ -17,7 +17,6 @@ void start_unicon(){
 
 void end_unicon(){
     fprintf(unicon,"end\n");
-    exit(6);
 }
 
 void generate_code(struct tree *t){
@@ -100,7 +99,12 @@ void generate_code(struct tree *t){
         case DEDENT: fprintf(unicon, "}"); break;
         case IN: break;
         case TYPE_COMMENT: break;
-        case FUNC: fprintf(unicon, "%s", t->symbolname); break;
+        case FUNC: if(strcmp(t->symbolname, "print") == 0){
+                        fprintf(unicon, "write"); break;
+                    }
+                    else{
+                        fprintf(unicon, "%s", t->symbolname); break;
+                    }
     }
 
 

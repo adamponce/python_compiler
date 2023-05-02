@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
         //Begins analysis
         printf("FILE: %s\n", argv[i]);
         printf("----------------------\n");
-        yydebug = 1;
+        yydebug = 0;
         /*
         while ((cat = yylex()) > 0){
             printf("%d\t %s\n", cat, yytext);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]){
             typecheck(root);
             start_unicon();
             generate_code(root);
-            end_unicon();
+            system("echo COMPILED UNICON");
 
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");

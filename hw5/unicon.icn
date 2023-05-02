@@ -1,5 +1,5 @@
 link puny
 procedure main()
-print("hello world")
+write("hello world")
 
 end

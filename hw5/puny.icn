@@ -1,0 +1,19 @@
+# puny.icn, the puny runtime system, version 0.1
+link numbers
+procedure print(s[])
+   write ! s
+end
+procedure input(s)
+   writes(s)
+   return read()
+end
+procedure int(x)
+   if not (rv := integer(x)) then
+      stop("PunY type mismatch error. ",type(x), "cannot convert to int")
+   return rv
+end
+procedure float(x)
+   if not (rv := real(x)) then
+      stop("PunY type mismatch error. ",type(x), "cannot convert to float")
+   return rv
+end
