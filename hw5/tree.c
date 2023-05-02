@@ -312,17 +312,17 @@ void treetraversal(struct tree *t){
                     }
                 }
                 else{
-                    int func_found = 0;
+                    int int_func_found = 0;
                     for(int i = 0; i < 10; i++){
                         if(tables[i] == NULL){
                             continue;
                         }
                         else if(strcmp(t->kids[0]->kids[0]->symbolname, tables[i]->name) == 0){
-                            func_found = 1;
+                            int_func_found = 1;
                             break;
                         }
                     }
-                    if(func_found == 0){
+                    if(int_func_found == 0){
                         printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
                         printf("Uninitialized Function: \"%s\" filename: %s line number: %d\n", t->kids[0]->kids[0]->leaf->text, current_file, t->kids[0]->kids[0]->leaf->lineno);
                         exit(3);
@@ -468,7 +468,6 @@ void treetraversal(struct tree *t){
 
     /* catch undeclared variable at return statement */
     else if((return_found == 1) && (atom_found == 1) && (strcmp("atom_expr", humanreadable(t)) == 0)) {
-        // printf("1st loop return type: %s\n", t->kids[0]->kids[0]->symbolname);
         if(t->kids[0]->kids[0]->prodrule == NAME) {
             if(!find_symbol(current, symbol)) {
                 // throw error
@@ -484,6 +483,10 @@ void treetraversal(struct tree *t){
 
     if (t->prodrule == NEWLINE && opt_arglist_found == 1) {
         opt_arglist_found = 0;
+    }
+
+    if (t->prodrule == NEWLINE && return_found == 1) {
+        return_found = 0;
     }
 
     //inserting library functions into symbol table
@@ -518,8 +521,6 @@ void typecheck(struct tree *t) {
     if(t == NULL) {
         return;
     }
-
-    // printf("in typecheck: %s\n", humanreadable(t));
 
     if(strcmp("terminal_symbol", humanreadable(t)) == 0) {
         /* if RPAR --> means end of function */
@@ -659,12 +660,12 @@ void typecheck(struct tree *t) {
                     if(strcmp("one_more_string", humanreadable(t->kids[0]->kids[0])) == 0) {
                         if(curr_param->type->basetype != STRING_TYPE && curr_param->type->basetype != ANY_TYPE) {
                             printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-                            printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
+                            printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", tables[func_i]->name, current_file, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
                             exit(3);
                         }
                     } else {
                         printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
-                        printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", curr_param->name, current_file, rows);
+                        printf("Incompatable Type in Function Call: \"%s\" filename: %s line number: %d\n", tables[func_i]->name, current_file, t->kids[0]->kids[0]->leaf->lineno);
                         exit(3);
                     }
                     func_call_param_count[func_call_param_i]++;
@@ -676,11 +677,19 @@ void typecheck(struct tree *t) {
         else if(assignment_found == 1) {
             struct sym_entry *tmp_symbol = find_symbol(current, t->kids[0]->kids[0]->symbolname);
             if(tmp_symbol != NULL) {
-                if(type_func_check == 1) {
-                    type_func_check = 0;
-                } else {
-                    if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) != 1) {
+                if(tmp_symbol->type->basetype == FUNC_TYPE) {
+                    int tmp_f_type = built_in_func_type(tmp_symbol->s);
+                    type_func_check = 1;
+                    if(check_types(current_symbol->type->basetype, tmp_f_type) != 1) {
                         incompatable_error(tmp_symbol->s, t->kids[0]->kids[0]->leaf->lineno);
+                    }
+                } else {
+                    if(type_func_check == 1) {
+                        type_func_check = 0;
+                    } else {
+                        if(check_types(current_symbol->type->basetype, tmp_symbol->type->basetype) != 1) {
+                            incompatable_error(tmp_symbol->s, t->kids[0]->kids[0]->leaf->lineno);
+                        }
                     }
                 }
             }
@@ -744,8 +753,10 @@ void typecheck(struct tree *t) {
                         type_func_check = 0;
                     } else {
                         if(current_symbol->type->basetype != ANY_TYPE) {
-                            if((t->kids[0]->kids[0]->kids[0] != NULL) && (current_symbol->type->basetype != STRING_TYPE)) {
-                                incompatable_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
+                            if(t->kids[0]->kids[0]->kids[0] != NULL) {
+                                if((current_symbol->type->basetype != STRING_TYPE)) {
+                                    incompatable_error(t->kids[0]->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->kids[0]->leaf->lineno);
+                                }
                             } else {
                                 if((t->kids[0]->kids[0]->leaf->ival != '\0') && (current_symbol->type->basetype != INT_TYPE)) {
                                     incompatable_error(t->kids[0]->kids[0]->symbolname, t->kids[0]->kids[0]->leaf->lineno);
@@ -928,8 +939,11 @@ int get_type(struct tree *t) {
         } else if(t->leaf->dval != '\0') {
             return FLOAT_TYPE;
         } else {
-            printf("Error -- number but not int or float.\n");
-            exit(3);
+            /* value is 0 --> check for "."*/
+            if(strstr(t->symbolname, ".")) {
+                return FLOAT_TYPE;
+            }
+            return INT_TYPE;
         }
     } else if((t->prodrule == TRUE) || (t->prodrule == FALSE)) {
         /* operand is bool -> treat as int
@@ -938,11 +952,70 @@ int get_type(struct tree *t) {
     } else if(t->prodrule == LSQB) {
         /* operand is list */
         return LIST_TYPE;
+    
+    } else if(t->prodrule == NAME) {      
+        for(int i = 0; i < 10; i++){
+            if(tables[i] == NULL){
+                continue;
+            }
+            else if(strcmp(t->symbolname, tables[i]->name) == 0){
+                func_found = 1;
+                func_i = i;
+                /* check num params */
+                return tables[i]->type->u.f.returntype->basetype;
+                break;
+            }
+        }
     } else {
-        printf("\telse\n");
         operation_error(t->symbolname, t->leaf->lineno);
     }
-    printf("\treturning 0\n");
+    return 0;
+}
+
+int built_in_func_type(char *name) {
+    
+    /* built in funcs: 
+    print, input, int, str, abs, bool, chr, dict, float, len, list
+    max, min, open, ord, pow, range, round, type */
+    if(strcmp(name, "print") == 0) {
+        return ANY_TYPE;
+    } else if(strcmp(name, "input") == 0) {
+        return ANY_TYPE;
+    } else if(strcmp(name, "int") == 0) {
+        return INT_TYPE;
+    } else if(strcmp(name, "str") == 0) {
+        return STRING_TYPE;
+    } else if(strcmp(name, "abs") == 0) {
+        return FLOAT_TYPE;
+    } else if(strcmp(name, "bool") == 0) {
+        return BOOL_TYPE;
+    } else if(strcmp(name, "chr") == 0) {
+        return STRING_TYPE;
+    } else if(strcmp(name, "dict") == 0) {
+        return DICT_TYPE;
+    } else if(strcmp(name, "float") == 0) {
+        return FLOAT_TYPE;
+    } else if(strcmp(name, "len") == 0) {
+        return INT_TYPE;
+    } else if(strcmp(name, "list") == 0) {
+        return LIST_TYPE;
+    } else if(strcmp(name, "max") == 0) {
+        return ANY_TYPE;
+    } else if(strcmp(name, "min") == 0) {
+        return ANY_TYPE;
+    } else if(strcmp(name, "open") == 0) {
+        return ANY_TYPE;
+    } else if(strcmp(name, "ord") == 0) {
+        return INT_TYPE;
+    } else if(strcmp(name, "pow") == 0) {
+        return INT_TYPE;
+    } else if(strcmp(name, "range") == 0) {
+        return ANY_TYPE;
+    } else if(strcmp(name, "round") == 0) {
+        return INT_TYPE;
+    } else if(strcmp(name, "type") == 0) {
+        return ANY_TYPE;
+    }
     return 0;
 }
 

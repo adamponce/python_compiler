@@ -1,11 +1,7 @@
-ft = float(3.281)
-yd = float(1.094)
-m = float(0.0006214)
-
-meter = float(input ("Please type a measurement in meters: "))
-feet = (float(meter * ft))
-yard = (float(meter * yd))
-mile = (float(meter * m))
-print("The measurement in feet is " + str(feet))
-print("The measurement in yards is " + str(yard))
-print("The measurement in miles is " + str(mile))
+def main():
+   j : int
+   s : str
+   s = "hello"
+   j = len(s)
+   j = dict()
+   print(j);
