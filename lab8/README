@@ -1,0 +1,4 @@
+The script file is in python, therefore the user needs to run: make 
+on the command line and then run: python3 script.py
+
+This will then run the .py file and create 3 different output files, one for each file of tests cases, aka erros, puny and python. 
