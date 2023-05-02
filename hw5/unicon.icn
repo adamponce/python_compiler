@@ -1,0 +1,5 @@
+link puny
+procedure main()
+print("hello world")
+
+end
