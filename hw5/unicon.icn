@@ -1,5 +1,3 @@
-link puny
-procedure main()
-write("hello world")
+x:=5
 
 end

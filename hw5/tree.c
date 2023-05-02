@@ -49,6 +49,8 @@ int return_found = 0;
 int opt_rarrowtest_found = 0;
 char *return_symbol = NULL;
 int import_stmt = 0;
+int anything_before_def = 0;
+int def_first = 0;
 
 /* for type checking */
 struct sym_entry *current_symbol;
@@ -913,6 +915,58 @@ void incompatable_error(char *tmp, int line) {
     printf(COLOR_BOLD "SEMANTIC ERROR: " COLOR_END);
     printf("Incompatable Types: %s, %s filename: %s line number: %d\n", current_symbol->s, tmp, current_file, line);
     exit(3);
+}
+
+
+
+void look_for_beginning(struct tree *t){
+    if(t == NULL){
+        return;
+    }
+    switch(t->prodrule){
+        case NAME: if(def_first == 1){
+                        return;
+                    }
+                    else{
+                        anything_before_def = 1;
+                        return;
+                    }
+        case WHILE: if(def_first == 1){
+                        return;
+                    }
+                    else{
+                        anything_before_def = 1;
+                        return;
+                    }
+        case IF: if(def_first == 1){
+                        return;
+                    }
+                    else{
+                        anything_before_def = 1;
+                        return;
+                    }
+        case FOR: if(def_first == 1){
+                        return;
+                    }
+                    else{
+                        anything_before_def = 1;
+                        return;
+                    }
+        case FUNC: if(def_first == 1){
+                        return;
+                    }
+                    else{
+                        anything_before_def = 1;
+                        return;
+                    }
+        case DEF: if(anything_before_def == 1){
+                    return;
+                }
+                else{
+                    def_first = 1;
+                    return;
+                }
+    }
 }
 
 // void operand_error(char *tmp, int line) {
