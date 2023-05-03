@@ -42,6 +42,9 @@ char *humanreadable(struct tree *t);
 void treetraversal(struct tree *t);
 void typecheck(struct tree *t);
 int check_types(int type1, int type2);
-void incompatable_error(char *tmp);
+int get_type(struct tree *t);
+int built_in_func_type(char *name);
+void incompatable_error(char *tmp, int line);
+void operation_error(char *tmp, int line);
 
 #endif

@@ -1,4 +1,7 @@
-def func(a : int) -> float:
-    c = a
-    return c
-func(12)
+def main():
+   j : int
+   s : str
+   s = "hello"
+   j = len(s)
+   j = dict()
+   print(j);

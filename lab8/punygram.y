@@ -131,7 +131,7 @@ zero_more_comma_sub opt_as_name opt_comma_test opt_else tfdef small_stmt augassi
 subscript opt_finally zero_more_comma_argtd
 dictorsetmarker dsm_expr tct_or_dse zero_more_comma_tct_or_dse cf_or_comma_tct_dct dsm_star_expr cf_or_comma_tse opt_dictsetmarker
 everything_in_parenthesis comma_test_or_se comma_isn comma_dsn comma_sub dict_set_maker opt_semi_colon
-small_or_null weird_buggy_thing one_more_newline
+small_or_null one_more_newline
 %%
 /*
 Removed:
@@ -148,7 +148,9 @@ zero_more_newline_stmt: {$$=NULL;} | zero_more_newline_stmt newline_stmt{$$ = al
 
 newline_stmt: NEWLINE{$$ = alctree(1002, "NEWLINE", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}| stmt{$$ = alctree(1003, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-funcdef: DEF NAME parameters opt_rarrowtest COLON func_body_suite{$$ = alctree(1004, "fundef", 6, $1, $2, $3, $4, $5, $6, NULL, NULL);};
+funcdef: DEF NAME parameters opt_rarrowtest COLON func_body_suite{$$ = alctree(1004, "fundef", 6, $1, $2, $3, $4, $5, $6, NULL, NULL);}
+    | DEF NAME parameters opt_rarrowtest NEWLINE{yyerror("colon");};
+
 opt_rarrowtest: {$$=NULL;} | RARROW test{$$ = alctree(1005, "opt_rarrowtest", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 parameters: LPAR argumentstd RPAR{$$ = alctree(1006, "parameters", 3, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
@@ -234,9 +236,9 @@ vfpdef: NAME;
 //===========
 stmt: simple_stmt{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
     | compound_stmt{$$ = alctree(1014, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
-    | weird_buggy_thing{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+    //| weird_buggy_thing{$$ = alctree(1013, "stmt", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
-weird_buggy_thing: DEDENT one_more_newline INDENT {$$ = alctree(1278, "weird_buggy_thing", 1, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
+//weird_buggy_thing: DEDENT one_more_newline INDENT {$$ = alctree(1278, "weird_buggy_thing", 1, $1, $2, $3, NULL, NULL, NULL, NULL, NULL);};
 
 one_more_newline: NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);}
     | one_more_newline NEWLINE{$$ = alctree(1279, "one_more_newline", 1, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
@@ -436,12 +438,13 @@ test_nocond: or_test{$$ = alctree(1105, "test_nocond", 1, $1, NULL, NULL, NULL, 
 or_test: and_test zero_more_or_and_test{$$ = alctree(1106, "or_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 zero_more_or_and_test: {$$=NULL;} 
     | zero_more_or_and_test or_and_test{$$ = alctree(1107, "zero_more_or_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-or_and_test: OR and_test{$$ = alctree(1107, "or_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+
+or_and_test: OR and_test{$$ = alctree(2000, "or_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 and_test: not_test zero_more_and_not_test{$$ = alctree(1108, "and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 zero_more_and_not_test: {$$=NULL;} 
     | zero_more_and_not_test not_and_test{$$ = alctree(1109, "zero_more_and_no_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
-not_and_test: AND not_test{$$ = alctree(1107, "not_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
+not_and_test: AND not_test{$$ = alctree(2001, "not_and_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 not_test: NOT not_test{$$ = alctree(1110, "not_test", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);}
     | comparison{$$ = alctree(1111, "not_test", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
@@ -635,14 +638,19 @@ opt_yield_args: {$$=NULL;} | yield_args;
 
 yield_args: FROM test | testlist_star_expr;
 
+//MAKE NEWLINE zero or more.
+
 func_body_suite: simple_stmt{$$ = alctree(1220, "func_body_suite", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);} 
-    | NEWLINE opt_type_comment_newline INDENT one_more_stmt DEDENT{$$ = alctree(1221, "func_body_suite", 5, $1, $2, $3, $4, $5, NULL, NULL, NULL);};
+    | one_more_newline opt_type_comment_newline INDENT one_more_stmt DEDENT{$$ = alctree(1221, "func_body_suite", 5, $1, $2, $3, $4, $5, NULL, NULL, NULL);};
 
 opt_type_comment_newline: {$$=NULL;} 
     | TYPE_COMMENT NEWLINE{$$ = alctree(1222, "opt_type_comment_newline", 2, $1, $2, NULL, NULL, NULL, NULL, NULL, NULL);};
 
+
 //func_type_input: func_type zero_more_newline ENDMARKER;
-//zero_more_newline: {$$=alocnull();} | zero_more_newline NEWLINE;
+//zero_more_newline: {$$=NULL;} | zero_more_newline NEWLINE;
+
+
 
 //func_type: LPAR opt_typelist RPAR RARROW test;
 //opt_typelist: {$$=alocnull();} | opt_typelist;
@@ -678,6 +686,7 @@ opt_test: {$$=NULL;}
     | test{$$ = alctree(1235, "opt_test", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
 
 opt_semi_colon: {$$=NULL;} | SEMI{$$ = alctree(1235, "opt_semi_colon", 1, $1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);};
+
 
 %%
 
