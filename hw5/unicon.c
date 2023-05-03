@@ -59,7 +59,7 @@ void generate_code(struct tree *t){
         case IMPORT: break;
         case RETURN:fprintf(unicon, "return "); break;
         case TRUE: break;
-        case ELIF: break;
+        case ELIF: fprintf(unicon, "else{ if "); break;
         case TRY: break;
         case AND: fprintf(unicon, " & "); break;
         case ELSE: fprintf(unicon, "else "); else_here = 1; break;
@@ -211,10 +211,6 @@ void generate_code(struct tree *t){
                         fprintf(unicon, "%s", t->symbolname); break;
                     }
     }
-
-    
-    iterations++;
-
 
     for(int i = 0; i < t->nkids; i++){
         generate_code(t->kids[i]);
