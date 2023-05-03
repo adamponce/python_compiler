@@ -17,5 +17,3 @@ def main():
     d2 = avg(d1, 3, avg(10, 5, 6))
     print(str(d1) + " " + str(d2))
     print("end")
-
-main()

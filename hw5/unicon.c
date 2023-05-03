@@ -22,6 +22,11 @@ int for_variable = 0;
 int name_found = 0;
 int iterations = 0;
 int name_interations = 0;
+int elseif_found = 0;
+int number_of_elifs = 0;
+int comparison_found = 0;
+int current_position;
+int eqq_position; 
 
 
 void start_unicon(){
@@ -59,7 +64,7 @@ void generate_code(struct tree *t){
         case IMPORT: break;
         case RETURN:fprintf(unicon, "return "); break;
         case TRUE: break;
-        case ELIF: fprintf(unicon, "else{ if "); break;
+        case ELIF: fprintf(unicon, "else{ if "); elseif_found = 1; number_of_elifs++; break;
         case TRY: break;
         case AND: fprintf(unicon, " & "); break;
         case ELSE: fprintf(unicon, "else "); else_here = 1; break;
@@ -85,7 +90,7 @@ void generate_code(struct tree *t){
         case RPAR: fprintf(unicon, ")"); break;
         case LSQB: fprintf(unicon, "["); break;
         case RSQB: fprintf(unicon, "]"); break;
-        case COLON: if(if_found == 1 && else_here == 0){
+        case COLON: if(if_found == 1 && else_here == 0 && elseif_found == 0){
                         fprintf(unicon, " then");
                         break;
                     }
@@ -101,6 +106,10 @@ void generate_code(struct tree *t){
                         break;
                     }
                     else if(function_here == 1){
+                        break;
+                    }
+                    else if(elseif_found == 1){
+                        fprintf(unicon, " then");
                         break;
                     }
                     else{
@@ -125,16 +134,16 @@ void generate_code(struct tree *t){
         case PERCENT: fprintf(unicon, "%%"); break;
         case LBRACE: fprintf(unicon, "{"); break;
         case RBRACE: fprintf(unicon, "}"); break;
-        case EQEQUAL: fprintf(unicon, "="); break;
+        case EQEQUAL: eqq_position = ftell(unicon); fprintf(unicon, "="); comparison_found = 1; break;
         case NOTEQUAL: fprintf(unicon, "~="); break;
         case LESSEQUAL: fprintf(unicon, "<="); break;
         case GREATEREQUAL: fprintf(unicon, ">="); break;
-        case DOUBLESTAR: break;
+        case DOUBLESTAR: fprintf(unicon, "^"); break;
         case PLUSEQUAL: fprintf(unicon, "+:="); break;
-        case MINEQUAL: break;
-        case STAREQUAL: break;
-        case SLASHEQUAL: break;
-        case PERCENTEQUAL: break;
+        case MINEQUAL: fprintf(unicon, "-:="); break;
+        case STAREQUAL: fprintf(unicon, "*:="); break;
+        case SLASHEQUAL: fprintf(unicon, "/:="); break;
+        case PERCENTEQUAL: fprintf(unicon, "%%:="); break;
         case DOUBLESTAREQUAL: break;
         case DOUBLESLASH: break;
         case DOUBLESLASHEQUAL: break;
@@ -161,7 +170,13 @@ void generate_code(struct tree *t){
                         fprintf(unicon, "%s", t->symbolname); break;
                     }
         case NUMBER: fprintf(unicon, "%s", t->symbolname); break;
-        case STRING: fprintf(unicon, "%s", t->symbolname); break;
+        case STRING:    if(comparison_found == 1){
+                            comparison_found = 0;
+                            current_position = ftell(unicon);
+                            fseek(unicon, eqq_position, current_position);
+                            fputs("=", unicon);
+                        }
+                    fprintf(unicon, "%s", t->symbolname); break;
         case INDENT: if(function_here == 1 && (while_found == 1 || for_here == 1 || if_found == 1 || else_here == 1)){
                         fprintf(unicon, "{"); break;
                     }
@@ -183,8 +198,20 @@ void generate_code(struct tree *t){
                         if_found = 0;
                         fprintf(unicon, "}\n"); break;
                     }
-                    else if(else_here == 1){
+                    else if(else_here == 1 && elseif_found == 1){
+                        elseif_found = 0;
                         else_here = 0;
+                        for(int i = 1; i <= number_of_elifs; i++){
+                            fprintf(unicon, "}\n");
+                        }
+                        number_of_elifs = 0;
+                        fprintf(unicon, "}\n"); break;
+                    }
+                    else if(else_here == 1 && elseif_found == 0){
+                        else_here = 0;
+                        fprintf(unicon, "}\n"); break;
+                    }
+                    else if(elseif_found == 1){
                         fprintf(unicon, "}\n"); break;
                     }
                     else if(function_here == 1){
