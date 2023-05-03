@@ -44,3 +44,7 @@ procedure split(s, delimiters : ' \t', keepall)
     }
   return ws
 end
+
+procedure len(s)
+   return *s
+end

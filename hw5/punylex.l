@@ -27,19 +27,20 @@
 
 %}
 %%
-<<EOF>> {labeltoken = ENDMARKER; if(firsttime ++ == 0){
-			if(top > 0){
-				dodedentpendings();
+<<EOF>> {labeltoken = ENDMARKER; 
+			if(firsttime ++ == 0){
+				if(top > 0){
+					dodedentpendings();
+				}
+				else{
+					flagcompleted = 1;
+				}
+				return alctoken(NEWLINE);
 			}
 			else{
-				flagcompleted = 1;
+				return -1;
 			}
-			return alctoken(NEWLINE);
 		}
-		else{
-			return -1;
-		}
-}
 
 
 
@@ -59,7 +60,7 @@
 			/*printf("deindentation root 0\n");*/
 			pendingtransition=0;
 		  }
-		  else if(top>0 && il<=dentstack[top] && pendingtransition == 1 && rootlevel == 1){
+		  else if(top>0 && il<=dentstack[top] && pendingtransition == 1 && strlen(yytext)> 1 && rootlevel == 1){
 			/*printf("deindentation Root 1\n");*/
 			pendingtransition=0;
 		   }
@@ -105,9 +106,9 @@
 "in"	{return alctoken(IN);}
 "try"	{return alctoken(TRY);}
 "and"	{return alctoken(AND);}
-"else"	{return alctoken(ELSE);}
+"else"	{labeltoken=ELSE; if(top>0 && column==2){dodedentpendings();return alctoken(NEWLINE);}else {return alctoken(ELSE);}}
 "is"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
-"while"	{return alctoken(WHILE);}
+"while"	{labeltoken = WHILE;if(top>0 && column == 2){dodedentpendings();rootlevel=1; return alctoken(NEWLINE);}else{return alctoken(WHILE);}}
 "as"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "except"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
 "lambda"	{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("\"%s\" this Python feature is not in PunY in file \"%s\" in line %d\n", yytext, current_file, rows);exit(1); }
@@ -180,7 +181,7 @@
 (\'([^\']|\'\')*\') {int cat = alctoken(STRING); mksval(yytext); yylval.treeptr->leaf->issval = 1; return cat;}
 -?[0-9]+	{int cat = alctoken(NUMBER); yylval.treeptr->leaf->ival = atoi(yytext); return cat;}
 -?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)? {int cat = alctoken(NUMBER); yylval.treeptr->leaf->dval = atof(yytext); return cat;}
-[a-zA-Z_][a-zA-Z0-9_]*	{pendingtransition=0;labeltoken = NAME; if(top >0 && column == 2 && rootlevel==0){dodedentpendings();rootlevel=1; return alctoken(NEWLINE);}else{return alctoken(labeltoken);};column += strlen(yytext);}
+[a-zA-Z_][a-zA-Z0-9_]*	{labeltoken = NAME; if(top >0 && column == 2 && rootlevel==0){dodedentpendings();rootlevel=1; return alctoken(NEWLINE);}else{return alctoken(labeltoken);};column += strlen(yytext);}
 "#".*   {comment = 1;}
 " "	{}
 .		{printf(COLOR_BOLD "LEXICAL ERROR: " COLOR_END); printf("%s in file \"%s\" line number: %d\n", yytext, current_file, rows); exit(1);}

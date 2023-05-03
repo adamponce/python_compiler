@@ -1,0 +1,48 @@
+link puny
+procedure max_(elements)
+maximum:=elements[1]
+every i := 1 to (len(elements)) do
+{if maximum<elements[i] then
+{maximum:=elements[i]
+}
+}
+print("The maximum of the list is",maximum)
+
+
+
+end
+procedure min_(elements)
+minimum:=elements[1]
+every i := 1 to (len(elements)) do
+{if minimum>elements[i] then
+{minimum:=elements[i]
+}
+}
+print("The minimum of the list is",minimum)
+
+
+
+end
+procedure sum_(elements)
+i:=1
+while i<=len(elements) do
+{total:=elements[i]
+i:=i+1
+if i>0 then
+{total:=total+elements[i]
+}
+}
+print("The sum of the list is",total)
+
+
+
+
+end
+procedure main()
+elements:=[3,5,6,8,1,9,12,15,2,2]
+max_(elements)
+min_(elements)
+sum_(elements)
+
+
+end

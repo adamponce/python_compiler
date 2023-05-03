@@ -605,14 +605,18 @@ void typecheck(struct tree *t) {
                     }
                 }
             }
-            operation_count--;
-            if(operation_count == 0) {
-                /* check if issue with funal operation type and type of symbol*/ 
-                if(current_symbol != NULL) {
-                    if((current_symbol->type->basetype != ANY_TYPE) && (current_symbol->type->basetype != operation_type)) {
-                        incompatable_error(typenam[operation_type-1000000], t->kids[0]->kids[0]->leaf->lineno);
+            if(operation_type != LPAR) {
+                operation_count--;
+                if(operation_count == 0) {
+                    /* check if issue with funal operation type and type of symbol*/ 
+                    if(current_symbol != NULL) {
+                        if((current_symbol->type->basetype != ANY_TYPE) && (current_symbol->type->basetype != operation_type)) {
+                            incompatable_error(typenam[operation_type-1000000], t->kids[0]->kids[0]->leaf->lineno);
+                        }
                     }
                 }
+            } else {
+                operation_type = 0;
             }
         }
 
@@ -968,6 +972,10 @@ int get_type(struct tree *t) {
                 break;
             }
         }
+    
+    }
+    else if(t->prodrule == LPAR || t->prodrule == RPAR) {
+        return LPAR;
     } else {
         operation_error(t->symbolname, t->leaf->lineno);
     }

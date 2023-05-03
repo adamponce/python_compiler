@@ -19,6 +19,9 @@ int print_found = 0;
 int to_string_found = 0;
 int func_range = 0;
 int for_variable = 0;
+int name_found = 0;
+int iterations = 0;
+int name_interations = 0;
 
 
 void start_unicon(){
@@ -82,7 +85,7 @@ void generate_code(struct tree *t){
         case RPAR: fprintf(unicon, ")"); break;
         case LSQB: fprintf(unicon, "["); break;
         case RSQB: fprintf(unicon, "]"); break;
-        case COLON: if(if_found == 1){
+        case COLON: if(if_found == 1 && else_here == 0){
                         fprintf(unicon, " then");
                         break;
                     }
@@ -92,6 +95,9 @@ void generate_code(struct tree *t){
                     }
                     else if(while_found == 1){
                         fprintf(unicon, " do");
+                        break;
+                    }
+                    else if(else_here == 1){
                         break;
                     }
                     else if(function_here == 1){
@@ -116,7 +122,7 @@ void generate_code(struct tree *t){
         case GREATER: fprintf(unicon, ">"); break;
         case EQUAL: fprintf(unicon, ":="); break;
         case DOT: break;
-        case PERCENT:break;
+        case PERCENT: fprintf(unicon, "%%"); break;
         case LBRACE: fprintf(unicon, "{"); break;
         case RBRACE: fprintf(unicon, "}"); break;
         case EQEQUAL: fprintf(unicon, "="); break;
@@ -145,12 +151,13 @@ void generate_code(struct tree *t){
                         break;
                     }
                     else if(for_here == 1 && for_variable == 1){
-                        fprintf(unicon, "%s := 0", t->symbolname);
+                        fprintf(unicon, "%s := 1", t->symbolname);
                         for_variable = 0;
                         break;
                     }
                     else{
                         anything_else = 1;
+                        name_found = 1;
                         fprintf(unicon, "%s", t->symbolname); break;
                     }
         case NUMBER: fprintf(unicon, "%s", t->symbolname); break;
@@ -205,6 +212,8 @@ void generate_code(struct tree *t){
                     }
     }
 
+    
+    iterations++;
 
 
     for(int i = 0; i < t->nkids; i++){

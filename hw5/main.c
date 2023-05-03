@@ -102,10 +102,28 @@ int main(int argc, char *argv[]){
             fprintf(stderr, "Can't open %s\n", argv[i]); fflush(stderr);
             exit(-1);
         }
-        unicon = fopen("unicon.icn", "w");
+        if(strchr(current_file, '/') != NULL) {
+            current_file = strrchr(current_file, '/') + 1;
+        }
         //Begins analysis
-        printf("FILE: %s\n", argv[i]);
+        printf("FILE: %s\n", current_file);
         printf("----------------------\n");
+
+        char *unicon_file = strdup(current_file);
+        char *pyext = ".py";
+        char *uniext = ".icn";
+        char *a, *b, *c;
+        if (*pyext && (b = c = strstr(unicon_file, pyext)) != NULL) {
+            size_t len = strlen(pyext);
+            while ((c = strstr(a = c + len, pyext)) != NULL) {
+                memmove(b, a, c - a);
+                b += c - a;
+            }
+            memmove(b, a, strlen(a) + 1);
+        }
+        strcat(unicon_file, uniext);
+
+        unicon = fopen(unicon_file, "w");
         yydebug = 0;
         /*
         while ((cat = yylex()) > 0){
@@ -133,10 +151,29 @@ int main(int argc, char *argv[]){
                 generate_code(root);
             }
             fclose(unicon);
+            char command[50] = "unicon -c ";
+            strcat(command, unicon_file);
+            //printf("%s", command);
             system("unicon -c puny.icn");
-            system("unicon -c unicon.icn");
-            system("unicon unicon.u puny.u");
-            system("./unicon");
+            char *ucode_file = strdup(unicon_file);
+            char *ucodeext = ".u";
+            char *uniext = ".icn";
+            char *a, *b, *c;
+            if (*uniext && (b = c = strstr(ucode_file, uniext)) != NULL) {
+                size_t len = strlen(uniext);
+                while ((c = strstr(a = c + len, uniext)) != NULL) {
+                    memmove(b, a, c - a);
+                    b += c - a;
+                }
+                memmove(b, a, strlen(a) + 1);
+            }
+            strcat(ucode_file, ucodeext);
+            system(command);
+            char command_2[50] = "unicon ";
+            char command_3[50] = " puny.u";
+            strcat(command_2, ucode_file);
+            strcat(command_2, command_3);
+            system(command_2);
 
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");
