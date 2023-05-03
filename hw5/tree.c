@@ -49,6 +49,8 @@ int return_found = 0;
 int opt_rarrowtest_found = 0;
 char *return_symbol = NULL;
 int import_stmt = 0;
+int def_first = 0;
+int anything_before_def = 0;
 
 /* for type checking */
 struct sym_entry *current_symbol;

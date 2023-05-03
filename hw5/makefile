@@ -38,5 +38,10 @@ type: type.c type.h tree.h symtab.h
 unicon: unicon.c unicon.h tree.h
 	$(CC) $(OBJFLAGS) $@.c
 
+
+test:
+	./puny working_tests/test_1.py
+	./puny working_tests/test_2.py
+
 clean:
 	rm *.o $(targets) punygram.tab.c punygram.tab.h lex.yy.c *.dot *.png

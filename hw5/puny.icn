@@ -17,3 +17,30 @@ procedure float(x)
       stop("PunY type mismatch error. ",type(x), "cannot convert to float")
    return rv
 end
+
+procedure join(separator, items[])
+  if type(items[1]) == "list" then {
+     return join ! (push(items[1], separator))
+     }
+
+  if *items = 0 then return ""
+  if *items = 1 then return items[1]
+  result := items[1]
+  every result ||:= separator || items[2 to *items]
+  return result
+end
+
+procedure split(s, delimiters : ' \t', keepall)
+  local w, ws := [], addproc := put, nullproc
+
+  otherproc := if \keepall then put else 1
+
+  if delimiters := (any(delimiters, s[1]) & ~dlms) then
+    otherproc :=: addproc
+
+  s ? while w := tab(many(delimiters := ~dlms)) do {
+    addproc(ws, w)
+    otherproc :=: addproc
+    }
+  return ws
+end

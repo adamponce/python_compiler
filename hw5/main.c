@@ -124,6 +124,7 @@ int main(int argc, char *argv[]){
             treetraversal(root);
             typecheck(root);
             look_for_beginning(root);
+            fprintf(unicon, "link puny\n");
             if(def_first == 1){
                 generate_code(root);
             }
@@ -132,9 +133,9 @@ int main(int argc, char *argv[]){
                 generate_code(root);
             }
             fclose(unicon);
-            //start_unicon();
+            system("unicon -c puny.icn");
             system("unicon -c unicon.icn");
-            system("unicon unicon.u");
+            system("unicon unicon.u puny.u");
             system("./unicon");
 
             if(symtab_flag == 0){

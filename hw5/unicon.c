@@ -15,6 +15,11 @@ int function_here = 0;
 int main_found = 0;
 int anything_else = 0;
 int else_here = 0;
+int print_found = 0;
+int to_string_found = 0;
+int func_range = 0;
+int for_variable = 0;
+
 
 void start_unicon(){
     fprintf(unicon,"procedure main()\n");
@@ -36,7 +41,12 @@ void generate_code(struct tree *t){
                         else{
                             end_unicon(); break;
                         }
-        case NEWLINE: fprintf(unicon, "\n"); break;
+        case NEWLINE: if(print_found == 1){
+                            print_found = 0;
+                            fprintf(unicon, "\n");
+                            break;
+                        }   
+                        else{fprintf(unicon, "\n"); break;}
         case FALSE: break;
         case IF: fprintf(unicon, "if "); if_found = 1; break;
         case DEF: fprintf(unicon, "procedure "); function_here = 1; break;
@@ -60,7 +70,7 @@ void generate_code(struct tree *t){
         case NONLOCAL: break;
         case YIELD: break;
         case BREAK: fprintf(unicon, "break"); break;
-        case FOR: fprintf(unicon, "every "); for_here = 1;break;
+        case FOR: fprintf(unicon, "every "); for_here = 1; for_variable = 1; break;
         case NOT: break;
         case CLASS: break;
         case FROM: break;
@@ -92,10 +102,16 @@ void generate_code(struct tree *t){
                     }
         case COMMA: fprintf(unicon, ","); break;
         case SEMI: fprintf(unicon, ";"); break;
-        case PLUS: fprintf(unicon, "+"); break;
+        case PLUS: if(print_found == 1){
+                        fprintf(unicon, ", ");
+                        break;
+                    }
+                    else{
+                        fprintf(unicon, "+"); break;
+                    }
         case MINUS: fprintf(unicon, "-"); break;
-        case STAR: break;
-        case SLASH: break;
+        case STAR: fprintf(unicon, "*");break;
+        case SLASH: fprintf(unicon, "/"); break;
         case LESS: fprintf(unicon, "<"); break;
         case GREATER: fprintf(unicon, ">"); break;
         case EQUAL: fprintf(unicon, ":="); break;
@@ -122,6 +138,15 @@ void generate_code(struct tree *t){
         case NAME:  if(strcmp(t->symbolname, "main") == 0){
                         main_found = 1;
                         fprintf(unicon, "%s", t->symbolname);
+                        break;
+                    }
+                    else if(to_string_found == 1){
+                        fprintf(unicon, "%s", t->symbolname);
+                        break;
+                    }
+                    else if(for_here == 1 && for_variable == 1){
+                        fprintf(unicon, "%s := 0", t->symbolname);
+                        for_variable = 0;
                         break;
                     }
                     else{
@@ -164,7 +189,16 @@ void generate_code(struct tree *t){
         case IN: fprintf(unicon, " to "); break;
         case TYPE_COMMENT: break;
         case FUNC: if(strcmp(t->symbolname, "print") == 0){
-                        fprintf(unicon, "write"); break;
+                        fprintf(unicon, "%s", t->symbolname);
+                        print_found = 1;
+                        break;
+                    }
+                    else if(strcmp(t->symbolname, "str") == 0){
+                        to_string_found = 1;
+                        break;
+                    }
+                    else if(strcmp(t->symbolname, "range") == 0){
+                        break;
                     }
                     else{
                         fprintf(unicon, "%s", t->symbolname); break;
