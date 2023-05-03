@@ -967,6 +967,11 @@ void look_for_beginning(struct tree *t){
                     return;
                 }
     }
+    for(int i = 0; i < t->nkids; i++){
+        look_for_beginning(t->kids[i]);
+    }
+
+
 }
 
 // void operand_error(char *tmp, int line) {

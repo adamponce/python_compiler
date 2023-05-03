@@ -14,9 +14,10 @@ int while_found = 0;
 int function_here = 0;
 int main_found = 0;
 int anything_else = 0;
+int else_here = 0;
 
 void start_unicon(){
-    fprintf(unicon,"link puny\nprocedure main()\n");
+    fprintf(unicon,"procedure main()\n");
 }
 
 void end_unicon(){
@@ -48,7 +49,7 @@ void generate_code(struct tree *t){
         case ELIF: break;
         case TRY: break;
         case AND: fprintf(unicon, " & "); break;
-        case ELSE: fprintf(unicon, "else "); break;
+        case ELSE: fprintf(unicon, "else "); else_here = 1; break;
         case WHILE: fprintf(unicon, "while "); while_found = 1; break;
         case AS: break;
         case EXCEPT: break;
@@ -129,7 +130,7 @@ void generate_code(struct tree *t){
                     }
         case NUMBER: fprintf(unicon, "%s", t->symbolname); break;
         case STRING: fprintf(unicon, "%s", t->symbolname); break;
-        case INDENT: if(function_here == 1 && (while_found == 1 || for_here == 1 || if_found == 1)){
+        case INDENT: if(function_here == 1 && (while_found == 1 || for_here == 1 || if_found == 1 || else_here == 1)){
                         fprintf(unicon, "{"); break;
                     }
                     else if(function_here == 1){
@@ -148,6 +149,10 @@ void generate_code(struct tree *t){
                     }
                     else if(if_found == 1){
                         if_found = 0;
+                        fprintf(unicon, "}\n"); break;
+                    }
+                    else if(else_here == 1){
+                        else_here = 0;
                         fprintf(unicon, "}\n"); break;
                     }
                     else if(function_here == 1){

@@ -40,8 +40,8 @@ struct sym_table *tables[ARRAY_SIZE];
 extern int table_count;
 extern int dedent;
 extern int indent;
-extern def_first;
-extern anything_before_def;
+extern int def_first;
+extern int anything_before_def;
 FILE *unicon;
 
 
@@ -124,9 +124,18 @@ int main(int argc, char *argv[]){
             treetraversal(root);
             typecheck(root);
             look_for_beginning(root);
+            if(def_first == 1){
+                generate_code(root);
+            }
+            else if(anything_before_def == 1){
+                start_unicon();
+                generate_code(root);
+            }
+            fclose(unicon);
             //start_unicon();
-            generate_code(root);
-            //system("./unicon");
+            system("unicon -c unicon.icn");
+            system("unicon unicon.u");
+            system("./unicon");
 
             if(symtab_flag == 0){
                 printf("No Errors Detected. Use -symtab to see symbol table");
