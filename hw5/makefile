@@ -40,8 +40,20 @@ unicon: unicon.c unicon.h tree.h
 
 
 test:
+	./puny working_tests/test_0.py
 	./puny working_tests/test_1.py
 	./puny working_tests/test_2.py
+	./puny working_tests/test_3.py
+	./puny working_tests/test_4.py
+	./puny working_tests/test_5.py
+	./puny working_tests/test_6.py
+	./puny working_tests/test_7.py
+	./puny working_tests/test_8.py
+	./puny working_tests/test_9.py
+	./puny working_tests/test_10.py
+	./puny working_tests/test_11.py
+	./puny working_tests/test_12.py
+
 
 clean:
 	rm *.o $(targets) punygram.tab.c punygram.tab.h lex.yy.c *.dot *.png

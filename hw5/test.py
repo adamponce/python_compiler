@@ -1,25 +1,31 @@
-"""
-The user is able to see how long it takes for a collatz sequence.
-collatz.py
-Author: Adam Schmidt
-date: Sept. 25, 2018
-Assignment: Lab3 
-"""
+def test_concatenate_strings():
+    input1 = "Hello"
+    input2 = "world"
+    expected_output = "Helloworld"
+    output = ""
+    for char in range(input1):
+        output += char
+    for char in range(input2):
+        output += char
+    if output == expected_output:
+        print("test_concatenate_strings PASSED")
+    else:
+        print("test_concatenate_strings FAILED: " + output + " != " + expected_output)
 
-def collatz_len(startnum):
+def test_get_string_length():
+    input_str = "Hello, world!"
+    expected_output = 13
+    output = 0
+    for char in input_str:
+        output += 1
+    if output == expected_output:
+        print("test_get_string_length PASSED")
+    else:
+        print("test_get_string_length FAILED: " + str(output) + " != " + str(expected_output))
 
-    sum = 1
-    while (startnum > 1):
-        if (startnum % 2 == 0):
-            sum = sum + 1
-            startnum = startnum / 2
-        elif (startnum % 2 != 0):
-            sum = sum + 1
-            startnum = (3 * startnum) + 1
-    return sum
-
+def run_tests():
+    test_concatenate_strings()
+    test_get_string_length()
 
 def main():
-    startnum = int(input("Please enter a positive starting number: "))
-    collatz_len(startnum)
-    print("Length of Collatz is: " + str(collatz_len(startnum)))
+    run_tests()

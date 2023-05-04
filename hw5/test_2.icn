@@ -1,0 +1,16 @@
+link puny
+procedure main()
+add:=0
+count:=0
+running_average:=0
+
+
+every x := 1 to (10) do
+{user_input:=float(input("Enter a number: "))
+count:=(count+1)
+add:=float(user_input+add)
+running_average:=float(add/count)
+print((running_average))
+
+}
+end

@@ -27,6 +27,7 @@ int number_of_elifs = 0;
 int comparison_found = 0;
 int current_position;
 int eqq_position; 
+int rigth_arrow_found = 0;
 
 
 void start_unicon(){
@@ -42,10 +43,10 @@ void generate_code(struct tree *t){
         return;
     }
 
+    
+
     switch(t->prodrule){
-        case ENDMARKER: 
-                        printf("%d\n", main_found);
-                        if(main_found == 1){
+        case ENDMARKER: if(main_found == 1){
                             break;
                         }
                         else{
@@ -94,6 +95,7 @@ void generate_code(struct tree *t){
         case RSQB: fprintf(unicon, "]"); break;
         case COLON: if(if_found == 1 && else_here == 0 && elseif_found == 0){
                         fprintf(unicon, " then");
+                        comparison_found = 0;
                         break;
                     }
                     else if(for_here == 1){
@@ -105,12 +107,14 @@ void generate_code(struct tree *t){
                         break;
                     }
                     else if(else_here == 1){
+                        comparison_found = 0;
                         break;
                     }
                     else if(function_here == 1){
                         break;
                     }
                     else if(elseif_found == 1){
+                        comparison_found = 0;
                         fprintf(unicon, " then");
                         break;
                     }
@@ -149,7 +153,7 @@ void generate_code(struct tree *t){
         case DOUBLESTAREQUAL: break;
         case DOUBLESLASH: break;
         case DOUBLESLASHEQUAL: break;
-        case RARROW: break;
+        case RARROW: rigth_arrow_found = 1; break;
         case ELLIPSIS: break;
         case COLONEQUAL: break;
         case NAME:  if(strcmp(t->symbolname, "main") == 0){
@@ -234,6 +238,10 @@ void generate_code(struct tree *t){
                         break;
                     }
                     else if(strcmp(t->symbolname, "range") == 0){
+                        break;
+                    }
+                    else if(rigth_arrow_found == 1){
+                        rigth_arrow_found = 0;
                         break;
                     }
                     else{

@@ -124,7 +124,7 @@ int main(int argc, char *argv[]){
         strcat(unicon_file, uniext);
 
         unicon = fopen(unicon_file, "w");
-        yydebug = 1;
+        yydebug = 0;
         /*
         while ((cat = yylex()) > 0){
             printf("%d\t %s\n", cat, yytext);
@@ -153,10 +153,10 @@ int main(int argc, char *argv[]){
                 generate_code(root);
             }
             fclose(unicon);
-            char command[50] = "unicon -c ";
+            char command[50] = "unicon -c -s ";
             strcat(command, unicon_file);
             //printf("%s", command);
-            system("unicon -c puny.icn");
+            system("unicon -c -s puny.icn");
             char *ucode_file = strdup(unicon_file);
             char *ucodeext = ".u";
             char *uniext = ".icn";

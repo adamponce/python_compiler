@@ -1,30 +1,47 @@
 link puny
-
-
-procedure collatz_len(startnum)
-sum:=1
-while (startnum>1) do
-{if (startnum%2=0) then
-{sum:=sum+1
-startnum:=startnum/2
+procedure test_concatenate_strings()
+input1:="Hello"
+input2:="world"
+expected_output:="Helloworld"
+output:=""
+every char := 1 to input1 do
+{output+:=char
 }
-else{ if (startnum%2~=0)
-{sum:=sum+1
-startnum:=(3*startnum)+1
+every char := 1 to input2 do
+{output+:=char
+}
+if output=expected_output then
+{print("test_concatenate_strings PASSED")
 }
 else 
-{print(="JHELLO")
-}
+{print("test_concatenate_strings FAILED: ", output, " != ", expected_output)
+
+
 }
 end
-return sum
-
+procedure test_get_string_length()
+input_str:="Hello, world!"
+expected_output:=13
+output:=0
+every char := 1 to input_str do
+{output+:=1
+}
+if output=expected_output then
+{print("test_get_string_length PASSED")
+}
+else 
+{print("test_get_string_length FAILED: ", (output), " != ", (expected_output))
 
 
 }
+end
+procedure run_tests()
+test_concatenate_strings()
+test_get_string_length()
+
+
+end
 procedure main()
-startnum:=int(input("Please enter a positive starting number: "))
-collatz_len(startnum)
-print("Length of Collatz is: ", (collatz_len(startnum)))
+run_tests()
 
 end

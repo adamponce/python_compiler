@@ -1,0 +1,11 @@
+link puny
+procedure main()
+elements:=[3,2,4,5,12]
+
+every i := 1 to (len(elements)) do
+{print(elements[i])
+
+
+
+}
+end

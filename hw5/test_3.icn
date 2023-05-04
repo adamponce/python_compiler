@@ -11,15 +11,12 @@ else
 }
 end
 procedure main()
-user_input:=int(input(="Please enter a number: "))
+user_input:=int(input("Please enter a number: "))
 while user_input>0 do
 {answer:=is_even(user_input)
 if answer=1 then
-{print((user_input), =" is an even number")
+{print((user_input), " is an even number")
 user_input:=int(input("Please enter a number: "))
-}
-else{ if answer=3
-{print(="HEKSLKFL:D")
 }
 else 
 {print((user_input), " is an odd number")
@@ -28,4 +25,3 @@ user_input:=int(input("Please enter a number:"))
 }
 }
 end
-}

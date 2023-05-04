@@ -12,8 +12,6 @@ def main():
         if answer == 1:
             print(str(user_input) + " is an even number")
             user_input = int(input("Please enter a number: "))
-        elif answer == 3:
-            print("HEKSLKFL:D")
         else:
             print(str(user_input) + " is an odd number")
             user_input = int(input("Please enter a number:"))

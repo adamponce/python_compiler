@@ -1,0 +1,24 @@
+link puny
+procedure collatz_len(startnum)
+sum:=1
+while startnum>1 do
+{if startnum%2=0 then
+{sum:=sum+1
+startnum:=startnum/2
+}
+else 
+{sum:=sum+1
+startnum:=(3*startnum)+1
+}
+}
+return sum
+
+
+
+end
+procedure main()
+startnum:=int(input("Please enter a positive starting number: "))
+collatz_len(startnum)
+print("Length of Collatz is: ", (collatz_len(startnum)))
+
+end
