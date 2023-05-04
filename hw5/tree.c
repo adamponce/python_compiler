@@ -852,9 +852,6 @@ void typecheck(struct tree *t) {
         new_scope = 0;
         dedent = 0;
         indent = 0;
-        //current = tables[0];
-    }
-    else if((dedent == indent) && (new_scope == 1) && (dedent == 0) && (indent == 0) ){
         current = tables[0];
     }
     

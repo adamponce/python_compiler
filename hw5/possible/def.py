@@ -1,19 +1,18 @@
 def is_even(num):
     if num % 2 == 1:
-        return 0
+        return False
     else:
-        return 1
+        return True
 
 
 def main():
     user_input = int(input("Please enter a number: "))
     while user_input > 0:
         answer = is_even(user_input)
-        if answer == 1:
+        if answer:
             print(str(user_input) + " is an even number")
             user_input = int(input("Please enter a number: "))
-        elif answer == 3:
-            print("HEKSLKFL:D")
         else:
             print(str(user_input) + " is an odd number")
             user_input = int(input("Please enter a number:"))
+            break

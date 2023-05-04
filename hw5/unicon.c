@@ -43,7 +43,9 @@ void generate_code(struct tree *t){
     }
 
     switch(t->prodrule){
-        case ENDMARKER: if(main_found == 1){
+        case ENDMARKER: 
+                        printf("%d\n", main_found);
+                        if(main_found == 1){
                             break;
                         }
                         else{

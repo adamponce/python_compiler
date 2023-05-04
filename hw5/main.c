@@ -124,7 +124,7 @@ int main(int argc, char *argv[]){
         strcat(unicon_file, uniext);
 
         unicon = fopen(unicon_file, "w");
-        yydebug = 0;
+        yydebug = 1;
         /*
         while ((cat = yylex()) > 0){
             printf("%d\t %s\n", cat, yytext);
@@ -140,6 +140,8 @@ int main(int argc, char *argv[]){
         if(r == 0){
             //treeprint(root, 1);
             treetraversal(root);
+            indent = 0;
+            dedent = 0;
             typecheck(root);
             look_for_beginning(root);
             fprintf(unicon, "link puny\n");
@@ -199,8 +201,6 @@ int main(int argc, char *argv[]){
         table_count = 1;
         firsttime = 0;
         rows = 1;
-        indent = 0;
-        dedent = 0;
         printf("\n");
         fclose(yyin);
     }

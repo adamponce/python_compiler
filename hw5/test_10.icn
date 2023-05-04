@@ -1,0 +1,45 @@
+link puny
+procedure main()
+
+
+
+
+
+
+
+
+speed:=int(input("Please enter the speed of the wind (in knots) as an integer:"))
+if speed>63 then
+{print("There is a hurricane in your area, please seek shelter")
+
+}
+else{ if 48<=speed<=63 then
+{print("There is a storm in your area, be careful")
+
+}
+else{ if 47>=speed>=28 then
+{print("There is a gale of wind in your area, be cautious")
+
+}
+else{ if 4<=speed<=27 then
+{print("There is a breeze in your area")
+
+}
+else{ if 1<=speed<=3 then
+{print("There is a gentle zephyr of light air in your area")
+
+}
+else{ if 0<speed<1 then
+{print("The air in your area is calm")
+
+}
+else 
+{print("Error not a valid knot speed")
+
+}
+}
+}
+}
+}
+}
+end
